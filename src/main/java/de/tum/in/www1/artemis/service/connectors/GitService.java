@@ -318,7 +318,7 @@ public class GitService {
 
         // Replace the exercise name in the repository folder name with the participation ID.
         // This is necessary to be able to refer back to the correct participation after the JPlag detection run.
-        String updatedRepoFolderName = repoFolderName.replaceAll("/[a-zA-Z0-9]*-", "/" + participation.getId() + "-");
+        String updatedRepoFolderName = repoFolderName.replaceAll("/[a-zA-Z\\d]*-", "/" + participation.getId() + "-");
         Path localPath = Path.of(targetPath, updatedRepoFolderName);
 
         Repository repository = getOrCheckoutRepository(repoUrl, localPath, true);
@@ -394,7 +394,7 @@ public class GitService {
      */
     public Repository getOrCheckoutRepository(VcsRepositoryUrl sourceRepoUrl, VcsRepositoryUrl targetRepoUrl, Path localPath, boolean pullOnGet)
             throws GitAPIException, GitException, InvalidPathException {
-        return getOrCheckoutRepository(sourceRepoUrl, targetRepoUrl, localPath, pullOnGet, defaultBranch);
+        return getOrCheckoutRepository(sourceRepoUrl, targetRepoUrl, localPath, pullOnGet, this.defaultBranch);
     }
 
     /**
@@ -529,8 +529,9 @@ public class GitService {
      * @param remoteRepositoryUrl the remote repository url for the git repository, will be added to the Repository object for later use, can be null
      * @return the git repository in the localPath or **null** if it does not exist on the server.
      */
+    // TODO: this method is only used by tests and should be deleted in my opinion
     public Repository getExistingCheckedOutRepositoryByLocalPath(@NotNull Path localPath, @Nullable VcsRepositoryUrl remoteRepositoryUrl) {
-        return getExistingCheckedOutRepositoryByLocalPath(localPath, remoteRepositoryUrl, defaultBranch);
+        return getExistingCheckedOutRepositoryByLocalPath(localPath, remoteRepositoryUrl, this.defaultBranch);
     }
 
     /**
@@ -539,7 +540,7 @@ public class GitService {
      *
      * @param localPath           to git repo on server.
      * @param remoteRepositoryUrl the remote repository url for the git repository, will be added to the Repository object for later use, can be null
-     * @param defaultBranch       the name of the branch that should be used as defalut branch
+     * @param defaultBranch       the name of the branch that should be used as default branch
      * @return the git repository in the localPath or **null** if it does not exist on the server.
      */
     public Repository getExistingCheckedOutRepositoryByLocalPath(@NotNull Path localPath, @Nullable VcsRepositoryUrl remoteRepositoryUrl, String defaultBranch) {
@@ -556,7 +557,7 @@ public class GitService {
             if (cachedRepository != null) {
                 return cachedRepository;
             }
-            // Else try to retrieve the git repository from our server. It could e.g. be the case that the folder is there, but there is no .git folder in it!
+            // Else try to retrieve the git repository in the file system of the server. It could e.g. be the case that the folder is there, but there is no .git folder in it!
 
             // Open the repository from the filesystem
             final Path gitPath = localPath.resolve(".git");
@@ -640,8 +641,8 @@ public class GitService {
             log.debug("pushSourceToTargetRepo -> Push {}", targetRepoUrl.getURI());
 
             String oldBranch = git.getRepository().getBranch();
-            if (!defaultBranch.equals(oldBranch)) {
-                git.branchRename().setNewName(defaultBranch).setOldName(oldBranch).call();
+            if (!this.defaultBranch.equals(oldBranch)) {
+                git.branchRename().setNewName(this.defaultBranch).setOldName(oldBranch).call();
             }
 
             // push the source content to the new remote
@@ -668,9 +669,9 @@ public class GitService {
             git.remoteSetUrl().setRemoteName(REMOTE_NAME).setRemoteUri(new URIish(getGitUriAsString(targetRepoUrl))).call();
             log.debug("pushSourceToTargetRepo -> Push {}", targetRepoUrl.getURI());
 
-            if (!defaultBranch.equals(oldBranch)) {
+            if (!this.defaultBranch.equals(oldBranch)) {
                 targetRepo.getConfig().unsetSection(ConfigConstants.CONFIG_BRANCH_SECTION, oldBranch);
-                git.branchRename().setNewName(defaultBranch).setOldName(oldBranch).call();
+                git.branchRename().setNewName(this.defaultBranch).setOldName(oldBranch).call();
             }
 
             // push the source content to the new remote
