@@ -66,6 +66,7 @@ Markdown editor can be used to  customise the text.
               :align: center
 - **Assessment Instructions**: The Assessment Instructions are used during the assessment and can be used as a
 grading scheme.
+
 .. note::
     The following options are available for the assessment instructions:
     - **Assessment Criterion**: Title for the collection of the Criterions below
@@ -77,19 +78,20 @@ grading scheme.
 more often than the limit, an information will be displayed to the student, when the limit is exceeded.
     .. figure:: text/text-assessment-instructions-1.png
               :align: center
-When selecting the Option "Edit as Text", the Assessment Criterions are displayed as a List.
-  .. figure:: text/text-assessment-instructions-2.png
+    When selecting the Option "Edit as Text", the Assessment Criterions are displayed as a List.
+     .. figure:: text/text-assessment-instructions-2.png
               :align: center
 
 Once you are done defining the schema of an exercise, you can now create an exercise by clicking on |save| button.
 You will then be redirected to **Example Submissions for Assessment Training** Page.
-
     .. figure:: modeling/example-submission-for-assessment-training.png
               :align: center
 
 In this page, you can either *Create Example Submission* or *Use as Example Submission* for Assessment Training.
-Example submissions can be used to assess the submissions of students semi-automatically.
-Artemis uses those submissions to automatically apply the known assessment comments to similar model elements in other submissions as well.
+Example submissions are used for two purposes:
+- They are used to provide example submissions of students to train the semi-automatic assessment by Athena
+- They are displayed to the teaching assistants before they assess the submissions of students
+
 
 - Select |create-example-submission| if you want to create an example submission from scratch.
 - Alternatively, after the exercise already started, you can also use some submissions submitted by students as an example submission. For that, click on |use-as-example-submission|.
