@@ -18,9 +18,12 @@ import de.tum.in.www1.artemis.service.connectors.bamboo.BambooAuthorizationInter
 import de.tum.in.www1.artemis.service.connectors.bitbucket.BitbucketAuthorizationInterceptor;
 import de.tum.in.www1.artemis.service.connectors.gitlab.GitLabAuthorizationInterceptor;
 import de.tum.in.www1.artemis.service.connectors.jenkins.JenkinsAuthorizationInterceptor;
+import de.tum.in.www1.artemis.service.connectors.localgit.LocalGitAuthorizationInterceptor;
 
 /**
- * For now only provides a basic {@link org.springframework.web.client.RestTemplate RestTemplate} bean. Can be extended
+ * For now only provides a basic
+ * {@link org.springframework.web.client.RestTemplate RestTemplate} bean. Can be
+ * extended
  * to further customize how requests to other REST APIs are handled
  */
 @Configuration
@@ -58,6 +61,12 @@ public class RestTemplateConfiguration {
     }
 
     @Bean
+    @Profile("localgit")
+    public RestTemplate localGitRestTemplate(LocalGitAuthorizationInterceptor bitbucketAuthorizationInterceptor) {
+        return initializeRestTemplateWithInterceptors(bitbucketAuthorizationInterceptor, createRestTemplate());
+    }
+
+    @Bean
     @Profile("bamboo")
     public RestTemplate bambooRestTemplate(BambooAuthorizationInterceptor bambooAuthorizationInterceptor) {
         return initializeRestTemplateWithInterceptors(bambooAuthorizationInterceptor, createRestTemplate());
@@ -75,7 +84,8 @@ public class RestTemplateConfiguration {
         return createRestTemplate();
     }
 
-    // Note: for certain requests, e.g. health(), we would like to have shorter timeouts, therefore we need additional rest templates, because
+    // Note: for certain requests, e.g. health(), we would like to have shorter
+    // timeouts, therefore we need additional rest templates, because
     // it is recommended to keep the timeout settings constant per rest template
 
     @Bean
@@ -106,6 +116,12 @@ public class RestTemplateConfiguration {
     }
 
     @Bean
+    @Profile("localgit")
+    public RestTemplate shortTimeoutLocalGitRestTemplate(LocalGitAuthorizationInterceptor bitbucketAuthorizationInterceptor) {
+        return initializeRestTemplateWithInterceptors(bitbucketAuthorizationInterceptor, createShortTimeoutRestTemplate());
+    }
+
+    @Bean
     @Profile("bamboo")
     public RestTemplate shortTimeoutBambooRestTemplate(BambooAuthorizationInterceptor bambooAuthorizationInterceptor) {
         return initializeRestTemplateWithInterceptors(bambooAuthorizationInterceptor, createShortTimeoutRestTemplate());
@@ -132,7 +148,8 @@ public class RestTemplateConfiguration {
         interceptors.add(interceptor);
         restTemplate.setInterceptors(interceptors);
 
-        // we do not want to use MappingJackson2XmlHttpMessageConverter here because it would lead to problems with the tests
+        // we do not want to use MappingJackson2XmlHttpMessageConverter here because it
+        // would lead to problems with the tests
         HttpMessageConverter<?> messageConverterToRemove = null;
         for (HttpMessageConverter<?> messageConverter : restTemplate.getMessageConverters()) {
             if (messageConverter instanceof MappingJackson2XmlHttpMessageConverter) {
