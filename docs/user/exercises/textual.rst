@@ -27,7 +27,7 @@ The following sections describe the supported features and the process of creati
 - Navigate into **Exercises** of your preferred course.
     .. figure:: modeling/course-management-course-dashboard.png
               :align: center
-- Scroll down to the section  **Text Exercises**
+- Scroll down to the section  **Text Exercises**.
     .. figure:: text/text-course-management.png
               :align: center
 
@@ -64,15 +64,21 @@ Markdown editor can be used to  customise the text.
 - **Example Solution Publication Date**: The date from which the example solution will be displayed to the students. If no date is set, the sample solution will not be shown to the students.
     .. figure:: text/text-creation-2.png
               :align: center
+- **Assessment Instructions**: The Assessment Instructions are used during the assessment and can be used as a
+grading scheme.
 .. note::
-   Fields marked with red are mandatory to be filled.
-
-.. note::
-   - The field **Diagram Type** determines the components that students/instructors can use while working on the exercise.
-   - This option cannot be changed after creating the exercise.
-   - For example: If the instructor selects class diagram as its diagram type, users (instructors/students) will now only be able to use components of class diagrams throughout the exercise.
-
-    .. figure:: modeling/class-diagram-diagram-type.png
+    The following options are available for the assessment instructions:
+    - **Assessment Criterion**: Title for the collection of the Criterions below
+    - **Credits**: The number of credits this criterion awards when used for assessment
+    - **Scale**: A short textual description about the criterion, i.e. "excellent", "good" or "bad"
+    - **Description**: A textual description displayed to the teaching assistants when assessing the submissions
+    - **Feedback**: Shown to the students after the assessment due date, when this criterion was used during assessment
+    - **Limit**: The maximum number of times this criterion counts towards the total score. If the criterion is used
+more often than the limit, an information will be displayed to the student, when the limit is exceeded.
+    .. figure:: text/text-assessment-instructions-1.png
+              :align: center
+When selecting the Option "Edit as Text", the Assessment Criterions are displayed as a List.
+  .. figure:: text/text-assessment-instructions-2.png
               :align: center
 
 Once you are done defining the schema of an exercise, you can now create an exercise by clicking on |save| button.
