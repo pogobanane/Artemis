@@ -156,8 +156,9 @@ public class ProgrammingExerciseService {
      *                         Git repository went wrong
      * @throws IOException     If the template files couldn't be read
      */
-    @Transactional // ok because we create many objects in a rather complex way and need a rollback
-                   // in case of exceptions
+    @Transactional
+    // ok because we create many objects in a rather complex way and need a rollback
+    // in case of exceptions
     public ProgrammingExercise createProgrammingExercise(ProgrammingExercise programmingExercise) throws GitAPIException, IOException {
         programmingExercise.generateAndSetProjectKey();
         final User exerciseCreator = userRepository.getUser();
@@ -761,7 +762,7 @@ public class ProgrammingExerciseService {
 
     /**
      * Updates the timeline attributes of the given programming exercise
-     * 
+     *
      * @param updatedProgrammingExercise containing the changes that have to be
      *                                   saved
      * @param notificationText           optional text for a notification to all
@@ -1090,11 +1091,41 @@ public class ProgrammingExerciseService {
             var errorMessageVcs = "Project already exists on the Version Control Server: " + projectName + ". Please choose a different title and short name!";
             throw new BadRequestAlertException(errorMessageVcs, "ProgrammingExercise", "vcsProjectExists");
         }
-
         String errorMessageCis = continuousIntegrationService.get().checkIfProjectExists(projectKey, projectName);
         if (errorMessageCis != null) {
             throw new BadRequestAlertException(errorMessageCis, "ProgrammingExercise", "ciProjectExists");
         }
+        // means the project does not exist in version control server and does not exist
+        // in continuous integration server
+    }
+
+    /**
+     * Pre-Checks if a project with the same ProjectKey or ProjectName already
+     * exists in the version control system (VCS) and in the continuous integration
+     * system (CIS).
+     * The check is done based on a generated project key (course short name +
+     * exercise short name) and the project name (course short name + exercise
+     * title).
+     *
+     * @param programmingExercise a typically new programming exercise for which the
+     *                            corresponding VCS and CIS projects should not yet
+     *                            exist.
+     * @param courseShortName     the shortName of the course the programming
+     *                            exercise should be imported in
+     * @return TRUE if a project with the same ProjectKey or ProjectName already
+     *         exists, otherwise false
+     */
+    public boolean preCheckProjectExistsOnVCSOrCI(ProgrammingExercise programmingExercise, String courseShortName) {
+        String projectKey = courseShortName + programmingExercise.getShortName().toUpperCase().replaceAll("\\s+", "");
+        String projectName = courseShortName + " " + programmingExercise.getTitle();
+        log.debug("Project Key: " + projectKey);
+        log.debug("Project Name: " + projectName);
+        boolean projectExists = versionControlService.get().checkIfProjectExists(projectKey, projectName);
+        if (projectExists) {
+            return true;
+        }
+        String errorMessageCis = continuousIntegrationService.get().checkIfProjectExists(projectKey, projectName);
+        return errorMessageCis != null;
         // means the project does not exist in version control server and does not exist
         // in continuous integration server
     }
