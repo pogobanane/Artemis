@@ -1,0 +1,36 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <changeSet author="ge35jib" id="20220716230000">
+        <addColumn tableName="team_assignment_config">
+            <column name="allow_team_formation" type="boolean" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <createTable tableName="team_student_invitation">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="team_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="accepted" type="boolean"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="team_student_invitation"
+                                 baseColumnNames="user_id"
+                                 constraintName="team_invitation_student_id"
+                                 referencedTableName="jhi_user"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE" />
+        <addForeignKeyConstraint baseTableName="team_student_invitation"
+                                 baseColumnNames="team_id"
+                                 constraintName="team_student_invitation_team_id"
+                                 referencedTableName="team"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE" />
+    </changeSet>
+</databaseChangeLog>

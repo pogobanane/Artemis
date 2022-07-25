@@ -35,6 +35,17 @@ public class TeamAssignmentConfig extends DomainObject {
     @Column(name = "max_team_size")
     private Integer maxTeamSize;
 
+    @Column(name = "allow_team_formation")
+    private boolean allowTeamFormation;
+
+    public Boolean getAllowTeamFormation() {
+        return allowTeamFormation;
+    }
+
+    public void setAllowTeamFormation(Boolean allowTeamFormation) {
+        this.allowTeamFormation = allowTeamFormation;
+    }
+
     public Exercise getExercise() {
         return exercise;
     }
@@ -72,6 +83,7 @@ public class TeamAssignmentConfig extends DomainObject {
         TeamAssignmentConfig newConfig = new TeamAssignmentConfig();
         newConfig.setMinTeamSize(getMinTeamSize());
         newConfig.setMaxTeamSize(getMaxTeamSize());
+        newConfig.setAllowTeamFormation(getAllowTeamFormation());
         return newConfig;
     }
 }

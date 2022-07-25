@@ -187,7 +187,8 @@
                 "typeNameToConfirm": "Bitte gib den Titel der Übung zur Bestätigung ein."
             },
             "importError": "Import fehlgeschlagen. Bitte versuche es erneut oder kontaktiere die Administration für Hilfe.",
-            "importSuccess": "Import war erfolgreich! {{ numberOfImportedTeams }} Teams wurden importiert."
+            "importSuccess": "Import war erfolgreich! {{ numberOfImportedTeams }} Teams wurden importiert.",
+            "invitedStudents": "Andere Teilnehmer"
         }
     }
 }

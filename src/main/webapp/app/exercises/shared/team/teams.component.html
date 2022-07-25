@@ -40,7 +40,7 @@
         entitiesPerPageTranslation="artemisApp.exercise.resultsPerPage"
         showAllEntitiesTranslation="artemisApp.exercise.showAllResults"
         searchPlaceholderTranslation="artemisApp.exercise.searchForTeams"
-        [searchFields]="['name', 'shortName', 'students.name', 'students.login', 'owner.name', 'owner.login']"
+        [searchFields]="['name', 'shortName', 'students.name', 'students.login', 'owner.name', 'owner.login', 'invitations.student.name', 'invitations.student.login']"
         [searchTextFromEntity]="searchTextFromTeam"
         [searchResultFormatter]="searchResultFormatter"
         (entitiesSizeChange)="handleTeamsSizeChange($event)"
@@ -113,6 +113,17 @@
                 </ngx-datatable-column>
 
                 <ngx-datatable-column prop="students" [minWidth]="200" [width]="600">
+                    <ng-template ngx-datatable-header-template>
+                        <span class="datatable-header-cell-wrapper" style="cursor: text">
+                            <span class="datatable-header-cell-label bold" jhiTranslate="artemisApp.team.students"> Students </span>
+                        </span>
+                    </ng-template>
+                    <ng-template ngx-datatable-cell-template let-value="value">
+                        <jhi-team-students-list [students]="value" [renderLinks]="isAdmin"></jhi-team-students-list>
+                    </ng-template>
+                </ngx-datatable-column>
+
+                <ngx-datatable-column prop="students" [minWidth]="200" [width]="600" *ngIf="">
                     <ng-template ngx-datatable-header-template>
                         <span class="datatable-header-cell-wrapper" style="cursor: text">
                             <span class="datatable-header-cell-label bold" jhiTranslate="artemisApp.team.students"> Students </span>

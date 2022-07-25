@@ -60,6 +60,8 @@ export enum ParticipationStatus {
     QUIZ_NOT_PARTICIPATED = 'quiz-not-participated',
     QUIZ_FINISHED = 'quiz-finished',
     NO_TEAM_ASSIGNED = 'no-team-assigned',
+    IS_INVITED = 'is-invited',
+    INVITATION_ACCEPTED = 'invitation-accepted',
     UNINITIALIZED = 'uninitialized',
     INITIALIZED = 'initialized',
     INACTIVE = 'inactive',
@@ -111,6 +113,8 @@ export abstract class Exercise implements BaseEntity {
     public numberOfOpenMoreFeedbackRequests?: number;
     public studentAssignedTeamId?: number;
     public studentAssignedTeamIdComputed = false;
+    public teamsIdStudentIsInvitedTo?: number[];
+    public teamIdStudentAcceptedInvitationTo?: number;
     public numberOfParticipations?: number;
     public testRunParticipationsExist?: boolean;
     public averageRating?: number;

@@ -1,0 +1,46 @@
+<div class="modal-header">
+    <h4 class="modal-title">
+        <span [jhiTranslate]="'artemisApp.exerciseActions.viewInvitations'"> Invitations </span>
+    </h4>
+    <button type="button" class="btn-close" data-dismiss="modal" aria-hidden="true" (click)="clear()"></button>
+</div>
+<div class="modal-body">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>
+                    <span>{{ 'artemisApp.team.name.label' | artemisTranslate }}</span>
+                </th>
+                <th>
+                    <span>{{ 'artemisApp.team.invitedStudents' | artemisTranslate }}</span>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let invitation of invitations">
+                <td class="align-middle">
+                    {{ invitation.team?.name }}
+                </td>
+                <td class="align-middle"></td>
+                <td class="align-middle">
+                    <button
+                        jhi-exercise-action-button
+                        [buttonLabel]="'artemisApp.exerciseActions.accept' | artemisTranslate"
+                        [buttonIcon]="faPlayCircle"
+                        [smallButton]="true"
+                        [hideLabelMobile]="false"
+                        (click)="onAccept(invitation)"
+                    ></button>
+                    <button
+                        jhi-exercise-action-button
+                        [buttonIcon]="faTrashAlt"
+                        [buttonLabel]="'artemisApp.exerciseActions.decline' | artemisTranslate"
+                        [smallButton]="true"
+                        [hideLabelMobile]="false"
+                        (click)="onDecline(invitation)"
+                    ></button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

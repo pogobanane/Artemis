@@ -187,7 +187,8 @@
                 "typeNameToConfirm": "Please type in the title of the exercise to confirm."
             },
             "importError": "Import failed. Please try again or contact an administrator for assistance.",
-            "importSuccess": "Import was successful! {{ numberOfImportedTeams }} teams were imported."
+            "importSuccess": "Import was successful! {{ numberOfImportedTeams }} teams were imported.",
+            "invitedStudents": "Other participants"
         }
     }
 }

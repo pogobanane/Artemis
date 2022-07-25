@@ -71,7 +71,7 @@ export class CourseExerciseDetailsComponent implements OnInit, OnDestroy {
     readonly TEXT = ExerciseType.TEXT;
     readonly FILE_UPLOAD = ExerciseType.FILE_UPLOAD;
 
-    private currentUser: User;
+    protected currentUser: User;
     private exerciseId: number;
     public courseId: number;
     private subscription: Subscription;

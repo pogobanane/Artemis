@@ -11,6 +11,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -48,6 +49,10 @@ public class Team extends AbstractAuditingEntity implements Participant {
     @JoinTable(name = "team_student", joinColumns = @JoinColumn(name = "team_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "student_id", referencedColumnName = "id"))
     private Set<User> students = new HashSet<>();
 
+    @OneToMany(mappedBy = "team", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties("team")
+    private Set<TeamStudentInvitation> invitations = new HashSet<>();
+
     @ManyToOne
     private User owner;
 
@@ -65,6 +70,7 @@ public class Team extends AbstractAuditingEntity implements Participant {
         this.image = team.image;
         this.students.addAll(team.students);
         this.owner = team.owner;
+        this.invitations = team.invitations;
     }
 
     public Team id(Long id) {
@@ -203,8 +209,16 @@ public class Team extends AbstractAuditingEntity implements Participant {
         return getStudents();
     }
 
+    public Set<TeamStudentInvitation> getInvitations() {
+        return this.invitations;
+    }
+
+    public void setInvitations(Set<TeamStudentInvitation> invitations) {
+        this.invitations = invitations;
+    }
+
     @Override
     public String toString() {
-        return "Team{" + "id=" + getId() + ", name='" + getName() + "'" + ", shortName='" + getShortName() + "'" + ", image='" + getImage() + "'" + "}";
+        return "Team{" + "id=" + getId() + ", name='" + getName() + "'" + ", shortName='" + getShortName() + "'" + ", image='" + getImage() + "}";
     }
 }

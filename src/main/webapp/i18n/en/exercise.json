@@ -109,7 +109,8 @@
             "teamAssignmentConfig": {
                 "teamSize": "Team Size",
                 "teamSizeTooltip": "Recommendation for tutors regarding the minimum and maximum number of students per team.",
-                "participants": "Participants"
+                "participants": "Participants",
+                "allowTeamFormation": "Are students allowed to form teams?"
             },
             "categories": "Categories",
             "noCategory": "No Category",

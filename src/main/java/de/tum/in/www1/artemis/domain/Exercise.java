@@ -153,6 +153,12 @@ public abstract class Exercise extends BaseExercise implements Completable {
     private Long numberOfOpenMoreFeedbackRequestsTransient;
 
     @Transient
+    private List<Long> teamsIdStudentIsInvitedToTransient;
+
+    @Transient
+    private Long teamIdStudentAcceptedInvitationToTransient;
+
+    @Transient
     private Long studentAssignedTeamIdTransient; // id of the team that the logged-in user is assigned to (only relevant if team mode is enabled)
 
     @Transient
@@ -684,12 +690,28 @@ public abstract class Exercise extends BaseExercise implements Completable {
         this.studentAssignedTeamIdTransient = studentAssignedTeamIdTransient;
     }
 
+    public void setTeamsIdStudentIsInvitedTo(List<Long> ids) {
+        this.teamsIdStudentIsInvitedToTransient = ids;
+    }
+
+    public List<Long> getteamsIdStudentIsInvitedTo() {
+        return this.teamsIdStudentIsInvitedToTransient;
+    }
+
     public boolean isStudentAssignedTeamIdComputed() {
         return studentAssignedTeamIdComputedTransient;
     }
 
     public void setStudentAssignedTeamIdComputed(boolean studentAssignedTeamIdComputedTransient) {
         this.studentAssignedTeamIdComputedTransient = studentAssignedTeamIdComputedTransient;
+    }
+
+    public Long getTeamIdStudentAcceptedInvitationTo() {
+        return this.teamIdStudentAcceptedInvitationToTransient;
+    }
+
+    public void setTeamIdStudentAcceptedInvitationTo(Long teamIdStudentAcceptedInvitationToTransient) {
+        this.teamIdStudentAcceptedInvitationToTransient = teamIdStudentAcceptedInvitationToTransient;
     }
 
     public boolean isGradingInstructionFeedbackUsed() {

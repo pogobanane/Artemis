@@ -75,6 +75,10 @@ export class TeamConfigFormGroupComponent implements OnInit {
         this.applyCurrentConfig();
     }
 
+    updateAllowTeamFormation() {
+        this.applyCurrentConfig();
+    }
+
     private applyCurrentConfig() {
         this.exercise.teamAssignmentConfig = cloneDeep(this.config);
     }

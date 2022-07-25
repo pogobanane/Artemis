@@ -288,7 +288,6 @@ public class ExerciseService {
             exercises = exerciseRepository.findByCourseIdWithCategories(course.getId());
         }
         else if (authCheckService.isOnlyStudentInCourse(course, user)) {
-
             if (course.isOnlineCourse()) {
                 // students in online courses can only see exercises where the lti outcome url exists, otherwise the result cannot be reported later on
                 exercises = exerciseRepository.findByCourseIdWhereLtiOutcomeUrlExists(course.getId(), user.getLogin());
@@ -489,6 +488,15 @@ public class ExerciseService {
         // if the exercise is not team-based, there is nothing to do here
         if (exercise.isTeamMode()) {
             Optional<Team> team = teamRepository.findOneByExerciseIdAndUserId(exercise.getId(), user.getId());
+            if (team.isEmpty()) {
+                List<TeamStudentInvitation> invitations = teamRepository.findInvitationsByExerciseIdAndUserId(exercise.getId(), user.getId());
+                Optional<TeamStudentInvitation> accepted = invitations.stream().filter(invitation -> Objects.nonNull(invitation.getAccepted()) && invitation.getAccepted())
+                        .findAny();
+                exercise.setTeamIdStudentAcceptedInvitationTo(accepted.map(invitation -> invitation.getTeam().getId()).orElse(null));
+                if (accepted.isEmpty()) {
+                    exercise.setTeamsIdStudentIsInvitedTo(invitations.stream().map(invitation -> invitation.getTeam().getId()).toList());
+                }
+            }
             exercise.setStudentAssignedTeamId(team.map(Team::getId).orElse(null));
             exercise.setStudentAssignedTeamIdComputed(true);
         }

@@ -2,6 +2,7 @@ import { User } from 'app/core/user/user.model';
 import { StudentParticipation } from 'app/entities/participation/student-participation.model';
 import { BaseEntity } from 'app/shared/model/base-entity';
 import dayjs from 'dayjs/esm';
+import { TeamStudentInvitation } from './teamStudentInvitation.model';
 export enum TeamImportStrategyType {
     PURGE_EXISTING = 'PURGE_EXISTING',
     CREATE_ONLY = 'CREATE_ONLY',
@@ -31,9 +32,11 @@ export class Team implements BaseEntity {
     public createdDate?: dayjs.Dayjs;
     public lastModifiedBy?: string;
     public lastModifiedDate?: dayjs.Dayjs;
+    public invitations: TeamStudentInvitation[];
 
     constructor() {
         this.students = []; // default value
+        this.invitations = [];
     }
 }
 

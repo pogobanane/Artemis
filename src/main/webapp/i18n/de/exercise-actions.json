@@ -26,7 +26,13 @@
             "copiedUrl": "URL kopiert",
             "uploadFile": "Datei hochladen",
             "viewTeam": "Team",
-            "sshKeyTip": "Um SSH zu nutzen, musst du {link:hier} einen SSH-Schlüssel zu deinem Konto hinzufügen."
+            "sshKeyTip": "Um SSH zu nutzen, musst du {link:hier} einen SSH-Schlüssel zu deinem Konto hinzufügen.",
+            "createTeam": "Team erstellen",
+            "viewInvitations": "Einladungen",
+            "invitationAccepted": "Noch nicht alle Mitglieder deines Teams haben die Teilnahme bestätigt.",
+            "leaveTeam": "Team verlassen",
+            "accept": "Annehmen",
+            "decline": "Ablehnen"
         }
     }
 }

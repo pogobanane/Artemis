@@ -12,8 +12,14 @@ import { ProgrammingExercise } from 'app/entities/programming-exercise.model';
 import { QuizExercise } from 'app/entities/quiz/quiz-exercise.model';
 import { StudentParticipation } from 'app/entities/participation/student-participation.model';
 import { finalize } from 'rxjs/operators';
-import { faEye, faFolderOpen, faPlayCircle, faRedo, faSignal, faUsers, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faTrashAlt, faFolderOpen, faPlayCircle, faRedo, faSignal, faUsers, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
 import { CourseExerciseService } from 'app/exercises/shared/course-exercises/course-exercise.service';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { Team } from 'app/entities/team.model';
+import { TeamCreateInvitationDialogComponent } from 'app/exercises/shared/team/team-update-dialog/team-create-invitation-dialog/team-create-invitation-dialog.component';
+import { User } from 'app/core/user/user.model';
+import { TeamService } from 'app/exercises/shared/team/team.service';
+import { InvitationsViewComponent } from './invitations-view/invitations-view.component';
 
 @Component({
     selector: 'jhi-exercise-details-student-actions',
@@ -31,7 +37,7 @@ export class ExerciseDetailsStudentActionsComponent {
 
     @Input() exercise: Exercise;
     @Input() courseId: number;
-
+    @Input() currentUser?: User;
     @Input() actionsOnly: boolean;
     @Input() smallButtons: boolean;
     @Input() showResult: boolean;
@@ -49,8 +55,16 @@ export class ExerciseDetailsStudentActionsComponent {
     faSignal = faSignal;
     faRedo = faRedo;
     faExternalLinkAlt = faExternalLinkAlt;
+    faTrashAlt = faTrashAlt;
 
-    constructor(private alertService: AlertService, private courseExerciseService: CourseExerciseService, private httpClient: HttpClient, private router: Router) {}
+    constructor(
+        private alertService: AlertService,
+        private courseExerciseService: CourseExerciseService,
+        private httpClient: HttpClient,
+        private router: Router,
+        private modalService: NgbModal,
+        private teamService: TeamService,
+    ) {}
 
     /**
      * check if practiceMode is available
@@ -194,5 +208,34 @@ export class ExerciseDetailsStudentActionsComponent {
             this.exercise.studentParticipations.length > 0 &&
             this.exercise.studentParticipations[0].initializationState !== InitializationState.INACTIVE
         );
+    }
+
+    assignedToTeam(): boolean {
+        const myStatus = this.participationStatusWrapper();
+        return myStatus !== ParticipationStatus.NO_TEAM_ASSIGNED && myStatus !== ParticipationStatus.IS_INVITED && myStatus !== ParticipationStatus.INVITATION_ACCEPTED;
+    }
+
+    openCreateTeamModal(): void {
+        if (this.currentUser) {
+            const modalRef: NgbModalRef = this.modalService.open(TeamCreateInvitationDialogComponent, { keyboard: true, size: 'lg', backdrop: 'static' });
+            const newTeam: Team = new Team();
+            modalRef.componentInstance.team = newTeam;
+            modalRef.componentInstance.exercise = this.exercise;
+            modalRef.componentInstance.currentUser = this.currentUser;
+            modalRef.closed.subscribe((team) => this.exercise.teamIdStudentAcceptedInvitationTo === team.id);
+        }
+    }
+
+    openInvitationsModal(): void {
+        const modalRef: NgbModalRef = this.modalService.open(InvitationsViewComponent, { keyboard: true, size: 'lg', backdrop: 'static' });
+        modalRef.componentInstance.exercise = this.exercise;
+    }
+
+    deleteAcceptedInvitation(): void {
+        // decline previously accepted invitation, results in removal of the whole team
+        this.teamService.rejectInvitation(this.exercise, this.exercise.teamIdStudentAcceptedInvitationTo!).subscribe({
+            error: () => this.alertService.error('artemisApp.team.removeTeam.error'),
+        });
+        this.exercise.teamIdStudentAcceptedInvitationTo = undefined;
     }
 }

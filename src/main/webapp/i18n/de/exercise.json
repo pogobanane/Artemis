@@ -109,7 +109,8 @@
             "teamAssignmentConfig": {
                 "teamSize": "Team-Größe",
                 "teamSizeTooltip": "Empfehlung für die Tutor:innen bezüglich minimaler und maximaler Anzahl an Studierenden pro Team.",
-                "participants": "Mitglieder"
+                "participants": "Mitglieder",
+                "allowTeamFormation": "Dürfen Studierende selbstständig Teams bilden?"
             },
             "categories": "Kategorien",
             "noCategory": "Keine Kategorie",

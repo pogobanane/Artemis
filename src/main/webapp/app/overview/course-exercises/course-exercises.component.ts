@@ -60,7 +60,7 @@ export class CourseExercisesComponent implements OnInit, OnChanges, OnDestroy, A
     private paramSubscription: Subscription;
     private courseUpdatesSubscription: Subscription;
     private translateSubscription: Subscription;
-    private currentUser?: User;
+    protected currentUser?: User;
     public course?: Course;
     public weeklyIndexKeys: string[];
     public weeklyExercisesGrouped: object;

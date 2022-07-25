@@ -6,9 +6,11 @@ export class TeamAssignmentConfig implements BaseEntity {
     public exercise?: Exercise;
     public minTeamSize?: number;
     public maxTeamSize?: number;
+    public allowTeamFormation?: boolean;
 
     constructor() {
         this.minTeamSize = 1; // default value
         this.maxTeamSize = 5; // default value
+        this.allowTeamFormation = false;
     }
 }

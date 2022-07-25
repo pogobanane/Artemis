@@ -20,6 +20,8 @@ import { ArtemisResultModule } from 'app/exercises/shared/result/result.module';
 import { TeamsImportFromFileFormComponent } from './teams-import-dialog/teams-import-from-file-form.component';
 import { TeamsExportButtonComponent } from 'app/exercises/shared/team/teams-import-dialog/teams-export-button.component';
 import { ArtemisTeamParticipeModule } from 'app/exercises/shared/team/team-participate/team-participate.module';
+import { TeamCreateInvitationDialogComponent } from './team-update-dialog/team-create-invitation-dialog/team-create-invitation-dialog.component';
+import { BaseTeamCreationComponent } from './team-update-dialog/base-team-creation.component';
 
 @NgModule({
     imports: [
@@ -45,6 +47,8 @@ import { ArtemisTeamParticipeModule } from 'app/exercises/shared/team/team-parti
         TeamParticipationTableComponent,
         TeamComponent,
         TeamsImportFromFileFormComponent,
+        TeamCreateInvitationDialogComponent,
+        BaseTeamCreationComponent,
     ],
     exports: [TeamUpdateButtonComponent, TeamsImportButtonComponent, TeamsExportButtonComponent],
 })

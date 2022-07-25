@@ -144,11 +144,24 @@ public class User extends AbstractAuditingEntity implements Participant {
     @JoinTable(name = "user_organization", joinColumns = { @JoinColumn(name = "user_id", referencedColumnName = "id") }, inverseJoinColumns = {
             @JoinColumn(name = "organization_id", referencedColumnName = "id") })
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+
     @JsonIgnoreProperties("user")
     private Set<Organization> organizations = new HashSet<>();
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Set<LectureUnitCompletion> completedLectureUnits = new HashSet<>();
+
+    public Set<TeamStudentInvitation> getInvitations() {
+        return invitations;
+    }
+
+    public void setInvitations(Set<TeamStudentInvitation> invitations) {
+        this.invitations = invitations;
+    }
+
+    @OneToMany(mappedBy = "student", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties("student")
+    Set<TeamStudentInvitation> invitations = new HashSet<>();
 
     public String getLogin() {
         return login;

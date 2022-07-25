@@ -26,7 +26,13 @@
             "copiedUrl": "Copied URL",
             "uploadFile": "Upload a file",
             "viewTeam": "Team",
-            "sshKeyTip": "To use ssh, you need to add an ssh-key to your account {link:here}."
+            "sshKeyTip": "To use ssh, you need to add an ssh-key to your account {link:here}.",
+            "createTeam": "Create a team",
+            "viewInvitations": "Invitations",
+            "invitationAccepted": "Some of the team members didn't accept the invitation to join the team yet. Please wait!",
+            "leaveTeam": "Leave the team",
+            "accept": "Accept",
+            "decline": "Decline"
         }
     }
 }

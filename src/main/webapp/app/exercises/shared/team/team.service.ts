@@ -175,6 +175,32 @@ export class TeamService implements ITeamService, OnDestroy {
     }
 
     /**
+     * Reject an invitation to the team
+     * @param {Exercise} exercise - Exercise the team belongs to
+     * @param {number} teamId - Team the student was invited to join
+     */
+    rejectInvitation(exercise: Exercise, teamId: number): Observable<HttpResponse<any>> {
+        return this.http.delete<any>(`${TeamService.resourceUrl(exercise.id!)}/rejectInvitation/${teamId}`, { observe: 'response' });
+    }
+
+    /**
+     * Accept an invitation to the team
+     * @param {Exercise} exercise - Exercise the team belongs to
+     * @param {number} teamId - Team the student was invited to join
+     */
+    acceptInvitation(exercise: Exercise, teamId: number): Observable<HttpResponse<any>> {
+        return this.http.put<any>(`${TeamService.resourceUrl(exercise.id!)}/acceptInvitation/${teamId}`, { observe: 'response' });
+    }
+
+    /**
+     * Get student's invitations to join teams for a certain exercise
+     * @param {Exercise} exercise - Exercise the team should belong to
+     */
+    getInvitationsForGroupExercise(exercise: Exercise): Observable<HttpResponse<any>> {
+        return this.http.get<any>(`${TeamService.resourceUrl(exercise.id!)}/getTeamsWithInvitations`, { observe: 'response' });
+    }
+
+    /**
      * Check if a given team short name exists in a course
      * @param {Course} course - Course in which to search
      * @param {string} shortName - Short name to search for

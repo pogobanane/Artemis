@@ -31,6 +31,7 @@ public interface ExerciseRepository extends JpaRepository<Exercise, Long> {
     @Query("""
             SELECT e FROM Exercise e
             LEFT JOIN FETCH e.categories
+            LEFT JOIN FETCH e.teamAssignmentConfig
             WHERE e.course.id = :#{#courseId}
             """)
     Set<Exercise> findByCourseIdWithCategories(@Param("courseId") Long courseId);
@@ -124,6 +125,7 @@ public interface ExerciseRepository extends JpaRepository<Exercise, Long> {
             SELECT DISTINCT e from Exercise e
             LEFT JOIN FETCH e.posts
             LEFT JOIN FETCH e.categories
+            LEFT JOIN FETCH e.teamAssignmentConfig
             WHERE e.id = :#{#exerciseId}
                 """)
     Optional<Exercise> findByIdWithDetailsForStudent(@Param("exerciseId") Long exerciseId);

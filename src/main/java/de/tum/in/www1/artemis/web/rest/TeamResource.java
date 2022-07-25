@@ -102,15 +102,29 @@ public class TeamResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PostMapping("/exercises/{exerciseId}/teams")
-    @PreAuthorize("hasRole('TA')")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Team> createTeam(@RequestBody Team team, @PathVariable long exerciseId) throws URISyntaxException {
         log.debug("REST request to save Team : {}", team);
         if (team.getId() != null) {
             throw new BadRequestAlertException("A new team cannot already have an ID", ENTITY_NAME, "idexists");
         }
         User user = userRepository.getUserWithGroupsAndAuthorities();
-        Exercise exercise = exerciseRepository.findByIdElseThrow(exerciseId);
-        authCheckService.checkHasAtLeastRoleForExerciseElseThrow(Role.TEACHING_ASSISTANT, exercise, user);
+        Optional<Exercise> foundExercise = exerciseRepository.findWithEagerCategoriesAndTeamAssignmentConfigById(exerciseId);
+        if (foundExercise.isEmpty()) {
+            throw new BadRequestAlertException("Referenced exercise wasn't found.", ENTITY_NAME, "exerciseNotFound");
+        }
+        Exercise exercise = foundExercise.get();
+        // auth check
+        if (team.getInvitations().isEmpty() || !exercise.getTeamAssignmentConfig().getAllowTeamFormation()) {
+            authCheckService.checkHasAtLeastRoleForExerciseElseThrow(Role.TEACHING_ASSISTANT, exercise, user);
+            // Tutors can only create teams for themselves while instructors can select any tutor as the team owner
+            if (!authCheckService.isAtLeastInstructorForExercise(exercise, user)) {
+                team.setOwner(user);
+            }
+        }
+        else {
+            authCheckService.checkHasAtLeastRoleForExerciseElseThrow(Role.STUDENT, exercise, user);
+        }
         if (!exercise.isTeamMode()) {
             throw new BadRequestAlertException("A team cannot be created for an exercise that is not team-based.", ENTITY_NAME, "exerciseNotTeamBased");
         }
@@ -125,14 +139,19 @@ public class TeamResource {
         }
         // Also remove illegal characters from the long name
         team.setName(stripIllegalCharacters(team.getName()));
-        // Tutors can only create teams for themselves while instructors can select any tutor as the team owner
-        if (!authCheckService.isAtLeastInstructorForExercise(exercise, user)) {
-            team.setOwner(user);
-        }
         Team savedTeam = teamRepository.save(exercise, team);
         savedTeam.filterSensitiveInformation();
-        savedTeam.getStudents().forEach(student -> student.setVisibleRegistrationNumber(student.getRegistrationNumber()));
-        teamWebsocketService.sendTeamAssignmentUpdate(exercise, null, savedTeam);
+        if (team.getInvitations().isEmpty()) {
+            /*
+             * if a student gets assigned to a certain group by a teaching assistant or instructor, all invitations of this student to other teams get invalidated, and the
+             * potential teams should be deleted
+             */
+            team.getStudents().forEach(
+                    student -> teamRepository.findInvitationsByExerciseIdAndUserId(exerciseId, student.getId()).forEach(invitation -> teamRepository.delete(invitation.getTeam())));
+            savedTeam.getStudents().forEach(student -> student.setVisibleRegistrationNumber(student.getRegistrationNumber()));
+            teamWebsocketService.sendTeamAssignmentUpdate(exercise, null, savedTeam);
+        }
+
         return ResponseEntity.created(new URI("/api/teams/" + savedTeam.getId()))
                 .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, savedTeam.getId().toString())).body(savedTeam);
     }
@@ -289,6 +308,69 @@ public class TeamResource {
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, Long.toString(teamId))).build();
     }
 
+    @DeleteMapping("/exercises/{exerciseId}/teams/rejectInvitation/{teamId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Void> deleteTeamStudentWasInvitedTo(@PathVariable long exerciseId, @PathVariable long teamId) {
+        log.info("REST request to a Team a student was invited to with id {} in exercise with id {}", teamId, exerciseId);
+        User user = userRepository.getUserWithGroupsAndAuthorities();
+        Optional<Team> team = teamRepository.findOneWithInvitedStudents(teamId);
+        if (team.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        if (team.get().getExercise() != null && !team.get().getExercise().getId().equals(exerciseId)) {
+            throw new BadRequestAlertException("The team does not belong to the specified exercise id.", ENTITY_NAME, "wrongExerciseId");
+        }
+        if (team.get().getInvitations().stream().map(TeamStudentInvitation::getStudent).filter(student -> student.equals(user)).findAny().isEmpty()) {
+            throw new BadRequestAlertException("You were not invited to join this team!", ENTITY_NAME, "notAuthorisedUser");
+        }
+        Exercise exercise = exerciseRepository.findByIdElseThrow(exerciseId);
+        authCheckService.checkHasAtLeastRoleForExerciseElseThrow(Role.STUDENT, exercise, user);
+        // Create audit event for team delete action
+        var logMessage = "Delete team invitations for Team with id " + teamId + " in exercise with id " + exerciseId;
+        var auditEvent = new AuditEvent(user.getLogin(), Constants.DELETE_TEAM, logMessage);
+        auditEventRepository.add(auditEvent);
+        teamRepository.delete(team.get());
+        // the students that already accepted invitations to the deleted team should be notified
+        team.get().students(team.get().getInvitations().stream().filter(invitation -> Boolean.TRUE.equals(invitation.getAccepted())).map(invitation -> invitation.getStudent())
+                .collect(Collectors.toSet()));
+        teamWebsocketService.sendTeamAssignmentUpdate(exercise, team.get(), null);
+        return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, Long.toString(teamId))).build();
+    }
+
+    @PutMapping("/exercises/{exerciseId}/teams/acceptInvitation/{teamId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Team> acceptInvitationToJoinTeam(@PathVariable long exerciseId, @PathVariable long teamId) {
+        log.debug("REST request accept invitation to join Team with id: {}", teamId);
+        User user = userRepository.getUserWithGroupsAndAuthorities();
+        Optional<Team> existingTeam = teamRepository.findOneWithInvitedStudents(teamId);
+        if (existingTeam.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        if (!existingTeam.get().getExercise().getId().equals(exerciseId)) {
+            throw new BadRequestAlertException("The team does not belong to the specified exercise id.", ENTITY_NAME, "wrongExerciseId");
+        }
+        if (existingTeam.get().getInvitations().stream().map(TeamStudentInvitation::getStudent).filter(student -> student.equals(user)).findAny().isEmpty()) {
+            throw new BadRequestAlertException("You were not invited to join this team!", ENTITY_NAME, "notAuthorisedUser");
+        }
+        Exercise exercise = exerciseRepository.findByIdElseThrow(exerciseId);
+        authCheckService.checkHasAtLeastRoleForExerciseElseThrow(Role.STUDENT, exercise, user);
+        existingTeam.get().getInvitations().stream().filter(invitation -> Objects.equals(invitation.getStudent().getId(), user.getId()))
+                .forEach(invitation -> invitation.setAccepted(true));
+        boolean isFinished = existingTeam.get().getInvitations().stream().noneMatch(invitation -> Objects.isNull(invitation.getAccepted()));
+        if (isFinished) {
+            existingTeam.get().students(existingTeam.get().getInvitations().stream().map(TeamStudentInvitation::getStudent).collect(Collectors.toSet()));
+            existingTeam.get().setInvitations(new HashSet<>());
+        }
+        Team savedTeam = teamRepository.save(exercise, existingTeam.get());
+        savedTeam.filterSensitiveInformation();
+        if (isFinished) {
+            savedTeam.getStudents().forEach(student -> student.setVisibleRegistrationNumber(student.getRegistrationNumber()));
+            var participationsOfSavedTeam = studentParticipationRepository.findByExerciseIdAndTeamIdWithEagerResultsAndLegalSubmissions(exercise.getId(), savedTeam.getId());
+            teamWebsocketService.sendTeamAssignmentUpdate(exercise, existingTeam.get(), savedTeam, participationsOfSavedTeam);
+        }
+        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, String.valueOf(teamId))).body(savedTeam);
+    }
+
     /**
      * GET /courses/{courseId}/teams/exists?shortName={shortName} : get boolean flag whether team with shortName exists for course
      *
@@ -297,11 +379,11 @@ public class TeamResource {
      * @return Response with status 200 (OK) and boolean flag in the body
      */
     @GetMapping("/courses/{courseId}/teams/exists")
-    @PreAuthorize("hasRole('TA')")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Boolean> existsTeamByShortName(@PathVariable long courseId, @RequestParam("shortName") String shortName) {
         log.debug("REST request to check Team existence for course with id {} for shortName : {}", courseId, shortName);
         Course course = courseRepository.findByIdElseThrow(courseId);
-        authCheckService.checkHasAtLeastRoleInCourseElseThrow(Role.TEACHING_ASSISTANT, course, null);
+        authCheckService.checkHasAtLeastRoleInCourseElseThrow(Role.STUDENT, course, null);
         return ResponseEntity.ok().body(teamRepository.existsByExerciseCourseIdAndShortName(courseId, shortName));
     }
 
@@ -314,7 +396,7 @@ public class TeamResource {
      * @return the ResponseEntity with status 200 (OK) and with body all users
      */
     @GetMapping("/courses/{courseId}/exercises/{exerciseId}/team-search-users")
-    @PreAuthorize("hasRole('TA')")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<TeamSearchUserDTO>> searchUsersInCourse(@PathVariable long courseId, @PathVariable long exerciseId,
             @RequestParam("loginOrName") String loginOrName) {
         log.debug("REST request to search Users for {} in course with id : {}", loginOrName, courseId);
@@ -323,7 +405,7 @@ public class TeamResource {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Query param 'loginOrName' must be three characters or longer.");
         }
         Course course = courseRepository.findByIdElseThrow(courseId);
-        authCheckService.checkHasAtLeastRoleInCourseElseThrow(Role.TEACHING_ASSISTANT, course, null);
+        authCheckService.checkHasAtLeastRoleInCourseElseThrow(Role.STUDENT, course, null);
         Exercise exercise = exerciseRepository.findByIdElseThrow(exerciseId);
         return ResponseEntity.ok().body(teamService.searchByLoginOrNameInCourseForExerciseTeam(course, exercise, loginOrName));
     }
@@ -477,6 +559,26 @@ public class TeamResource {
         return ResponseEntity.ok(course);
     }
 
+    @GetMapping(value = "/exercises/{exerciseId}/teams/getTeamsWithInvitations")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<TeamStudentInvitation>> getTeamsWithInvitation(@PathVariable Long exerciseId) {
+        User user = userRepository.getUserWithGroupsAndAuthorities();
+        Optional<Exercise> exercise = exerciseRepository.findWithEagerCategoriesAndTeamAssignmentConfigById(exerciseId);
+        if (exercise.isEmpty()) {
+            throw new BadRequestAlertException("An exercise with the given id doesn't exist.", ENTITY_NAME, "destinationExerciseNotFound");
+        }
+        if (!exercise.get().isTeamMode()) {
+            throw new BadRequestAlertException("An exercise with the given id is not team base.", ENTITY_NAME, "destinationExerciseNotTeamBased");
+        }
+        if (!authCheckService.isAtLeastStudentForExercise(exercise.get())) {
+            throw new BadRequestAlertException("The requesting user is not registered for the exercise.", ENTITY_NAME, "noRegistrationForDestinationExercise");
+        }
+
+        List<TeamStudentInvitation> invitations = teamRepository.findInvitationsByExerciseIdAndUserId(exerciseId, user.getId());
+
+        return ResponseEntity.ok(invitations);
+    }
+
     /**
      * Sends students in each team an update about their assignments to the teams
      * Along with participation if they have any
@@ -492,4 +594,5 @@ public class TeamResource {
         // Send out team assignment update via websockets to each team
         teams.forEach(team -> teamWebsocketService.sendTeamAssignmentUpdate(exercise, null, team, participationsMap.getOrDefault(team.getParticipantIdentifier(), List.of())));
     }
+
 }

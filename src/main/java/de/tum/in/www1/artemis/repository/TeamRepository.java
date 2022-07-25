@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Repository;
 
 import de.tum.in.www1.artemis.domain.Exercise;
 import de.tum.in.www1.artemis.domain.Team;
+import de.tum.in.www1.artemis.domain.TeamStudentInvitation;
 import de.tum.in.www1.artemis.domain.User;
 import de.tum.in.www1.artemis.web.rest.errors.EntityNotFoundException;
 import de.tum.in.www1.artemis.web.rest.errors.StudentsAlreadyAssignedException;
@@ -63,6 +66,15 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
     @Query("select team from Team team left join fetch team.students where team.id = :#{#teamId}")
     Optional<Team> findOneWithEagerStudents(@Param("teamId") Long teamId);
 
+    @Query(value = "select invitation from Team team left join team.invitations invitation where team.exercise.id = :#{#exerciseId} and invitation.student.id = :#{#userId}")
+    List<TeamStudentInvitation> findInvitationsByExerciseIdAndUserId(@Param("exerciseId") Long exerciseId, @Param("userId") Long userId);
+
+    @Query(value = "select owner, count(team) from Team team inner join team.owner owner where team.exercise.id = :#{#exerciseId} group by team.owner.id")
+    List<Object[]> getTeamOwnerWithNumberTeams(@Param("exerciseId") Long exerciseId);
+
+    @Query("select team from Team team inner join fetch team.invitations where team.id = :#{#teamId}")
+    Optional<Team> findOneWithInvitedStudents(@Param("teamId") Long teamId);
+
     /**
      * Returns all teams for an exercise (optionally filtered for a specific tutor who owns the teams)
      * @param exercise Exercise for which to return all teams
@@ -97,6 +109,7 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
             team.setLastModifiedDate(Instant.now());
         }
         team.setExercise(exercise);
+        team.getInvitations().stream().forEach(invitation -> invitation.setTeam(team));
         return save(team);
     }
 
@@ -109,7 +122,9 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
      */
     private List<Pair<User, Team>> findStudentTeamConflicts(Exercise exercise, Team team) {
         List<Pair<User, Team>> conflicts = new ArrayList<>();
-        team.getStudents().forEach(student -> {
+        Set<User> relevantGroup = !team.getStudents().isEmpty() ? team.getStudents()
+                : team.getInvitations().stream().map(TeamStudentInvitation::getStudent).collect(Collectors.toSet());
+        relevantGroup.forEach(student -> {
             Optional<Team> assignedTeam = findOneByExerciseIdAndUserId(exercise.getId(), student.getId());
             if (assignedTeam.isPresent() && !assignedTeam.get().equals(team)) {
                 conflicts.add(Pair.of(student, assignedTeam.get()));

@@ -12,6 +12,7 @@ import { Exercise, ExerciseType, getIcon, getIconTooltip, IncludedInOverallScore
 import { ExerciseService } from 'app/exercises/shared/exercise/exercise.service';
 import { getExerciseDueDate, participationStatus } from 'app/exercises/shared/exercise/exercise.utils';
 import { ExerciseCategory } from 'app/entities/exercise-category.model';
+import { User } from 'app/core/user/user.model';
 
 @Component({
     selector: 'jhi-course-exercise-row',
@@ -29,6 +30,7 @@ export class CourseExerciseRowComponent implements OnInit, OnDestroy, OnChanges 
     @Input() exercise: Exercise;
     @Input() course: Course;
     @Input() hasGuidedTour: boolean;
+    @Input() currentUser?: User;
     /**
      * PresentationMode deactivates the interactivity of the component
      */

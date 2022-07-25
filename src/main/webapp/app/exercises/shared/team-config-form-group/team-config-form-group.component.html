@@ -51,6 +51,21 @@
                         (ngModelChange)="updateMaxTeamSize($event)"
                         #maxTeamSize="ngModel"
                     />
+                    <div class="form-check custom-control custom-checkbox ps-5">
+                        <label
+                            class="form-check-label custom-control-label"
+                            for="allow_team_formation"
+                            jhiTranslate="artemisApp.exercise.teamAssignmentConfig.allowTeamFormation"
+                        ></label>
+                        <input
+                            type="checkbox"
+                            id="allow_team_formation"
+                            class="form-check-input custom-control-input"
+                            [(ngModel)]="config.allowTeamFormation"
+                            (ngModelChange)="(updateAllowTeamFormation)"
+                            name="allow_team_formation"
+                        />
+                    </div>
                 </div>
                 <ng-container *ngFor="let e of minTeamSize.errors! | keyvalue | removekeys: ['required']">
                     <div *ngIf="minTeamSize.invalid && (minTeamSize.dirty || minTeamSize.touched)" class="alert alert-danger">
