@@ -1,4 +1,4 @@
-package de.tum.in.www1.artemis.service.connectors.bitbucket;
+package de.tum.in.www1.artemis.service.connectors.localgit;
 
 import java.net.URL;
 import java.util.Optional;

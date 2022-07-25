@@ -4,6 +4,8 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -51,6 +53,7 @@ import de.tum.in.www1.artemis.service.connectors.GitService;
 import de.tum.in.www1.artemis.service.connectors.VersionControlRepositoryPermission;
 import de.tum.in.www1.artemis.service.connectors.bitbucket.BitbucketPermission;
 import de.tum.in.www1.artemis.service.connectors.bitbucket.dto.*;
+import de.tum.in.www1.artemis.service.connectors.localgit.dto.LocalGitProjectDTO;
 import de.tum.in.www1.artemis.service.user.PasswordService;
 
 @Service
@@ -66,6 +69,9 @@ public class LocalGitService extends AbstractVersionControlService {
 
     @Value("${artemis.version-control.url}")
     private URL bitbucketServerUrl;
+
+    // Später auch mit @Value probieren
+    private String localGitPath = "../../TestGitRepos/";
 
     @Value("${artemis.git.name}")
     private String artemisGitName;
@@ -212,9 +218,21 @@ public class LocalGitService extends AbstractVersionControlService {
         return cloneUrl;
     }
 
-    private BitbucketProjectDTO getBitbucketProject(String projectKey) {
-        return restTemplate.exchange(bitbucketServerUrl + "/rest/api/latest/projects/" + projectKey, HttpMethod.GET,
-                null, BitbucketProjectDTO.class).getBody();
+    private LocalGitProjectDTO getLocalGitProject(String projectKey) throws LocalGitException {
+
+        // Try to find the folder in the file system. If it is not found,
+        // throw an exception.
+        if (new File(localGitPath + projectKey).exists()) {
+            return new LocalGitProjectDTO(projectKey);
+        } else {
+            throw new LocalGitException();
+        }
+        /*
+         * return
+         * return restTemplate.exchange(localGitServerUrl + "/project/" + projectKey,
+         * HttpMethod.GET,
+         * null, LocalGitProjectDTO.class).getBody();
+         */
     }
 
     /**
@@ -603,38 +621,16 @@ public class LocalGitService extends AbstractVersionControlService {
 
     @Override
     public boolean checkIfProjectExists(String projectKey, String projectName) {
+        // Check if the folder already exists in the file system to make sure the new
+        // project key is unique.
+
         try {
-            // first check that the project key is unique, if the project does not exist, we
-            // expect a 404 Not Found status
-            var project = getBitbucketProject(projectKey);
-            log.warn("Bitbucket project with key {} already exists: {}", projectKey, project.getName());
+            var project = getLocalGitProject(projectKey);
+            log.warn("Local git project with key {} already exists: {}", projectKey, project.getName());
             return true;
-        } catch (HttpClientErrorException e) {
-            log.debug("Bitbucket project {} does not exist", projectKey);
-            if (e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-                // only if this is the case, we additionally check that the project name is
-                // unique
-
-                final var response = restTemplate.exchange(
-                        bitbucketServerUrl + "/rest/api/latest/projects?name=" + projectName, HttpMethod.GET, null,
-                        new ParameterizedTypeReference<BitbucketSearchDTO<BitbucketProjectDTO>>() {
-                        });
-
-                if (response.getBody() != null && response.getBody().getSize() > 0) {
-                    final var exists = response.getBody().getSearchResults().stream()
-                            .anyMatch(project -> project.getName().equalsIgnoreCase(projectName));
-                    if (exists) {
-                        log.warn("Bitbucket project with name {} already exists", projectName);
-                        return true;
-                    }
-                }
-
-                return false;
-            } else {
-                // rethrow so that other errors are not hidden
-                log.error(e.getMessage(), e);
-                throw e;
-            }
+        } catch (LocalGitException e) {
+            log.debug("Local git project {} does not exist", projectKey);
+            return false;
         }
     }
 
@@ -666,7 +662,13 @@ public class LocalGitService extends AbstractVersionControlService {
 
         // Instead of defining a project like would be done for GitLab or Bitbucket,
         // just define a directory that will contain all repositories.
-        new File("../../TestGitRepos/" + projectKey).mkdirs();
+        // Ich probiere es erstmal hiermit und habe die Dateien so lokal bei mir und
+        // kann sie dort anschauen.
+        // Langfristig wird es wahrscheinlich eher sowas wie das hier:
+        // https://spring.io/guides/gs/uploading-files/
+        // Nachschauen wie langfristig die Dateien damit gespeichert sind und Stephan
+        // fragen ob das so passt.
+        new File(localGitPath + projectKey).mkdirs();
 
         // grantGroupPermissionToProject(projectKey, adminGroupName,
         // BitbucketPermission.PROJECT_ADMIN); // admins get
@@ -729,8 +731,8 @@ public class LocalGitService extends AbstractVersionControlService {
 
         try {
             // Create a bare local repository with JGit
-            File directory = new File("../../TestGitRepos/" + projectKey + "/" + repoName);
-            Git git = Git.init().setInitialBranch(defaultBranch).setDirectory(directory).setBare(true).call();
+            File directory = new File(localGitPath + projectKey + "/" + repoName);
+            Git.init().setInitialBranch(defaultBranch).setDirectory(directory).setBare(true).call();
 
         } catch (GitAPIException e) {
             log.error("Could not create local git repo {} with project key {}", repoName, projectKey, e);

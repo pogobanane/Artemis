@@ -6,6 +6,8 @@ public final class GitServerResourceEndpoints {
 
     public static final String INITPROJECT = "/init-project";
 
+    public static final String GETPROJECT = "/project/:projectKey";
+
     private GitServerResourceEndpoints() {
     }
 }
