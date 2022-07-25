@@ -310,7 +310,7 @@ public class TeamResource {
 
     @DeleteMapping("/exercises/{exerciseId}/teams/rejectInvitation/{teamId}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Void> deleteTeamStudentWasInvitedTo(@PathVariable long exerciseId, @PathVariable long teamId) {
+    public ResponseEntity<Team> deleteTeamStudentWasInvitedTo(@PathVariable long exerciseId, @PathVariable long teamId) {
         log.info("REST request to a Team a student was invited to with id {} in exercise with id {}", teamId, exerciseId);
         User user = userRepository.getUserWithGroupsAndAuthorities();
         Optional<Team> team = teamRepository.findOneWithInvitedStudents(teamId);
@@ -334,7 +334,7 @@ public class TeamResource {
         team.get().students(team.get().getInvitations().stream().filter(invitation -> Boolean.TRUE.equals(invitation.getAccepted())).map(invitation -> invitation.getStudent())
                 .collect(Collectors.toSet()));
         teamWebsocketService.sendTeamAssignmentUpdate(exercise, team.get(), null);
-        return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, Long.toString(teamId))).build();
+        return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, Long.toString(teamId))).body(team.get());
     }
 
     @PutMapping("/exercises/{exerciseId}/teams/acceptInvitation/{teamId}")

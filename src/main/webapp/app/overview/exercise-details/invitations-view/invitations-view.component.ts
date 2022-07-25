@@ -28,18 +28,21 @@ export class InvitationsViewComponent implements OnInit {
     onAccept(invitation: TeamStudentInvitation) {
         if (invitation.team && invitation.team.id) {
             this.teamService.acceptInvitation(this.exercise, invitation.team.id).subscribe({
-                next: (team) => {
+                next: () => {
                     this.exercise.teamIdStudentAcceptedInvitationTo = invitation.team?.id;
-                    this.activeModal.close(team);
+                    this.activeModal.close();
                 },
             });
         }
     }
 
-    onDecline(invitation: TeamStudentInvitation) {
-        if (invitation.team && invitation.team.id) {
-            this.teamService.rejectInvitation(this.exercise, invitation.team.id).subscribe({
-                next: () => this.exercise.teamsIdStudentIsInvitedTo?.filter((id) => id !== invitation.team?.id),
+    onDecline(declinedInvitation: TeamStudentInvitation) {
+        if (declinedInvitation.team && declinedInvitation.team.id) {
+            this.teamService.rejectInvitation(this.exercise, declinedInvitation.team.id).subscribe({
+                next: (team) => {
+                    this.exercise.teamsIdStudentIsInvitedTo = this.exercise.teamsIdStudentIsInvitedTo?.filter((id) => id !== team.body!.id);
+                    this.invitations = this.invitations.filter((invitation) => invitation.id !== declinedInvitation.id);
+                },
             });
         }
     }

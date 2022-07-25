@@ -156,7 +156,7 @@ export const participationStatus = (exercise: Exercise): ParticipationStatus => 
         if (exercise.teamIdStudentAcceptedInvitationTo) {
             return ParticipationStatus.INVITATION_ACCEPTED;
         }
-        if (exercise.teamsIdStudentIsInvitedTo) {
+        if (exercise.teamsIdStudentIsInvitedTo && exercise.teamsIdStudentIsInvitedTo.length > 0) {
             return ParticipationStatus.IS_INVITED;
         }
         return ParticipationStatus.NO_TEAM_ASSIGNED;

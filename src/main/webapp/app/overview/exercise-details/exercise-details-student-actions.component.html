@@ -100,35 +100,38 @@
             [hideLabelMobile]="true"
             [routerLink]="['/courses', courseId, 'exercises', exercise.id, 'teams', assignedTeamId]"
         ></button>
-        <button
-            jhi-exercise-action-button
-            [buttonIcon]="faUsers"
-            [buttonLabel]="'artemisApp.exerciseActions.createTeam' | artemisTranslate"
-            *ngIf="!!exercise.teamMode && participationStatusWrapper() === ParticipationStatus.NO_TEAM_ASSIGNED"
-            [smallButton]="smallButtons"
-            [hideLabelMobile]="false"
-            (click)="openCreateTeamModal()"
-        ></button>
-        <button
-            jhi-exercise-action-button
-            [buttonIcon]="faUsers"
-            [buttonLabel]="'artemisApp.exerciseActions.viewInvitations' | artemisTranslate"
-            *ngIf="!!exercise.teamMode && participationStatusWrapper() === ParticipationStatus.IS_INVITED"
-            [smallButton]="smallButtons"
-            [hideLabelMobile]="false"
-            (click)="openInvitationsModal()"
-        ></button>
-        <div *ngIf="!!exercise.teamMode && participationStatusWrapper() === ParticipationStatus.INVITATION_ACCEPTED">
-            <label>{{ 'artemisApp.exerciseActions.invitationAccepted' | artemisTranslate }}</label>
+        <div *ngIf="!!exercise.teamMode && exercise.teamAssignmentConfig && !!exercise.teamAssignmentConfig.allowTeamFormation">
             <button
                 jhi-exercise-action-button
-                [buttonIcon]="faTrashAlt"
-                [buttonLabel]="'artemisApp.exerciseActions.leaveTeam' | artemisTranslate"
+                [buttonIcon]="faUsers"
+                [buttonLabel]="'artemisApp.exerciseActions.createTeam' | artemisTranslate"
+                *ngIf="participationStatusWrapper() === ParticipationStatus.NO_TEAM_ASSIGNED"
                 [smallButton]="smallButtons"
                 [hideLabelMobile]="false"
-                (click)="deleteAcceptedInvitation()"
+                (click)="openCreateTeamModal()"
             ></button>
+            <button
+                jhi-exercise-action-button
+                [buttonIcon]="faUsers"
+                [buttonLabel]="'artemisApp.exerciseActions.viewInvitations' | artemisTranslate"
+                *ngIf="participationStatusWrapper() === ParticipationStatus.IS_INVITED"
+                [smallButton]="smallButtons"
+                [hideLabelMobile]="false"
+                (click)="openInvitationsModal()"
+            ></button>
+            <div *ngIf="participationStatusWrapper() === ParticipationStatus.INVITATION_ACCEPTED">
+                <label>{{ 'artemisApp.exerciseActions.invitationAccepted' | artemisTranslate }}</label>
+                <button
+                    jhi-exercise-action-button
+                    [buttonIcon]="faTrashAlt"
+                    [buttonLabel]="'artemisApp.exerciseActions.leaveTeam' | artemisTranslate"
+                    [smallButton]="smallButtons"
+                    [hideLabelMobile]="false"
+                    (click)="deleteAcceptedInvitation()"
+                ></button>
+            </div>
         </div>
+
         <button
             [id]="'start-exercise-' + exercise.id"
             jhi-exercise-action-button
@@ -207,11 +210,42 @@
             jhi-exercise-action-button
             [buttonIcon]="faUsers"
             [buttonLabel]="'artemisApp.exerciseActions.viewTeam' | artemisTranslate"
-            *ngIf="!!exercise.teamMode && participationStatusWrapper() !== ParticipationStatus.NO_TEAM_ASSIGNED"
+            *ngIf="!!exercise.teamMode && assignedToTeam()"
             [smallButton]="smallButtons"
             [hideLabelMobile]="true"
             [routerLink]="['/courses', courseId, 'exercises', exercise.id, 'teams', assignedTeamId]"
         ></button>
+        <div *ngIf="!!exercise.teamMode && exercise.teamAssignmentConfig && !!exercise.teamAssignmentConfig.allowTeamFormation">
+            <button
+                jhi-exercise-action-button
+                [buttonIcon]="faUsers"
+                [buttonLabel]="'artemisApp.exerciseActions.createTeam' | artemisTranslate"
+                *ngIf="participationStatusWrapper() === ParticipationStatus.NO_TEAM_ASSIGNED"
+                [smallButton]="smallButtons"
+                [hideLabelMobile]="false"
+                (click)="openCreateTeamModal()"
+            ></button>
+            <button
+                jhi-exercise-action-button
+                [buttonIcon]="faUsers"
+                [buttonLabel]="'artemisApp.exerciseActions.viewInvitations' | artemisTranslate"
+                *ngIf="participationStatusWrapper() === ParticipationStatus.IS_INVITED"
+                [smallButton]="smallButtons"
+                [hideLabelMobile]="false"
+                (click)="openInvitationsModal()"
+            ></button>
+            <div *ngIf="participationStatusWrapper() === ParticipationStatus.INVITATION_ACCEPTED">
+                <label>{{ 'artemisApp.exerciseActions.invitationAccepted' | artemisTranslate }}</label>
+                <button
+                    jhi-exercise-action-button
+                    [buttonIcon]="faTrashAlt"
+                    [buttonLabel]="'artemisApp.exerciseActions.leaveTeam' | artemisTranslate"
+                    [smallButton]="smallButtons"
+                    [hideLabelMobile]="false"
+                    (click)="deleteAcceptedInvitation()"
+                ></button>
+            </div>
+        </div>
         <button
             [id]="'start-exercise-' + exercise.id"
             class="start-exercise"
@@ -290,11 +324,42 @@
             jhi-exercise-action-button
             [buttonIcon]="faUsers"
             [buttonLabel]="'artemisApp.exerciseActions.viewTeam' | artemisTranslate"
-            *ngIf="!!exercise.teamMode && participationStatusWrapper() !== ParticipationStatus.NO_TEAM_ASSIGNED"
+            *ngIf="!!exercise.teamMode && assignedToTeam()"
             [smallButton]="smallButtons"
             [hideLabelMobile]="true"
             [routerLink]="['/courses', courseId, 'exercises', exercise.id, 'teams', assignedTeamId]"
         ></button>
+        <div *ngIf="!!exercise.teamMode && exercise.teamAssignmentConfig && !!exercise.teamAssignmentConfig.allowTeamFormation">
+            <button
+                jhi-exercise-action-button
+                [buttonIcon]="faUsers"
+                [buttonLabel]="'artemisApp.exerciseActions.createTeam' | artemisTranslate"
+                *ngIf="participationStatusWrapper() === ParticipationStatus.NO_TEAM_ASSIGNED"
+                [smallButton]="smallButtons"
+                [hideLabelMobile]="false"
+                (click)="openCreateTeamModal()"
+            ></button>
+            <button
+                jhi-exercise-action-button
+                [buttonIcon]="faUsers"
+                [buttonLabel]="'artemisApp.exerciseActions.viewInvitations' | artemisTranslate"
+                *ngIf="participationStatusWrapper() === ParticipationStatus.IS_INVITED"
+                [smallButton]="smallButtons"
+                [hideLabelMobile]="false"
+                (click)="openInvitationsModal()"
+            ></button>
+            <div *ngIf="participationStatusWrapper() === ParticipationStatus.INVITATION_ACCEPTED">
+                <label>{{ 'artemisApp.exerciseActions.invitationAccepted' | artemisTranslate }}</label>
+                <button
+                    jhi-exercise-action-button
+                    [buttonIcon]="faTrashAlt"
+                    [buttonLabel]="'artemisApp.exerciseActions.leaveTeam' | artemisTranslate"
+                    [smallButton]="smallButtons"
+                    [hideLabelMobile]="false"
+                    (click)="deleteAcceptedInvitation()"
+                ></button>
+            </div>
+        </div>
         <button
             [id]="'start-exercise-' + exercise.id"
             class="start-exercise"
@@ -375,14 +440,37 @@
             [hideLabelMobile]="true"
             [routerLink]="['/courses', courseId, 'exercises', exercise.id, 'teams', assignedTeamId]"
         ></button>
-        <button
-            jhi-exercise-action-button
-            [buttonIcon]="faUsers"
-            [buttonLabel]="'artemisApp.exerciseActions.createTeam' | artemisTranslate"
-            *ngIf="!!exercise.teamMode && participationStatusWrapper() === ParticipationStatus.NO_TEAM_ASSIGNED"
-            [smallButton]="smallButtons"
-            [hideLabelMobile]="false"
-        ></button>
+        <div *ngIf="!!exercise.teamMode && exercise.teamAssignmentConfig && !!exercise.teamAssignmentConfig.allowTeamFormation">
+            <button
+                jhi-exercise-action-button
+                [buttonIcon]="faUsers"
+                [buttonLabel]="'artemisApp.exerciseActions.createTeam' | artemisTranslate"
+                *ngIf="participationStatusWrapper() === ParticipationStatus.NO_TEAM_ASSIGNED"
+                [smallButton]="smallButtons"
+                [hideLabelMobile]="false"
+                (click)="openCreateTeamModal()"
+            ></button>
+            <button
+                jhi-exercise-action-button
+                [buttonIcon]="faUsers"
+                [buttonLabel]="'artemisApp.exerciseActions.viewInvitations' | artemisTranslate"
+                *ngIf="participationStatusWrapper() === ParticipationStatus.IS_INVITED"
+                [smallButton]="smallButtons"
+                [hideLabelMobile]="false"
+                (click)="openInvitationsModal()"
+            ></button>
+            <div *ngIf="participationStatusWrapper() === ParticipationStatus.INVITATION_ACCEPTED">
+                <label>{{ 'artemisApp.exerciseActions.invitationAccepted' | artemisTranslate }}</label>
+                <button
+                    jhi-exercise-action-button
+                    [buttonIcon]="faTrashAlt"
+                    [buttonLabel]="'artemisApp.exerciseActions.leaveTeam' | artemisTranslate"
+                    [smallButton]="smallButtons"
+                    [hideLabelMobile]="false"
+                    (click)="deleteAcceptedInvitation()"
+                ></button>
+            </div>
+        </div>
         <button
             jhi-exercise-action-button
             [buttonIcon]="faPlayCircle"

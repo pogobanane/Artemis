@@ -222,7 +222,7 @@ export class ExerciseDetailsStudentActionsComponent {
             modalRef.componentInstance.team = newTeam;
             modalRef.componentInstance.exercise = this.exercise;
             modalRef.componentInstance.currentUser = this.currentUser;
-            modalRef.closed.subscribe((team) => this.exercise.teamIdStudentAcceptedInvitationTo === team.id);
+            modalRef.closed.subscribe((team) => (this.exercise.teamIdStudentAcceptedInvitationTo = team.id));
         }
     }
 
