@@ -5,8 +5,10 @@ import static de.tum.in.www1.artemis.service.util.TimeLogUtil.formatDurationFrom
 
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
@@ -34,6 +36,7 @@ import de.tum.in.www1.artemis.domain.quiz.QuizSubmission;
 import de.tum.in.www1.artemis.repository.*;
 import de.tum.in.www1.artemis.service.AuthorizationCheckService;
 import de.tum.in.www1.artemis.service.exam.*;
+import de.tum.in.www1.artemis.service.messaging.InstanceMessageSendService;
 import de.tum.in.www1.artemis.service.scheduled.cache.monitoring.ExamMonitoringScheduleService;
 import de.tum.in.www1.artemis.service.util.HttpRequestUtils;
 import de.tum.in.www1.artemis.web.rest.dto.StudentExamWithGradeDTO;
@@ -79,14 +82,16 @@ public class StudentExamResource {
 
     private final ExamMonitoringScheduleService examMonitoringScheduleService;
 
-    @Value("${info.browser-fingerprints-enabled:#{true}}")
-    private boolean fingerprintingEnabled;
+    private final InstanceMessageSendService instanceMessageSendService;
+
+    @Value("${info.student-exam-store-session-data:#{true}}")
+    private boolean storeSessionDataInStudentExamSession;
 
     public StudentExamResource(ExamAccessService examAccessService, StudentExamService studentExamService, StudentExamAccessService studentExamAccessService,
             UserRepository userRepository, AuditEventRepository auditEventRepository, StudentExamRepository studentExamRepository, ExamDateService examDateService,
             ExamSessionService examSessionService, StudentParticipationRepository studentParticipationRepository, QuizExerciseRepository quizExerciseRepository,
             ExamRepository examRepository, AuthorizationCheckService authorizationCheckService, ExamService examService,
-            ExamMonitoringScheduleService examMonitoringScheduleService) {
+            ExamMonitoringScheduleService examMonitoringScheduleService, InstanceMessageSendService instanceMessageSendService) {
         this.examAccessService = examAccessService;
         this.studentExamService = studentExamService;
         this.studentExamAccessService = studentExamAccessService;
@@ -101,6 +106,7 @@ public class StudentExamResource {
         this.authorizationCheckService = authorizationCheckService;
         this.examService = examService;
         this.examMonitoringScheduleService = examMonitoringScheduleService;
+        this.instanceMessageSendService = instanceMessageSendService;
     }
 
     /**
@@ -122,7 +128,7 @@ public class StudentExamResource {
 
         StudentExam studentExam = studentExamRepository.findByIdWithExercisesElseThrow(studentExamId);
 
-        loadExercisesForStudentExam(studentExam);
+        loadQuizExercisesForStudentExam(studentExam);
 
         // fetch participations, submissions and results for these exercises, note: exams only contain individual exercises for now
         // fetching all participations at once is more effective
@@ -193,7 +199,7 @@ public class StudentExamResource {
         studentExam.setWorkingTime(workingTime);
         var savedStudentExam = studentExamRepository.save(studentExam);
 
-        examMonitoringScheduleService.scheduleExamActivitySave(examId);
+        instanceMessageSendService.sendExamMonitoringSchedule(examId);
 
         return ResponseEntity.ok(savedStudentExam);
     }
@@ -368,7 +374,10 @@ public class StudentExamResource {
             throw new AccessForbiddenException("You are not allowed to access the summary of a student exam which was NOT submitted!");
         }
 
-        // 3rd fetch participations, submissions and results and connect them to the studentExam
+        // 3rd: Reload the Quiz-Exercises
+        loadQuizExercisesForStudentExam(studentExam);
+
+        // 4th fetch participations, submissions and results and connect them to the studentExam
         if (studentExam.getExam().isTestExam()) {
             fetchParticipationsSubmissionsAndResultsForTestExam(studentExam, user);
         }
@@ -415,13 +424,12 @@ public class StudentExamResource {
             throw new AccessForbiddenException("You are not allowed to access the grade summary of a student exam which was NOT submitted!");
         }
 
-        loadExercisesForStudentExam(studentExam);
+        loadQuizExercisesForStudentExam(studentExam);
 
         // 3rd fetch participations, submissions and results and connect them to the studentExam
         fetchParticipationsSubmissionsAndResultsForRealExam(studentExam, targetUser);
 
-        List<StudentParticipation> participations = studentExam.getExercises().stream().flatMap(exercise -> exercise.getStudentParticipations().stream())
-                .collect(Collectors.toList());
+        List<StudentParticipation> participations = studentExam.getExercises().stream().flatMap(exercise -> exercise.getStudentParticipations().stream()).toList();
 
         StudentExamWithGradeDTO studentExamWithGradeDTO = examService.calculateStudentResultWithGradeAndPoints(studentExam, participations);
         studentExamWithGradeDTO.studentExam = null;  // To save bandwidth.
@@ -562,7 +570,7 @@ public class StudentExamResource {
      * @param studentExam the student exam to be prepared
      */
     private void prepareStudentExamForConduction(HttpServletRequest request, User currentUser, StudentExam studentExam) {
-        loadExercisesForStudentExam(studentExam);
+        loadQuizExercisesForStudentExam(studentExam);
 
         // 2nd: mark the student exam as started
         studentExam.setStarted(true);
@@ -613,7 +621,7 @@ public class StudentExamResource {
         fetchParticipationsSubmissionsAndResultsForRealExam(studentExam, currentUser);
 
         // 5th: Reload the Quiz-Exercises
-        loadExercisesForStudentExam(studentExam);
+        loadQuizExercisesForStudentExam(studentExam);
 
         // 6th: Save StudentExam
         studentExamRepository.save(studentExam);
@@ -632,10 +640,10 @@ public class StudentExamResource {
      * @param studentExam the student exam to be prepared
      */
     private void createNewExamSession(HttpServletRequest request, StudentExam studentExam) {
-        final var ipAddress = HttpRequestUtils.getIpAddressFromRequest(request).orElse(null);
-        final String browserFingerprint = !fingerprintingEnabled ? null : request.getHeader("X-Artemis-Client-Fingerprint");
-        final String instanceId = !fingerprintingEnabled ? null : request.getHeader("X-Artemis-Client-Instance-ID");
-        final String userAgent = request.getHeader("User-Agent");
+        final var ipAddress = !storeSessionDataInStudentExamSession ? null : HttpRequestUtils.getIpAddressFromRequest(request).orElse(null);
+        final String browserFingerprint = !storeSessionDataInStudentExamSession ? null : request.getHeader("X-Artemis-Client-Fingerprint");
+        final String instanceId = !storeSessionDataInStudentExamSession ? null : request.getHeader("X-Artemis-Client-Instance-ID");
+        final String userAgent = !storeSessionDataInStudentExamSession ? null : request.getHeader("User-Agent");
         ExamSession examSession = this.examSessionService.startExamSession(studentExam, browserFingerprint, userAgent, instanceId, ipAddress);
         examSession.hideDetails();
         examSession.setInitialSession(this.examSessionService.checkExamSessionIsInitial(studentExam.getId()));
@@ -670,16 +678,14 @@ public class StudentExamResource {
      * @param user logged-in user with groups and authorities
      */
     private void fetchParticipationsSubmissionsAndResultsForTestExam(StudentExam studentExam, User user) {
-        // 1st: Load (Quiz-)Exercises
-        loadExercisesForStudentExam(studentExam);
 
-        // 2nd: fetch participations, submissions and results.
+        // 1st: fetch participations, submissions and results.
         List<StudentParticipation> participations = studentParticipationRepository
                 .findParticipationsByStudentIdAndIndividualExercisesWithEagerSubmissionsResultWithoutAssessor(studentExam);
 
         boolean isAtLeastInstructor = authorizationCheckService.isAtLeastInstructorInCourse(studentExam.getExam().getCourse(), user);
 
-        // 3rd: connect & filter the exercises and student participations including the latest submission and results where necessary, to make sure all relevant associations are
+        // 2nd: connect & filter the exercises and student participations including the latest submission and results where necessary, to make sure all relevant associations are
         // available
         for (Exercise exercise : studentExam.getExercises()) {
             filterParticipationForExercise(studentExam, exercise, participations, isAtLeastInstructor);
@@ -784,7 +790,7 @@ public class StudentExamResource {
      *
      * @param studentExam the studentExam for which to load exercises
      */
-    private void loadExercisesForStudentExam(StudentExam studentExam) {
+    private void loadQuizExercisesForStudentExam(StudentExam studentExam) {
         for (int i = 0; i < studentExam.getExercises().size(); i++) {
             var exercise = studentExam.getExercises().get(i);
             if (exercise instanceof QuizExercise) {
