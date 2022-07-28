@@ -728,6 +728,10 @@ public class ExamResource {
 
         final var exam = checkAccessAndLog(courseId, examId, Constants.GENERATE_STUDENT_EXAMS);
         examService.combineTemplateCommitsOfAllProgrammingExercisesInExam(exam);
+
+        // Reset existing student exams & participations
+        examService.deleteStudentExamsAndExistingParticipationsForExam(exam.getId());
+
         List<StudentExam> studentExams = studentExamRepository.generateStudentExams(exam);
 
         // we need to break a cycle for the serialization
