@@ -18,7 +18,7 @@
     },
     "scripts": {
         "cypress:open": "cypress open",
-        "cypress:run": "cypress run --browser=chrome",
+        "cypress:run": "cypress run --browser=chrome --spec integration/Test.spec.ts",
         "update": "npm-upgrade"
     }
 }
