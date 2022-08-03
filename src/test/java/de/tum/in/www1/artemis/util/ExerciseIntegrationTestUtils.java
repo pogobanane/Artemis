@@ -23,6 +23,11 @@ public class ExerciseIntegrationTestUtils {
     @Autowired
     protected RequestUtilService request;
 
+    /**
+     * Common test scenario for all exercise types to confirm filter by exam and course works.
+     *
+     * @param apiPath api path to get the paging results from
+     */
     public void testCourseAndExamFilters(String apiPath) throws Exception {
         final var search = database.configureSearch("Ankh");
 
