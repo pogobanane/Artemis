@@ -1,9 +1,11 @@
 package de.tum.in.www1.artemis.service.connectors.localgit;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -19,6 +21,7 @@ import javax.validation.constraints.NotNull;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.transport.RefSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -705,10 +708,32 @@ public class LocalGitService extends AbstractVersionControlService {
         try {
             // Create a bare local repository with JGit
             File directory = new File(localGitPath + "/" + projectKey + "/" + repoName + ".git");
-            Git.init().setInitialBranch(defaultBranch).setDirectory(directory).setBare(true).call();
+            directory.delete();
+            directory.mkdirs();
+
+            Git gitRemote = Git.init().setInitialBranch(defaultBranch).setDirectory(directory).setBare(true).call();
+
+            // Clone the repository and commit a file to it
+            File cloneDir = File.createTempFile(projectKey + "-" + repoName, "");
+            // File cloneDir = new File(localGitPath + "/local/" + projectKey + "/" +
+            // repoName);
+            cloneDir.delete();
+            cloneDir.mkdirs();
+            Git gitClone = Git.cloneRepository().setURI(gitRemote.getRepository().getDirectory().getAbsolutePath()).setDirectory(cloneDir).call();
+            // gitClone.checkout().setName(defaultBranch).setCreateBranch(true).call();
+
+            File initFile = new File(cloneDir, "testfile");
+            initFile.createNewFile();
+            Files.write(initFile.toPath(), "Test content".getBytes());
+
+            gitClone.add().addFilepattern(initFile.getName()).call();
+            gitClone.commit().setMessage("Initial commit").call();
+            gitClone.branchRename().setOldName("master").setNewName(defaultBranch).call();
+            gitClone.push().setRemote("origin").setRefSpecs(new RefSpec(defaultBranch)).call();
+            log.debug("Commited file {} to repository at ", initFile, gitRemote.getRepository().getDirectory().getAbsolutePath());
 
         }
-        catch (GitAPIException e) {
+        catch (GitAPIException | IOException e) {
             log.error("Could not create local git repo {} with project key {}", repoName, projectKey, e);
             throw new LocalGitException("Error while creating local git project.");
         }
