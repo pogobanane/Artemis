@@ -12,9 +12,13 @@
                 <dd>
                     <span>{{ exerciseHint.description }}</span>
                 </dd>
-                <dt><span jhiTranslate="artemisApp.exerciseHint.task">Content</span></dt>
+                <dt><span jhiTranslate="artemisApp.exerciseHint.task">Task</span></dt>
                 <dd>
                     <span>{{ exerciseHint?.programmingExerciseTask?.taskName ?? '-' }}</span>
+                </dd>
+                <dt><span jhiTranslate="artemisApp.exerciseHint.displayThreshold">Unlock after number of unsuccessful submissions</span></dt>
+                <dd>
+                    <span>{{ exerciseHint?.displayThreshold ?? '-' }}</span>
                 </dd>
                 <dt><span jhiTranslate="artemisApp.exerciseHint.content">Content</span></dt>
                 <dd>
