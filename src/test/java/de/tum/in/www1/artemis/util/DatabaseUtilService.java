@@ -3286,6 +3286,7 @@ public class DatabaseUtilService {
             var solutionEntries = task.getTestCases().stream().flatMap(testCase -> testCase.getSolutionEntries().stream()).collect(Collectors.toSet());
             var codeHint = new CodeHint();
             codeHint.setTitle("Code Hint for " + task.getTaskName());
+            codeHint.setDescription("Description for " + task.getTaskName());
             codeHint.setContent("Content for " + task.getTaskName());
             codeHint.setExercise(programmingExercise);
             codeHint.setSolutionEntries(solutionEntries);

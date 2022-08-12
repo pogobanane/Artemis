@@ -70,6 +70,7 @@ public class CodeHintService {
         codeHint.setExercise(task.getExercise());
         codeHint.setProgrammingExerciseTask(task);
         codeHint.setTitle("Code hint for task " + task.getTaskName());
+        codeHint.setDescription("Code hint for task " + task.getTaskName());
 
         var solutionEntries = task.getTestCases().stream().flatMap(testCase -> testCase.getSolutionEntries().stream()).peek(solutionEntry -> solutionEntry.setCodeHint(codeHint))
                 .collect(Collectors.toSet());
