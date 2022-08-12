@@ -45,8 +45,8 @@ public class ProgrammingExerciseTaskService {
      * @param task The task to delete
      */
     public void delete(ProgrammingExerciseTask task) {
-        var exerciseHints = exerciseHintRepository.findByTaskId(task.getId());
-        exerciseHintRepository.deleteAll(exerciseHints);
+        var exerciseHints = exerciseHintRepository.findByTaskId(task.getId()).stream().peek(hint -> hint.setProgrammingExerciseTask(null)).toList();
+        exerciseHintRepository.saveAll(exerciseHints);
         programmingExerciseTaskRepository.delete(task);
     }
 

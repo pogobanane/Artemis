@@ -172,7 +172,11 @@ class ProgrammingExerciseTaskServiceTest extends AbstractSpringIntegrationBamboo
         programmingExerciseTaskService.delete(task);
         assertThat(programmingExerciseTaskRepository.findAll()).hasSize(1);
         assertThat(programmingExerciseTaskRepository.findById(task.getId())).isEmpty();
-        assertThat(codeHintRepository.findAll()).isEmpty();
+
+        var actualCodeHints = codeHintRepository.findAll();
+        assertThat(actualCodeHints).hasSize(1);
+        var actualHint = actualCodeHints.get(0);
+        assertThat(actualHint.getProgrammingExerciseTask()).isNull();
     }
 
     @Test
