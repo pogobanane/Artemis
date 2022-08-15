@@ -5,6 +5,7 @@ import { Exercise, ExerciseType } from 'app/entities/exercise.model';
 import { ExerciseGroup } from 'app/entities/exercise-group.model';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { SHORT_NAME_PATTERN } from 'app/shared/constants/input.constants';
+import { cloneDeep } from 'lodash-es';
 
 @Component({
     selector: 'jhi-exam-exercise-import',
@@ -14,6 +15,8 @@ import { SHORT_NAME_PATTERN } from 'app/shared/constants/input.constants';
 export class ExamExerciseImportComponent implements OnInit {
     @Input() exam: Exam;
     @Input() importInSameCourse = false;
+    // Needed to "persist" the non-selected Exercise Groups, as the exam:exerciseGroups will only contain the selected ones, once the user triggers the import
+    originalExerciseGroups: ExerciseGroup[];
     // Map to determine, which exercises the user has selected and therefore should be imported alongside an exam
     selectedExercises = new Map<ExerciseGroup, Set<Exercise>>();
     // Map / Blocklist with the title and shortName of the programming exercises, that have been either rejected by the server
@@ -40,6 +43,8 @@ export class ExamExerciseImportComponent implements OnInit {
     constructor() {}
 
     ngOnInit(): void {
+        // The exerciseGroups are cloneDeep to "persist" the non-selected exercises after a rejected import
+        this.originalExerciseGroups = cloneDeep(this.exam.exerciseGroups!);
         this.initializeSelectedExercisesAndContainsProgrammingExercisesMaps();
         // If the exam is imported into the same course, the title + shortName of Programming Exercises must be changed
         if (this.importInSameCourse) {
@@ -52,23 +57,49 @@ export class ExamExerciseImportComponent implements OnInit {
      * Called by the parent component
      */
     updateMapsAfterRejectedImport() {
+        this.syncExamExerciseGroupsAndOriginalExerciseGroupsAfterRejectedImport();
         this.titleAndShortNameOfProgrammingExercises.clear();
         this.initializeTitleAndShortNameMap();
-        this.selectedExercises.clear();
-        this.containsProgrammingExercises.clear();
-        this.initializeSelectedExercisesAndContainsProgrammingExercisesMaps();
+        // this.selectedExercises.clear();
+        // this.containsProgrammingExercises.clear();
+        // this.initializeSelectedExercisesAndContainsProgrammingExercisesMaps();
+    }
+
+    /**
+     * As the exam.exerciseGroups contains only the selected exerciseGroups, once the user triggers the import, the
+     * originalExerciseGroups[] is used to "persist" the selected and non-selected ones in case, a pre-check failed.
+     * In case of a failing pre-check, we need to sync the originalExerciseGroups[] with the exam.exerciseGroups, as the
+     * latter ones are returned from the server and for programming exercises failing the pre-check, the title and
+     * short name is deleted.
+     */
+    syncExamExerciseGroupsAndOriginalExerciseGroupsAfterRejectedImport() {
+        this.originalExerciseGroups.forEach((originalExerciseGroup) => {
+            const rejectedExerciseGroup = this.exam.exerciseGroups!.find((rExerciseGroup) => rExerciseGroup.id === originalExerciseGroup.id);
+            if (rejectedExerciseGroup !== undefined) {
+                rejectedExerciseGroup.exercises
+                    ?.filter((exercise) => exercise.type === ExerciseType.PROGRAMMING)
+                    .forEach((rejectedExercise) => {
+                        const originalExercise = originalExerciseGroup.exercises?.find((oExercise) => oExercise.id === rejectedExercise.id);
+                        if (originalExercise !== undefined) {
+                            originalExercise.title = undefined;
+                            originalExercise.shortName = undefined;
+                        }
+                    });
+            }
+        });
     }
 
     /**
      * Method to initialize the Maps selectedExercises and containsProgrammingExercises
      */
     initializeSelectedExercisesAndContainsProgrammingExercisesMaps() {
-        // Initialize selectedExercises
-        this.exam.exerciseGroups?.forEach((exerciseGroup) => {
+        // Initialize selectedExercises (using exam.exerciseGroups is fine here, as those are either all initial ones
+        // ore the ones, the user (previously) selected, but were returned due to a failing pre-check
+        this.originalExerciseGroups.forEach((exerciseGroup) => {
             this.selectedExercises.set(exerciseGroup, new Set<Exercise>(exerciseGroup.exercises));
         });
         // Initialize containsProgrammingExercises
-        this.exam.exerciseGroups!.forEach((exerciseGroup) => {
+        this.originalExerciseGroups.forEach((exerciseGroup) => {
             const hasProgrammingExercises = !!exerciseGroup.exercises?.some((value) => value.type === ExerciseType.PROGRAMMING);
             this.containsProgrammingExercises.set(exerciseGroup, hasProgrammingExercises);
             // In case of a rejected import, we can delete programming exercises with a title from the Map / blocklist, as those were not rejected by the server.
@@ -129,7 +160,7 @@ export class ExamExerciseImportComponent implements OnInit {
      * @param exerciseGroup the corresponding exercise group
      */
     exerciseGroupContainsExercises(exerciseGroup: ExerciseGroup): boolean {
-        return this.selectedExercises!.get(exerciseGroup)!.size > 0;
+        return this.selectedExercises?.get(exerciseGroup)?.size! > 0;
     }
 
     /**

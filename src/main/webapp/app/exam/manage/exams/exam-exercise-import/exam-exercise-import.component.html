@@ -13,7 +13,7 @@
     </thead>
     <tbody>
         <!-- Exercise Group as rows -->
-        <tr *ngFor="let exerciseGroup of exam.exerciseGroups" [class.exerciseGroupNotSelected]="!exerciseGroupContainsExercises(exerciseGroup)">
+        <tr *ngFor="let exerciseGroup of originalExerciseGroups" [class.exerciseGroupNotSelected]="!exerciseGroupContainsExercises(exerciseGroup)">
             <td>
                 <!-- Display general exercise group settings (name, mandatory) to the left -->
                 <table class="table table-hover table-striped">
