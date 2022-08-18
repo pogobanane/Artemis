@@ -35,8 +35,11 @@ import de.tum.in.www1.artemis.service.ParticipationService;
 import de.tum.in.www1.artemis.service.SubmissionService;
 import de.tum.in.www1.artemis.service.SubmissionVersionService;
 import de.tum.in.www1.artemis.service.messaging.InstanceMessageSendService;
-import de.tum.in.www1.artemis.service.programming.ProgrammingExerciseParticipationService;
+import de.tum.in.www1.artemis.service.scheduled.DistributedExecutorService;
 import de.tum.in.www1.artemis.service.scheduled.ProgrammingExerciseScheduleService;
+import de.tum.in.www1.artemis.service.scheduled.distributed.callables.programming.FindStudentParticipationByExerciseAndStudentIdCallable;
+import de.tum.in.www1.artemis.service.scheduled.distributed.callables.programming.LockStudentRepositoryCallable;
+import de.tum.in.www1.artemis.service.scheduled.distributed.callables.programming.UnlockStudentRepositoryCallable;
 import de.tum.in.www1.artemis.service.util.ExamExerciseStartPreparationStatus;
 import de.tum.in.www1.artemis.web.rest.errors.AccessForbiddenException;
 import de.tum.in.www1.artemis.web.rest.errors.EntityNotFoundException;
@@ -58,8 +61,6 @@ public class StudentExamService {
     private final UserRepository userRepository;
 
     private final ProgrammingExerciseRepository programmingExerciseRepository;
-
-    private final ProgrammingExerciseParticipationService programmingExerciseParticipationService;
 
     private final SubmissionService submissionService;
 
@@ -87,12 +88,14 @@ public class StudentExamService {
 
     private final SimpMessageSendingOperations messagingTemplate;
 
+    private final DistributedExecutorService distributedExecutorService;
+
     public StudentExamService(StudentExamRepository studentExamRepository, UserRepository userRepository, ParticipationService participationService,
             QuizSubmissionRepository quizSubmissionRepository, TextSubmissionRepository textSubmissionRepository, ModelingSubmissionRepository modelingSubmissionRepository,
-            SubmissionVersionService submissionVersionService, ProgrammingExerciseParticipationService programmingExerciseParticipationService, SubmissionService submissionService,
-            ProgrammingSubmissionRepository programmingSubmissionRepository, StudentParticipationRepository studentParticipationRepository, ExamQuizService examQuizService,
-            ProgrammingExerciseRepository programmingExerciseRepository, ExamRepository examRepository, InstanceMessageSendService instanceMessageSendService,
-            CacheManager cacheManager, SimpMessageSendingOperations messagingTemplate) {
+            SubmissionVersionService submissionVersionService, SubmissionService submissionService, ProgrammingSubmissionRepository programmingSubmissionRepository,
+            StudentParticipationRepository studentParticipationRepository, ExamQuizService examQuizService, ProgrammingExerciseRepository programmingExerciseRepository,
+            ExamRepository examRepository, InstanceMessageSendService instanceMessageSendService, CacheManager cacheManager, SimpMessageSendingOperations messagingTemplate,
+            DistributedExecutorService distributedExecutorService) {
         this.participationService = participationService;
         this.studentExamRepository = studentExamRepository;
         this.userRepository = userRepository;
@@ -100,7 +103,6 @@ public class StudentExamService {
         this.textSubmissionRepository = textSubmissionRepository;
         this.modelingSubmissionRepository = modelingSubmissionRepository;
         this.submissionVersionService = submissionVersionService;
-        this.programmingExerciseParticipationService = programmingExerciseParticipationService;
         this.programmingSubmissionRepository = programmingSubmissionRepository;
         this.studentParticipationRepository = studentParticipationRepository;
         this.examQuizService = examQuizService;
@@ -110,6 +112,7 @@ public class StudentExamService {
         this.instanceMessageSendService = instanceMessageSendService;
         this.cacheManager = cacheManager;
         this.messagingTemplate = messagingTemplate;
+        this.distributedExecutorService = distributedExecutorService;
     }
 
     /**
@@ -369,9 +372,10 @@ public class StudentExamService {
                 if (exercise instanceof ProgrammingExercise) {
                     try {
                         log.debug("lock student repositories for {}", currentUser);
-                        ProgrammingExerciseStudentParticipation participation = programmingExerciseParticipationService.findStudentParticipationByExerciseAndStudentId(exercise,
-                                currentUser.getLogin());
-                        programmingExerciseParticipationService.lockStudentRepository((ProgrammingExercise) exercise, participation);
+                        ProgrammingExerciseStudentParticipation participation = distributedExecutorService
+                                .executeTaskOnMemberWithProfile(new FindStudentParticipationByExerciseAndStudentIdCallable(exercise, currentUser.getLogin()), "scheduling").get();
+                        distributedExecutorService.executeTaskOnMemberWithProfile(new LockStudentRepositoryCallable((ProgrammingExercise) exercise, participation), "scheduling")
+                                .get();
                     }
                     catch (Exception e) {
                         log.error("Locking programming exercise {} submitted manually by {} failed", exercise.getId(), currentUser.getLogin(), e);
@@ -481,7 +485,8 @@ public class StudentExamService {
                     if (exercise instanceof ProgrammingExercise programmingExercise && (studentExam.isTestRun() || studentExam.getExam().isTestExam()
                             || ProgrammingExerciseScheduleService.getExamProgrammingExerciseUnlockDate(programmingExercise).isBefore(ZonedDateTime.now()))) {
                         // Note: only unlock the programming exercise student repository for the affected user (Important: Do NOT invoke unlockAll)
-                        programmingExerciseParticipationService.unlockStudentRepository(programmingExercise, (ProgrammingExerciseStudentParticipation) participation);
+                        distributedExecutorService.executeTaskOnMemberWithProfile(
+                                new UnlockStudentRepositoryCallable(programmingExercise, (ProgrammingExerciseStudentParticipation) participation), "scheduling").get();
                     }
                     log.info("SUCCESS: Start exercise for student exam {} and exercise {} and student {}", studentExam.getId(), exercise.getId(), student.getId());
                 }

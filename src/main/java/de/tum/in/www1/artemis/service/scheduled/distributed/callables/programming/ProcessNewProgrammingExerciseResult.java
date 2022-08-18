@@ -1,0 +1,37 @@
+package de.tum.in.www1.artemis.service.scheduled.distributed.callables.programming;
+
+import java.util.Optional;
+import java.util.concurrent.Callable;
+
+import javax.validation.constraints.NotNull;
+
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import de.tum.in.www1.artemis.domain.Result;
+import de.tum.in.www1.artemis.domain.participation.ProgrammingExerciseParticipation;
+import de.tum.in.www1.artemis.service.programming.ProgrammingExerciseGradingService;
+
+public class ProcessNewProgrammingExerciseResult implements Callable<Optional<Result>>, java.io.Serializable {
+
+    private transient ProgrammingExerciseGradingService programmingExerciseGradingService;
+
+    private final ProgrammingExerciseParticipation participation;
+
+    private final Object requestBody;
+
+    public ProcessNewProgrammingExerciseResult(@NotNull ProgrammingExerciseParticipation participation, @NotNull Object requestBody) {
+        this.participation = participation;
+        this.requestBody = requestBody;
+    }
+
+    @Override
+    public Optional<Result> call() throws GitAPIException {
+        return this.programmingExerciseGradingService.processNewProgrammingExerciseResult(participation, requestBody);
+    }
+
+    @Autowired
+    public void setProgrammingExerciseGradingService(final ProgrammingExerciseGradingService programmingExerciseGradingService) {
+        this.programmingExerciseGradingService = programmingExerciseGradingService;
+    }
+}

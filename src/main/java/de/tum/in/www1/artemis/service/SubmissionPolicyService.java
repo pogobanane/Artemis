@@ -1,5 +1,7 @@
 package de.tum.in.www1.artemis.service;
 
+import java.util.concurrent.ExecutionException;
+
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +15,9 @@ import de.tum.in.www1.artemis.domain.submissionpolicy.LockRepositoryPolicy;
 import de.tum.in.www1.artemis.domain.submissionpolicy.SubmissionPenaltyPolicy;
 import de.tum.in.www1.artemis.domain.submissionpolicy.SubmissionPolicy;
 import de.tum.in.www1.artemis.repository.*;
-import de.tum.in.www1.artemis.service.programming.ProgrammingExerciseParticipationService;
+import de.tum.in.www1.artemis.service.scheduled.DistributedExecutorService;
+import de.tum.in.www1.artemis.service.scheduled.distributed.callables.programming.LockStudentRepositoryCallable;
+import de.tum.in.www1.artemis.service.scheduled.distributed.callables.programming.UnlockStudentRepositoryCallable;
 import de.tum.in.www1.artemis.web.rest.SubmissionPolicyResource;
 import de.tum.in.www1.artemis.web.rest.errors.BadRequestAlertException;
 import de.tum.in.www1.artemis.web.rest.errors.EntityNotFoundException;
@@ -25,20 +29,20 @@ public class SubmissionPolicyService {
 
     private final SubmissionPolicyRepository submissionPolicyRepository;
 
-    private final ProgrammingExerciseParticipationService programmingExerciseParticipationService;
-
     private final ProgrammingSubmissionRepository programmingSubmissionRepository;
 
     private final ParticipationRepository participationRepository;
 
+    private final DistributedExecutorService distributedExecutorService;
+
     public SubmissionPolicyService(ProgrammingExerciseRepository programmingExerciseRepository, SubmissionPolicyRepository submissionPolicyRepository,
-            ProgrammingExerciseParticipationService programmingExerciseParticipationService, ProgrammingSubmissionRepository programmingSubmissionRepository,
-            ParticipationRepository participationRepository) {
+            ProgrammingSubmissionRepository programmingSubmissionRepository, ParticipationRepository participationRepository,
+            DistributedExecutorService distributedExecutorService) {
         this.programmingExerciseRepository = programmingExerciseRepository;
         this.submissionPolicyRepository = submissionPolicyRepository;
-        this.programmingExerciseParticipationService = programmingExerciseParticipationService;
         this.programmingSubmissionRepository = programmingSubmissionRepository;
         this.participationRepository = participationRepository;
+        this.distributedExecutorService = distributedExecutorService;
     }
 
     /**
@@ -238,7 +242,16 @@ public class SubmissionPolicyService {
     private void lockParticipationsWhenSubmissionsGreaterLimit(ProgrammingExercise exercise, int submissionLimit) {
         for (StudentParticipation studentParticipation : exercise.getStudentParticipations()) {
             if (getParticipationSubmissionCount(studentParticipation) >= submissionLimit) {
-                programmingExerciseParticipationService.lockStudentRepository(exercise, (ProgrammingExerciseStudentParticipation) studentParticipation);
+                try {
+                    distributedExecutorService.executeTaskOnMemberWithProfile(
+                            new LockStudentRepositoryCallable(exercise, (ProgrammingExerciseStudentParticipation) studentParticipation), "scheduling").get();
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -246,7 +259,16 @@ public class SubmissionPolicyService {
     private void unlockParticipationsWhenSubmissionsGreaterLimit(ProgrammingExercise exercise, int submissionLimit) {
         for (StudentParticipation studentParticipation : exercise.getStudentParticipations()) {
             if (getParticipationSubmissionCount(studentParticipation) >= submissionLimit) {
-                programmingExerciseParticipationService.unlockStudentRepository(exercise, (ProgrammingExerciseStudentParticipation) studentParticipation);
+                try {
+                    distributedExecutorService.executeTaskOnMemberWithProfile(
+                            new UnlockStudentRepositoryCallable(exercise, (ProgrammingExerciseStudentParticipation) studentParticipation), "scheduling").get();
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -294,7 +316,16 @@ public class SubmissionPolicyService {
         if (submissions == allowedSubmissions) {
             ProgrammingExercise programmingExercise = programmingExerciseRepository
                     .findByIdWithStudentParticipationsAndLegalSubmissionsElseThrow(lockRepositoryPolicy.getProgrammingExercise().getId());
-            programmingExerciseParticipationService.lockStudentRepository(programmingExercise, (ProgrammingExerciseStudentParticipation) result.getParticipation());
+            try {
+                distributedExecutorService.executeTaskOnMemberWithProfile(
+                        new LockStudentRepositoryCallable(programmingExercise, (ProgrammingExerciseStudentParticipation) result.getParticipation()), "scheduling").get();
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            catch (ExecutionException e) {
+                e.printStackTrace();
+            }
         }
         // This is the fallback behavior in case the VCS does not lock the repository for whatever reason when the
         // submission limit is reached.

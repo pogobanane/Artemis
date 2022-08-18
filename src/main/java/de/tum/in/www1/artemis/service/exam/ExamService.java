@@ -8,11 +8,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,9 +42,10 @@ import de.tum.in.www1.artemis.service.AuthorizationCheckService;
 import de.tum.in.www1.artemis.service.CourseExamExportService;
 import de.tum.in.www1.artemis.service.ExerciseDeletionService;
 import de.tum.in.www1.artemis.service.TutorLeaderboardService;
-import de.tum.in.www1.artemis.service.connectors.GitService;
 import de.tum.in.www1.artemis.service.messaging.InstanceMessageSendService;
 import de.tum.in.www1.artemis.service.notifications.GroupNotificationService;
+import de.tum.in.www1.artemis.service.scheduled.DistributedExecutorService;
+import de.tum.in.www1.artemis.service.scheduled.distributed.callables.programming.CombineAllCommitsOfRepositoryIntoOneCallable;
 import de.tum.in.www1.artemis.service.util.TimeLogUtil;
 import de.tum.in.www1.artemis.web.rest.dto.*;
 import de.tum.in.www1.artemis.web.rest.errors.BadRequestAlertException;
@@ -92,8 +93,6 @@ public class ExamService {
 
     private final TutorLeaderboardService tutorLeaderboardService;
 
-    private final GitService gitService;
-
     private final CourseExamExportService courseExamExportService;
 
     private final GroupNotificationService groupNotificationService;
@@ -104,13 +103,15 @@ public class ExamService {
 
     private final CacheManager cacheManager;
 
+    private final DistributedExecutorService distributedExecutorService;
+
     public ExamService(ExerciseDeletionService exerciseDeletionService, ExamRepository examRepository, StudentExamRepository studentExamRepository, ExamQuizService examQuizService,
             InstanceMessageSendService instanceMessageSendService, TutorLeaderboardService tutorLeaderboardService, AuditEventRepository auditEventRepository,
             StudentParticipationRepository studentParticipationRepository, ComplaintRepository complaintRepository, ComplaintResponseRepository complaintResponseRepository,
             UserRepository userRepository, ProgrammingExerciseRepository programmingExerciseRepository, QuizExerciseRepository quizExerciseRepository,
-            ResultRepository resultRepository, SubmissionRepository submissionRepository, CourseExamExportService courseExamExportService, GitService gitService,
+            ResultRepository resultRepository, SubmissionRepository submissionRepository, CourseExamExportService courseExamExportService,
             GroupNotificationService groupNotificationService, GradingScaleRepository gradingScaleRepository, AuthorizationCheckService authorizationCheckService,
-            CacheManager cacheManager) {
+            CacheManager cacheManager, DistributedExecutorService distributedExecutorService) {
         this.exerciseDeletionService = exerciseDeletionService;
         this.examRepository = examRepository;
         this.studentExamRepository = studentExamRepository;
@@ -128,10 +129,10 @@ public class ExamService {
         this.tutorLeaderboardService = tutorLeaderboardService;
         this.courseExamExportService = courseExamExportService;
         this.groupNotificationService = groupNotificationService;
-        this.gitService = gitService;
         this.gradingScaleRepository = gradingScaleRepository;
         this.authorizationCheckService = authorizationCheckService;
         this.cacheManager = cacheManager;
+        this.distributedExecutorService = distributedExecutorService;
     }
 
     /**
@@ -957,10 +958,13 @@ public class ExamService {
             try {
                 ProgrammingExercise programmingExerciseWithTemplateParticipation = programmingExerciseRepository
                         .findByIdWithTemplateAndSolutionParticipationElseThrow(exercise.getId());
-                gitService.combineAllCommitsOfRepositoryIntoOne(programmingExerciseWithTemplateParticipation.getTemplateParticipation().getVcsRepositoryUrl());
+                distributedExecutorService.executeTaskOnMemberWithProfile(
+                        new CombineAllCommitsOfRepositoryIntoOneCallable(programmingExerciseWithTemplateParticipation.getTemplateParticipation().getVcsRepositoryUrl()),
+                        "scheduling").get();
+
                 log.debug("Finished combination of template commits for programming exercise {}", programmingExerciseWithTemplateParticipation);
             }
-            catch (GitAPIException e) {
+            catch (InterruptedException | ExecutionException e) {
                 log.error("An error occurred when trying to combine template commits for exam {}.", exam.getId(), e);
             }
         }));

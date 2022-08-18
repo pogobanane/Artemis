@@ -7,6 +7,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.Principal;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -40,8 +41,11 @@ import de.tum.in.www1.artemis.service.feature.Feature;
 import de.tum.in.www1.artemis.service.feature.FeatureToggle;
 import de.tum.in.www1.artemis.service.feature.FeatureToggleService;
 import de.tum.in.www1.artemis.service.messaging.InstanceMessageSendService;
-import de.tum.in.www1.artemis.service.programming.ProgrammingExerciseParticipationService;
+import de.tum.in.www1.artemis.service.scheduled.DistributedExecutorService;
 import de.tum.in.www1.artemis.service.scheduled.cache.quiz.QuizScheduleService;
+import de.tum.in.www1.artemis.service.scheduled.distributed.callables.programming.FindStudentParticipationByExerciseAndStudentIdCallable;
+import de.tum.in.www1.artemis.service.scheduled.distributed.callables.programming.LockStudentRepositoryCallable;
+import de.tum.in.www1.artemis.service.scheduled.distributed.callables.programming.UnlockStudentRepositoryCallable;
 import de.tum.in.www1.artemis.web.rest.errors.AccessForbiddenException;
 import de.tum.in.www1.artemis.web.rest.errors.BadRequestAlertException;
 import de.tum.in.www1.artemis.web.rest.errors.ConflictException;
@@ -63,8 +67,6 @@ public class ParticipationResource {
     private String applicationName;
 
     private final ParticipationService participationService;
-
-    private final ProgrammingExerciseParticipationService programmingExerciseParticipationService;
 
     private final QuizExerciseRepository quizExerciseRepository;
 
@@ -104,16 +106,16 @@ public class ParticipationResource {
 
     private final QuizScheduleService quizScheduleService;
 
-    public ParticipationResource(ParticipationService participationService, ProgrammingExerciseParticipationService programmingExerciseParticipationService,
-            CourseRepository courseRepository, QuizExerciseRepository quizExerciseRepository, ExerciseRepository exerciseRepository,
-            ProgrammingExerciseRepository programmingExerciseRepository, AuthorizationCheckService authCheckService,
+    private final DistributedExecutorService distributedExecutorService;
+
+    public ParticipationResource(ParticipationService participationService, CourseRepository courseRepository, QuizExerciseRepository quizExerciseRepository,
+            ExerciseRepository exerciseRepository, ProgrammingExerciseRepository programmingExerciseRepository, AuthorizationCheckService authCheckService,
             Optional<ContinuousIntegrationService> continuousIntegrationService, UserRepository userRepository, StudentParticipationRepository studentParticipationRepository,
             AuditEventRepository auditEventRepository, GuidedTourConfiguration guidedTourConfiguration, TeamRepository teamRepository, FeatureToggleService featureToggleService,
             ProgrammingExerciseStudentParticipationRepository programmingExerciseStudentParticipationRepository, SubmissionRepository submissionRepository,
             ResultRepository resultRepository, ExerciseDateService exerciseDateService, InstanceMessageSendService instanceMessageSendService, QuizBatchService quizBatchService,
-            QuizScheduleService quizScheduleService) {
+            QuizScheduleService quizScheduleService, DistributedExecutorService distributedExecutorService) {
         this.participationService = participationService;
-        this.programmingExerciseParticipationService = programmingExerciseParticipationService;
         this.quizExerciseRepository = quizExerciseRepository;
         this.courseRepository = courseRepository;
         this.exerciseRepository = exerciseRepository;
@@ -133,6 +135,7 @@ public class ParticipationResource {
         this.instanceMessageSendService = instanceMessageSendService;
         this.quizBatchService = quizBatchService;
         this.quizScheduleService = quizScheduleService;
+        this.distributedExecutorService = distributedExecutorService;
     }
 
     /**
@@ -203,9 +206,19 @@ public class ParticipationResource {
     public ResponseEntity<ProgrammingExerciseStudentParticipation> resumeParticipation(@PathVariable Long exerciseId, Principal principal) {
         log.debug("REST request to resume Exercise : {}", exerciseId);
         var programmingExercise = programmingExerciseRepository.findByIdWithTemplateAndSolutionParticipationElseThrow(exerciseId);
-        var participation = programmingExerciseParticipationService.findStudentParticipationByExerciseAndStudentId(programmingExercise, principal.getName());
-        // explicitly set the exercise here to make sure that the templateParticipation and solutionParticipation are initialized in case they should be used again
-        participation.setProgrammingExercise(programmingExercise);
+        ProgrammingExerciseStudentParticipation participation = null;
+        try {
+            participation = distributedExecutorService
+                    .executeTaskOnMemberWithProfile(new FindStudentParticipationByExerciseAndStudentIdCallable(programmingExercise, principal.getName()), "scheduling").get();
+            // explicitly set the exercise here to make sure that the templateParticipation and solutionParticipation are initialized in case they should be used again
+            participation.setProgrammingExercise(programmingExercise);
+        }
+        catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        catch (ExecutionException e) {
+            e.printStackTrace();
+        }
 
         User user = userRepository.getUserWithGroupsAndAuthorities();
         checkAccessPermissionOwner(participation, user);
@@ -321,11 +334,31 @@ public class ParticipationResource {
             instanceMessageSendService.sendProgrammingExerciseSchedule(programmingExercise.getId());
 
             // when changing the individual due date after the regular due date, the repository might already have been locked
-            updatedParticipations.stream().filter(exerciseDateService::isBeforeDueDate).forEach(
-                    participation -> programmingExerciseParticipationService.unlockStudentRepository(programmingExercise, (ProgrammingExerciseStudentParticipation) participation));
+            updatedParticipations.stream().filter(exerciseDateService::isBeforeDueDate).forEach(participation -> {
+                try {
+                    distributedExecutorService.executeTaskOnMemberWithProfile(
+                            new UnlockStudentRepositoryCallable(programmingExercise, (ProgrammingExerciseStudentParticipation) participation), "scheduling").get();
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+            });
             // the new due date may be in the past, students should no longer be able to make any changes
-            updatedParticipations.stream().filter(exerciseDateService::isAfterDueDate).forEach(
-                    participation -> programmingExerciseParticipationService.lockStudentRepository(programmingExercise, (ProgrammingExerciseStudentParticipation) participation));
+            updatedParticipations.stream().filter(exerciseDateService::isAfterDueDate).forEach(participation -> {
+                try {
+                    distributedExecutorService.executeTaskOnMemberWithProfile(
+                            new LockStudentRepositoryCallable(programmingExercise, (ProgrammingExerciseStudentParticipation) participation), "scheduling").get();
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+            });
         }
 
         return ResponseEntity.ok().body(updatedParticipations);

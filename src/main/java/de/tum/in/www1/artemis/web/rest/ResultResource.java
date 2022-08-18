@@ -6,6 +6,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 import javax.annotation.Nullable;
 
@@ -40,6 +41,9 @@ import de.tum.in.www1.artemis.service.connectors.LtiService;
 import de.tum.in.www1.artemis.service.exam.ExamDateService;
 import de.tum.in.www1.artemis.service.programming.ProgrammingExerciseGradingService;
 import de.tum.in.www1.artemis.service.programming.ProgrammingExerciseParticipationService;
+import de.tum.in.www1.artemis.service.scheduled.DistributedExecutorService;
+import de.tum.in.www1.artemis.service.scheduled.distributed.callables.programming.CanAccessParticipationCallable;
+import de.tum.in.www1.artemis.service.scheduled.distributed.callables.programming.ProcessNewProgrammingExerciseResult;
 import de.tum.in.www1.artemis.web.rest.dto.ResultWithPointsPerGradingCriterionDTO;
 import de.tum.in.www1.artemis.web.rest.errors.AccessForbiddenException;
 import de.tum.in.www1.artemis.web.rest.errors.BadRequestAlertException;
@@ -81,13 +85,9 @@ public class ResultResource {
 
     private final Optional<ContinuousIntegrationService> continuousIntegrationService;
 
-    private final ProgrammingExerciseParticipationService programmingExerciseParticipationService;
-
     private final WebsocketMessagingService messagingService;
 
     private final LtiService ltiService;
-
-    private final ProgrammingExerciseGradingService programmingExerciseGradingService;
 
     private final ParticipationRepository participationRepository;
 
@@ -99,6 +99,8 @@ public class ResultResource {
 
     private final ProgrammingExerciseStudentParticipationRepository programmingExerciseStudentParticipationRepository;
 
+    private final DistributedExecutorService distributedExecutorService;
+
     public ResultResource(ProgrammingExerciseParticipationService programmingExerciseParticipationService, ParticipationService participationService,
             ExampleSubmissionRepository exampleSubmissionRepository, ResultService resultService, ExerciseRepository exerciseRepository, AuthorizationCheckService authCheckService,
             Optional<ContinuousIntegrationService> continuousIntegrationService, LtiService ltiService, ResultRepository resultRepository,
@@ -106,7 +108,7 @@ public class ResultResource {
             ProgrammingExerciseGradingService programmingExerciseGradingService, ParticipationRepository participationRepository,
             StudentParticipationRepository studentParticipationRepository, TemplateProgrammingExerciseParticipationRepository templateProgrammingExerciseParticipationRepository,
             SolutionProgrammingExerciseParticipationRepository solutionProgrammingExerciseParticipationRepository,
-            ProgrammingExerciseStudentParticipationRepository programmingExerciseStudentParticipationRepository) {
+            ProgrammingExerciseStudentParticipationRepository programmingExerciseStudentParticipationRepository, DistributedExecutorService distributedExecutorService) {
         this.exerciseRepository = exerciseRepository;
         this.resultRepository = resultRepository;
         this.participationService = participationService;
@@ -114,17 +116,16 @@ public class ResultResource {
         this.resultService = resultService;
         this.authCheckService = authCheckService;
         this.continuousIntegrationService = continuousIntegrationService;
-        this.programmingExerciseParticipationService = programmingExerciseParticipationService;
         this.messagingService = messagingService;
         this.ltiService = ltiService;
         this.userRepository = userRepository;
         this.examDateService = examDateService;
-        this.programmingExerciseGradingService = programmingExerciseGradingService;
         this.participationRepository = participationRepository;
         this.studentParticipationRepository = studentParticipationRepository;
         this.templateProgrammingExerciseParticipationRepository = templateProgrammingExerciseParticipationRepository;
         this.solutionProgrammingExerciseParticipationRepository = solutionProgrammingExerciseParticipationRepository;
         this.programmingExerciseStudentParticipationRepository = programmingExerciseStudentParticipationRepository;
+        this.distributedExecutorService = distributedExecutorService;
     }
 
     /**
@@ -173,7 +174,16 @@ public class ResultResource {
         }
 
         // Process the new result from the build result.
-        Optional<Result> optResult = programmingExerciseGradingService.processNewProgrammingExerciseResult(participation, requestBody);
+        Optional<Result> optResult = Optional.empty();
+        try {
+            optResult = distributedExecutorService.executeTaskOnMemberWithProfile(new ProcessNewProgrammingExerciseResult(participation, requestBody), "scheduling").get();
+        }
+        catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        catch (ExecutionException e) {
+            e.printStackTrace();
+        }
 
         // Only notify the user about the new result if the result was created successfully.
         if (optResult.isPresent()) {
@@ -358,10 +368,18 @@ public class ResultResource {
         log.debug("REST request to get latest result for participation : {}", participationId);
         Participation participation = participationRepository.findByIdElseThrow(participationId);
 
-        if (participation instanceof StudentParticipation && !authCheckService.canAccessParticipation((StudentParticipation) participation)
-                || participation instanceof ProgrammingExerciseParticipation
-                        && !programmingExerciseParticipationService.canAccessParticipation((ProgrammingExerciseParticipation) participation)) {
-            throw new AccessForbiddenException();
+        try {
+            if (participation instanceof StudentParticipation && !authCheckService.canAccessParticipation((StudentParticipation) participation)
+                    || participation instanceof ProgrammingExerciseParticipation && !distributedExecutorService
+                            .executeTaskOnMemberWithProfile(new CanAccessParticipationCallable((ProgrammingExerciseParticipation) participation), "scheduling").get()) {
+                throw new AccessForbiddenException();
+            }
+        }
+        catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        catch (ExecutionException e) {
+            e.printStackTrace();
         }
 
         Result result = resultRepository.findFirstWithFeedbacksByParticipationIdOrderByCompletionDateDescElseThrow(participation.getId());
@@ -394,8 +412,17 @@ public class ResultResource {
             }
         }
         else if (participation instanceof ProgrammingExerciseParticipation) {
-            if (!programmingExerciseParticipationService.canAccessParticipation((ProgrammingExerciseParticipation) participation)) {
-                throw new AccessForbiddenException("participation", participationId);
+            try {
+                if (!distributedExecutorService.executeTaskOnMemberWithProfile(new CanAccessParticipationCallable((ProgrammingExerciseParticipation) participation), "scheduling")
+                        .get()) {
+                    throw new AccessForbiddenException("participation", participationId);
+                }
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            catch (ExecutionException e) {
+                e.printStackTrace();
             }
         }
         else {

@@ -2,6 +2,7 @@ package de.tum.in.www1.artemis.service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +22,8 @@ import de.tum.in.www1.artemis.domain.participation.StudentParticipation;
 import de.tum.in.www1.artemis.domain.quiz.QuizExercise;
 import de.tum.in.www1.artemis.repository.*;
 import de.tum.in.www1.artemis.repository.plagiarism.PlagiarismResultRepository;
-import de.tum.in.www1.artemis.service.programming.ProgrammingExerciseService;
+import de.tum.in.www1.artemis.service.scheduled.DistributedExecutorService;
+import de.tum.in.www1.artemis.service.scheduled.distributed.callables.programming.DeleteProgrammingExerciseCallable;
 
 /**
  * Service Implementation for managing Exercise.
@@ -32,8 +34,6 @@ public class ExerciseDeletionService {
     private final Logger log = LoggerFactory.getLogger(ExerciseDeletionService.class);
 
     private final ParticipationService participationService;
-
-    private final ProgrammingExerciseService programmingExerciseService;
 
     private final ModelingExerciseService modelingExerciseService;
 
@@ -65,16 +65,18 @@ public class ExerciseDeletionService {
 
     private final ModelingExerciseRepository modelingExerciseRepository;
 
+    private final DistributedExecutorService distributedExecutorService;
+
     public ExerciseDeletionService(ExerciseRepository exerciseRepository, ExerciseUnitRepository exerciseUnitRepository, ParticipationService participationService,
-            ProgrammingExerciseService programmingExerciseService, ModelingExerciseService modelingExerciseService, QuizExerciseService quizExerciseService,
-            TutorParticipationRepository tutorParticipationRepository, ExampleSubmissionService exampleSubmissionService, StudentExamRepository studentExamRepository,
-            ExamRepository examRepository, ParticipantScoreRepository participantScoreRepository, LectureUnitService lectureUnitService,
-            TextExerciseRepository textExerciseRepository, PlagiarismResultRepository plagiarismResultRepository, TextAssessmentKnowledgeService textAssessmentKnowledgeService,
-            ModelingExerciseRepository modelingExerciseRepository, ModelAssessmentKnowledgeService modelAssessmentKnowledgeService) {
+            ModelingExerciseService modelingExerciseService, QuizExerciseService quizExerciseService, TutorParticipationRepository tutorParticipationRepository,
+            ExampleSubmissionService exampleSubmissionService, StudentExamRepository studentExamRepository, ExamRepository examRepository,
+            ParticipantScoreRepository participantScoreRepository, LectureUnitService lectureUnitService, TextExerciseRepository textExerciseRepository,
+            PlagiarismResultRepository plagiarismResultRepository, TextAssessmentKnowledgeService textAssessmentKnowledgeService,
+            ModelingExerciseRepository modelingExerciseRepository, ModelAssessmentKnowledgeService modelAssessmentKnowledgeService,
+            DistributedExecutorService distributedExecutorService) {
         this.exerciseRepository = exerciseRepository;
         this.examRepository = examRepository;
         this.participationService = participationService;
-        this.programmingExerciseService = programmingExerciseService;
         this.modelingExerciseService = modelingExerciseService;
         this.tutorParticipationRepository = tutorParticipationRepository;
         this.exampleSubmissionService = exampleSubmissionService;
@@ -88,6 +90,7 @@ public class ExerciseDeletionService {
         this.modelAssessmentKnowledgeService = modelAssessmentKnowledgeService;
         this.textExerciseRepository = textExerciseRepository;
         this.modelingExerciseRepository = modelingExerciseRepository;
+        this.distributedExecutorService = distributedExecutorService;
     }
 
     /**
@@ -176,7 +179,15 @@ public class ExerciseDeletionService {
         // Programming exercises have some special stuff that needs to be cleaned up (solution/template participation, build plans, etc.).
         if (exercise instanceof ProgrammingExercise) {
             // TODO: delete all schedules related to this programming exercise
-            programmingExerciseService.delete(exercise.getId(), deleteBaseReposBuildPlans);
+            try {
+                distributedExecutorService.executeTaskOnMemberWithProfile(new DeleteProgrammingExerciseCallable(exercise.getId(), deleteBaseReposBuildPlans), "scheduling").get();
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            catch (ExecutionException e) {
+                e.printStackTrace();
+            }
         }
         else {
             // delete text assessment knowledge if exercise is of type TextExercise and if no other exercise uses same knowledge

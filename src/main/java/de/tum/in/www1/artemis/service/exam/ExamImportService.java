@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.stereotype.Service;
@@ -20,8 +21,9 @@ import de.tum.in.www1.artemis.service.FileUploadExerciseImportService;
 import de.tum.in.www1.artemis.service.ModelingExerciseImportService;
 import de.tum.in.www1.artemis.service.QuizExerciseImportService;
 import de.tum.in.www1.artemis.service.TextExerciseImportService;
-import de.tum.in.www1.artemis.service.programming.ProgrammingExerciseImportService;
-import de.tum.in.www1.artemis.service.programming.ProgrammingExerciseService;
+import de.tum.in.www1.artemis.service.scheduled.DistributedExecutorService;
+import de.tum.in.www1.artemis.service.scheduled.distributed.callables.programming.ImportProgrammingExerciseCallable;
+import de.tum.in.www1.artemis.service.scheduled.distributed.callables.programming.PreCheckProjectExistsOnVCSOrCICallable;
 import de.tum.in.www1.artemis.web.rest.errors.ExamConfigurationException;
 
 @Service
@@ -45,11 +47,7 @@ public class ExamImportService {
 
     private final CourseRepository courseRepository;
 
-    private final ProgrammingExerciseService programmingExerciseService;
-
     private final ProgrammingExerciseRepository programmingExerciseRepository;
-
-    private final ProgrammingExerciseImportService programmingExerciseImportService;
 
     private final FileUploadExerciseRepository fileUploadExerciseRepository;
 
@@ -59,13 +57,14 @@ public class ExamImportService {
 
     private final ProgrammingExerciseTaskRepository programmingExerciseTaskRepository;
 
+    private final DistributedExecutorService distributedExecutorService;
+
     public ExamImportService(TextExerciseImportService textExerciseImportService, TextExerciseRepository textExerciseRepository,
             ModelingExerciseImportService modelingExerciseImportService, ModelingExerciseRepository modelingExerciseRepository, ExamRepository examRepository,
             ExerciseGroupRepository exerciseGroupRepository, QuizExerciseRepository quizExerciseRepository, QuizExerciseImportService importQuizExercise,
-            CourseRepository courseRepository, ProgrammingExerciseService programmingExerciseService1, ProgrammingExerciseRepository programmingExerciseRepository,
-            ProgrammingExerciseImportService programmingExerciseImportService, FileUploadExerciseRepository fileUploadExerciseRepository,
+            CourseRepository courseRepository, ProgrammingExerciseRepository programmingExerciseRepository, FileUploadExerciseRepository fileUploadExerciseRepository,
             FileUploadExerciseImportService fileUploadExerciseImportService, GradingCriterionRepository gradingCriterionRepository,
-            ProgrammingExerciseTaskRepository programmingExerciseTaskRepository) {
+            ProgrammingExerciseTaskRepository programmingExerciseTaskRepository, DistributedExecutorService distributedExecutorService) {
         this.textExerciseImportService = textExerciseImportService;
         this.textExerciseRepository = textExerciseRepository;
         this.modelingExerciseImportService = modelingExerciseImportService;
@@ -75,13 +74,12 @@ public class ExamImportService {
         this.quizExerciseRepository = quizExerciseRepository;
         this.quizExerciseImportService = importQuizExercise;
         this.courseRepository = courseRepository;
-        this.programmingExerciseService = programmingExerciseService1;
         this.programmingExerciseRepository = programmingExerciseRepository;
-        this.programmingExerciseImportService = programmingExerciseImportService;
         this.fileUploadExerciseRepository = fileUploadExerciseRepository;
         this.fileUploadExerciseImportService = fileUploadExerciseImportService;
         this.gradingCriterionRepository = gradingCriterionRepository;
         this.programmingExerciseTaskRepository = programmingExerciseTaskRepository;
+        this.distributedExecutorService = distributedExecutorService;
     }
 
     /**
@@ -145,7 +143,18 @@ public class ExamImportService {
             exerciseGroup.getExercises().forEach(exercise -> {
                 if (exercise.getExerciseType() == ExerciseType.PROGRAMMING) {
                     // Method to check, if the project already exists.
-                    boolean invalidShortName = programmingExerciseService.preCheckProjectExistsOnVCSOrCI((ProgrammingExercise) exercise, targetCourseShortName);
+                    boolean invalidShortName = false;
+                    try {
+                        invalidShortName = distributedExecutorService
+                                .executeTaskOnMemberWithProfile(new PreCheckProjectExistsOnVCSOrCICallable((ProgrammingExercise) exercise, targetCourseShortName), "scheduling")
+                                .get();
+                    }
+                    catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    catch (ExecutionException e) {
+                        e.printStackTrace();
+                    }
                     if (invalidShortName) {
                         // If the project already exists and thus the short name isn't valid, it is removed
                         exercise.setShortName("");
@@ -246,7 +255,16 @@ public class ExamImportService {
                     originalProgrammingExercise.setTasks(new ArrayList<>(templateTasks));
 
                     prepareProgrammingExerciseForExamImport((ProgrammingExercise) exerciseToCopy);
-                    exerciseCopied = programmingExerciseImportService.importProgrammingExercise(originalProgrammingExercise, (ProgrammingExercise) exerciseToCopy, false, false);
+                    try {
+                        exerciseCopied = distributedExecutorService.executeTaskOnMemberWithProfile(
+                                new ImportProgrammingExerciseCallable(originalProgrammingExercise, (ProgrammingExercise) exerciseToCopy, false, false), "scheduling").get();
+                    }
+                    catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    catch (ExecutionException e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 case FILE_UPLOAD -> {

@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -24,7 +25,8 @@ import de.tum.in.www1.artemis.domain.modeling.ModelingExercise;
 import de.tum.in.www1.artemis.domain.quiz.QuizExercise;
 import de.tum.in.www1.artemis.repository.ExamRepository;
 import de.tum.in.www1.artemis.service.archival.ArchivalReportEntry;
-import de.tum.in.www1.artemis.service.programming.ProgrammingExerciseExportService;
+import de.tum.in.www1.artemis.service.scheduled.DistributedExecutorService;
+import de.tum.in.www1.artemis.service.scheduled.distributed.callables.programming.ExportProgrammingExerciseRepositoriesCallable;
 import de.tum.in.www1.artemis.web.rest.dto.SubmissionExportOptionsDTO;
 
 /**
@@ -37,8 +39,6 @@ public class CourseExamExportService {
     private String courseArchivesDirPath;
 
     private final Logger log = LoggerFactory.getLogger(CourseExamExportService.class);
-
-    private final ProgrammingExerciseExportService programmingExerciseExportService;
 
     private final ZipFileService zipFileService;
 
@@ -54,10 +54,11 @@ public class CourseExamExportService {
 
     private final WebsocketMessagingService websocketMessagingService;
 
-    public CourseExamExportService(ProgrammingExerciseExportService programmingExerciseExportService, ZipFileService zipFileService, FileService fileService,
-            FileUploadSubmissionExportService fileUploadSubmissionExportService, TextSubmissionExportService textSubmissionExportService,
-            ModelingSubmissionExportService modelingSubmissionExportService, WebsocketMessagingService websocketMessagingService, ExamRepository examRepository) {
-        this.programmingExerciseExportService = programmingExerciseExportService;
+    private final DistributedExecutorService distributedExecutorService;
+
+    public CourseExamExportService(ZipFileService zipFileService, FileService fileService, FileUploadSubmissionExportService fileUploadSubmissionExportService,
+            TextSubmissionExportService textSubmissionExportService, ModelingSubmissionExportService modelingSubmissionExportService,
+            WebsocketMessagingService websocketMessagingService, ExamRepository examRepository, DistributedExecutorService distributedExecutorService) {
         this.zipFileService = zipFileService;
         this.fileService = fileService;
         this.fileUploadSubmissionExportService = fileUploadSubmissionExportService;
@@ -65,6 +66,7 @@ public class CourseExamExportService {
         this.modelingSubmissionExportService = modelingSubmissionExportService;
         this.websocketMessagingService = websocketMessagingService;
         this.examRepository = examRepository;
+        this.distributedExecutorService = distributedExecutorService;
     }
 
     /**
@@ -364,7 +366,16 @@ public class CourseExamExportService {
             // Export programming exercise
             if (exercise instanceof ProgrammingExercise programmingExercise) {
                 // Download the repositories' template, solution, tests and students' repositories
-                exportedExercises.add(programmingExerciseExportService.exportProgrammingExerciseRepositories(programmingExercise, true, outputDir, exportErrors, reportData));
+                try {
+                    exportedExercises.add(distributedExecutorService.executeTaskOnMemberWithProfile(
+                            new ExportProgrammingExerciseRepositoriesCallable(programmingExercise, true, outputDir, exportErrors, reportData), "scheduling").get());
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
                 continue;
             }
 

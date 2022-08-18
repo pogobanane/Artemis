@@ -4,6 +4,7 @@ import static de.tum.in.www1.artemis.domain.enumeration.InitializationState.*;
 
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,8 @@ import de.tum.in.www1.artemis.repository.hestia.CoverageReportRepository;
 import de.tum.in.www1.artemis.service.connectors.ContinuousIntegrationService;
 import de.tum.in.www1.artemis.service.connectors.GitService;
 import de.tum.in.www1.artemis.service.connectors.VersionControlService;
+import de.tum.in.www1.artemis.service.scheduled.DistributedExecutorService;
+import de.tum.in.www1.artemis.service.scheduled.distributed.callables.programming.DeleteLocalRepositoryCallable;
 import de.tum.in.www1.artemis.web.rest.errors.EntityNotFoundException;
 
 /**
@@ -30,8 +33,6 @@ import de.tum.in.www1.artemis.web.rest.errors.EntityNotFoundException;
 public class ParticipationService {
 
     private final Logger log = LoggerFactory.getLogger(ParticipationService.class);
-
-    private final GitService gitService;
 
     private final Optional<ContinuousIntegrationService> continuousIntegrationService;
 
@@ -65,12 +66,15 @@ public class ParticipationService {
 
     private final CoverageReportRepository coverageReportRepository;
 
+    private final DistributedExecutorService distributedExecutorService;
+
     public ParticipationService(ProgrammingExerciseStudentParticipationRepository programmingExerciseStudentParticipationRepository,
             StudentParticipationRepository studentParticipationRepository, ExerciseRepository exerciseRepository, ProgrammingExerciseRepository programmingExerciseRepository,
             ResultRepository resultRepository, SubmissionRepository submissionRepository, ComplaintResponseRepository complaintResponseRepository,
             ComplaintRepository complaintRepository, TeamRepository teamRepository, GitService gitService, ParticipationRepository participationRepository,
             Optional<ContinuousIntegrationService> continuousIntegrationService, Optional<VersionControlService> versionControlService, RatingRepository ratingRepository,
-            ParticipantScoreRepository participantScoreRepository, UrlService urlService, CoverageReportRepository coverageReportRepository) {
+            ParticipantScoreRepository participantScoreRepository, UrlService urlService, CoverageReportRepository coverageReportRepository,
+            DistributedExecutorService distributedExecutorService) {
         this.programmingExerciseRepository = programmingExerciseRepository;
         this.participationRepository = participationRepository;
         this.programmingExerciseStudentParticipationRepository = programmingExerciseStudentParticipationRepository;
@@ -81,13 +85,13 @@ public class ParticipationService {
         this.complaintResponseRepository = complaintResponseRepository;
         this.complaintRepository = complaintRepository;
         this.teamRepository = teamRepository;
-        this.gitService = gitService;
         this.continuousIntegrationService = continuousIntegrationService;
         this.versionControlService = versionControlService;
         this.ratingRepository = ratingRepository;
         this.participantScoreRepository = participantScoreRepository;
         this.urlService = urlService;
         this.coverageReportRepository = coverageReportRepository;
+        this.distributedExecutorService = distributedExecutorService;
     }
 
     /**
@@ -548,7 +552,15 @@ public class ParticipationService {
         // ignore participations without repository URL
         if (participation.getRepositoryUrl() != null) {
             versionControlService.get().deleteRepository(participation.getVcsRepositoryUrl());
-            gitService.deleteLocalRepository(participation.getVcsRepositoryUrl());
+            try {
+                distributedExecutorService.executeTaskOnMemberWithProfile(new DeleteLocalRepositoryCallable(participation.getVcsRepositoryUrl()), "scheduling").get();
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            catch (ExecutionException e) {
+                e.printStackTrace();
+            }
             participation.setRepositoryUrl(null);
             participation.setInitializationState(InitializationState.FINISHED);
             programmingExerciseStudentParticipationRepository.saveAndFlush(participation);
@@ -621,8 +633,16 @@ public class ParticipationService {
                     log.error("Could not delete repository: {}", ex.getMessage());
                 }
             }
-            // delete local repository cache
-            gitService.deleteLocalRepository(repositoryUrl);
+            try {
+                // delete local repository cache
+                distributedExecutorService.executeTaskOnMemberWithProfile(new DeleteLocalRepositoryCallable(repositoryUrl), "scheduling").get();
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            catch (ExecutionException e) {
+                e.printStackTrace();
+            }
         }
 
         complaintResponseRepository.deleteByComplaint_Result_Participation_Id(participationId);
