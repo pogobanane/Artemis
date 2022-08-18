@@ -9,11 +9,15 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.IsoFields;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
+import de.tum.in.www1.artemis.service.scheduled.DistributedExecutorService;
+import de.tum.in.www1.artemis.service.scheduled.distributed.callables.lecture.DeleteLectureCallable;
+import de.tum.in.www1.artemis.service.scheduled.distributed.callables.lecture.FilterActiveAttachmentsLecturesUserCallable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -69,8 +73,6 @@ public class CourseService {
 
     private final AuthorizationCheckService authCheckService;
 
-    private final LectureService lectureService;
-
     private final GroupNotificationRepository groupNotificationRepository;
 
     private final UserService userService;
@@ -101,12 +103,14 @@ public class CourseService {
 
     private final StudentParticipationRepository studentParticipationRepository;
 
+    private final DistributedExecutorService distributedExecutorService;
+
     public CourseService(Environment env, ArtemisAuthenticationProvider artemisAuthenticationProvider, CourseRepository courseRepository, ExerciseService exerciseService,
-            ExerciseDeletionService exerciseDeletionService, AuthorizationCheckService authCheckService, UserRepository userRepository, LectureService lectureService,
+            ExerciseDeletionService exerciseDeletionService, AuthorizationCheckService authCheckService, UserRepository userRepository,
             GroupNotificationRepository groupNotificationRepository, ExerciseGroupRepository exerciseGroupRepository, AuditEventRepository auditEventRepository,
             UserService userService, LearningGoalRepository learningGoalRepository, GroupNotificationService groupNotificationService, ExamService examService,
             ExamRepository examRepository, CourseExamExportService courseExamExportService, LearningGoalService learningGoalService, GradingScaleRepository gradingScaleRepository,
-            StatisticsRepository statisticsRepository, StudentParticipationRepository studentParticipationRepository) {
+            StatisticsRepository statisticsRepository, StudentParticipationRepository studentParticipationRepository, DistributedExecutorService distributedExecutorService) {
         this.env = env;
         this.artemisAuthenticationProvider = artemisAuthenticationProvider;
         this.courseRepository = courseRepository;
@@ -114,7 +118,6 @@ public class CourseService {
         this.exerciseDeletionService = exerciseDeletionService;
         this.authCheckService = authCheckService;
         this.userRepository = userRepository;
-        this.lectureService = lectureService;
         this.groupNotificationRepository = groupNotificationRepository;
         this.exerciseGroupRepository = exerciseGroupRepository;
         this.auditEventRepository = auditEventRepository;
@@ -128,6 +131,7 @@ public class CourseService {
         this.gradingScaleRepository = gradingScaleRepository;
         this.statisticsRepository = statisticsRepository;
         this.studentParticipationRepository = studentParticipationRepository;
+        this.distributedExecutorService = distributedExecutorService;
     }
 
     /**
@@ -174,7 +178,13 @@ public class CourseService {
             throw new AccessForbiddenException();
         }
         course.setExercises(exerciseService.findAllForCourse(course, user));
-        course.setLectures(lectureService.filterActiveAttachments(course.getLectures(), user));
+        try {
+            course.setLectures(distributedExecutorService.executeTaskOnMemberWithProfile(new FilterActiveAttachmentsLecturesUserCallable(course.getLectures(), user), "scheduling").get());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
         course.setLearningGoals(learningGoalService.findAllForCourse(course, user));
         course.setPrerequisites(learningGoalService.findAllPrerequisitesForCourse(course, user));
         if (authCheckService.isOnlyStudentInCourse(course, user)) {
@@ -207,7 +217,13 @@ public class CourseService {
                 .filter(course -> course.getEndDate() == null || course.getEndDate().isAfter(ZonedDateTime.now())).filter(course -> isCourseVisibleForUser(user, course))
                 .peek(course -> {
                     course.setExercises(exerciseService.findAllForCourse(course, user));
-                    course.setLectures(lectureService.filterActiveAttachments(course.getLectures(), user));
+                    try {
+                        course.setLectures(distributedExecutorService.executeTaskOnMemberWithProfile(new FilterActiveAttachmentsLecturesUserCallable(course.getLectures(), user), "scheduling").get());
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    }
                     if (authCheckService.isOnlyStudentInCourse(course, user)) {
                         course.setExams(examRepository.filterVisibleExams(course.getExams()));
                     }
@@ -292,7 +308,13 @@ public class CourseService {
 
     private void deleteLecturesOfCourse(Course course) {
         for (Lecture lecture : course.getLectures()) {
-            lectureService.delete(lecture);
+            try {
+                distributedExecutorService.executeTaskOnMemberWithProfile(new DeleteLectureCallable(lecture), "scheduling").get();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
         }
     }
 

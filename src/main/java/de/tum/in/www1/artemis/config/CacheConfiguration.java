@@ -28,6 +28,7 @@ import com.hazelcast.spring.context.SpringManagedContext;
 
 import de.tum.in.www1.artemis.service.scheduled.cache.monitoring.ExamMonitoringScheduleService;
 import de.tum.in.www1.artemis.service.scheduled.cache.quiz.QuizScheduleService;
+import org.springframework.core.env.Environment;
 import tech.jhipster.config.JHipsterProperties;
 import tech.jhipster.config.cache.PrefixedKeyGenerator;
 
@@ -49,6 +50,8 @@ public class CacheConfiguration {
 
     private final ApplicationContext applicationContext;
 
+    private final Environment env;
+
     @Value("${spring.jpa.properties.hibernate.cache.hazelcast.instance_name}")
     private String instanceName;
 
@@ -61,10 +64,11 @@ public class CacheConfiguration {
     @Value("${spring.hazelcast.localInstances:true}")
     private boolean hazelcastLocalInstances;
 
-    public CacheConfiguration(ServerProperties serverProperties, DiscoveryClient discoveryClient, ApplicationContext applicationContext) {
+    public CacheConfiguration(ServerProperties serverProperties, DiscoveryClient discoveryClient, ApplicationContext applicationContext, Environment env) {
         this.serverProperties = serverProperties;
         this.discoveryClient = discoveryClient;
         this.applicationContext = applicationContext;
+        this.env = env;
     }
 
     @Autowired(required = false) // ok
@@ -110,6 +114,7 @@ public class CacheConfiguration {
         // Allows using @SpringAware and therefore Spring Services in distributed tasks
         config.setManagedContext(new SpringManagedContext(applicationContext));
         config.setClassLoader(applicationContext.getClassLoader());
+        config.setMemberAttributeConfig(getMemberAttributeConfig());
         if (registration == null) {
             log.warn("No discovery service is set up, Hazelcast cannot create a cluster.");
             hazelcastBindOnlyOnInterface("127.0.0.1", config);
@@ -140,6 +145,7 @@ public class CacheConfiguration {
                 for (ServiceInstance instance : discoveryClient.getInstances(serviceId)) {
                     String clusterMember = instance.getHost() + ":" + (instance.getPort() + hazelcastPort); // Address where the other instance is expected
                     log.info("Adding Hazelcast (dev) cluster member {}", clusterMember);
+                    log.info("Metadata of instance {} is {}", instance.getPort(), instance.getMetadata());
                     config.getNetworkConfig().getJoin().getTcpIpConfig().addMember(clusterMember);
                 }
             }
@@ -210,5 +216,12 @@ public class CacheConfiguration {
         MapConfig mapConfig = new MapConfig();
         mapConfig.setTimeToLiveSeconds(jHipsterProperties.getCache().getHazelcast().getTimeToLiveSeconds());
         return mapConfig;
+    }
+
+    private MemberAttributeConfig getMemberAttributeConfig() {
+        MemberAttributeConfig memberAttributeConfig = new MemberAttributeConfig();
+        memberAttributeConfig.setAttribute("profiles", String.join(",", env.getActiveProfiles()));
+
+        return memberAttributeConfig;
     }
 }
