@@ -15,9 +15,6 @@ import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
-import de.tum.in.www1.artemis.service.scheduled.DistributedExecutorService;
-import de.tum.in.www1.artemis.service.scheduled.distributed.callables.lecture.DeleteLectureCallable;
-import de.tum.in.www1.artemis.service.scheduled.distributed.callables.lecture.FilterActiveAttachmentsLecturesUserCallable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,6 +44,9 @@ import de.tum.in.www1.artemis.security.SecurityUtils;
 import de.tum.in.www1.artemis.service.dto.StudentDTO;
 import de.tum.in.www1.artemis.service.exam.ExamService;
 import de.tum.in.www1.artemis.service.notifications.GroupNotificationService;
+import de.tum.in.www1.artemis.service.scheduled.DistributedExecutorService;
+import de.tum.in.www1.artemis.service.scheduled.distributed.callables.lecture.DeleteLectureCallable;
+import de.tum.in.www1.artemis.service.scheduled.distributed.callables.lecture.FilterActiveAttachmentsLecturesUserCallable;
 import de.tum.in.www1.artemis.service.user.UserService;
 import de.tum.in.www1.artemis.web.rest.dto.CourseManagementDetailViewDTO;
 import de.tum.in.www1.artemis.web.rest.errors.AccessForbiddenException;
@@ -179,10 +179,13 @@ public class CourseService {
         }
         course.setExercises(exerciseService.findAllForCourse(course, user));
         try {
-            course.setLectures(distributedExecutorService.executeTaskOnMemberWithProfile(new FilterActiveAttachmentsLecturesUserCallable(course.getLectures(), user), "scheduling").get());
-        } catch (InterruptedException e) {
+            course.setLectures(
+                    distributedExecutorService.executeTaskOnMemberWithProfile(new FilterActiveAttachmentsLecturesUserCallable(course.getLectures(), user), "scheduling").get());
+        }
+        catch (InterruptedException e) {
             e.printStackTrace();
-        } catch (ExecutionException e) {
+        }
+        catch (ExecutionException e) {
             e.printStackTrace();
         }
         course.setLearningGoals(learningGoalService.findAllForCourse(course, user));
@@ -218,10 +221,13 @@ public class CourseService {
                 .peek(course -> {
                     course.setExercises(exerciseService.findAllForCourse(course, user));
                     try {
-                        course.setLectures(distributedExecutorService.executeTaskOnMemberWithProfile(new FilterActiveAttachmentsLecturesUserCallable(course.getLectures(), user), "scheduling").get());
-                    } catch (InterruptedException e) {
+                        course.setLectures(distributedExecutorService
+                                .executeTaskOnMemberWithProfile(new FilterActiveAttachmentsLecturesUserCallable(course.getLectures(), user), "scheduling").get());
+                    }
+                    catch (InterruptedException e) {
                         e.printStackTrace();
-                    } catch (ExecutionException e) {
+                    }
+                    catch (ExecutionException e) {
                         e.printStackTrace();
                     }
                     if (authCheckService.isOnlyStudentInCourse(course, user)) {
@@ -310,9 +316,11 @@ public class CourseService {
         for (Lecture lecture : course.getLectures()) {
             try {
                 distributedExecutorService.executeTaskOnMemberWithProfile(new DeleteLectureCallable(lecture), "scheduling").get();
-            } catch (InterruptedException e) {
+            }
+            catch (InterruptedException e) {
                 e.printStackTrace();
-            } catch (ExecutionException e) {
+            }
+            catch (ExecutionException e) {
                 e.printStackTrace();
             }
         }
