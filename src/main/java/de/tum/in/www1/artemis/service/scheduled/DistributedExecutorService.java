@@ -4,11 +4,9 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.serviceregistry.Registration;
 import org.springframework.stereotype.Service;
@@ -35,25 +33,17 @@ public class DistributedExecutorService {
     }
 
     public <T> Future<T> executeTaskOnMemberWithProfile(Callable<T> taskCallable, String profile) {
-        if (this.registration.isEmpty()) {
-            // No distributed setup -> This instance has to execute it
-            // TODO
-            return null;
-        }
-
-        var instances = discoveryClient.getInstances(registration.get().getServiceId());
-        var instancesWithMatchingProfile = instances.stream().filter(instance -> Arrays.asList(instance.getMetadata().getOrDefault("profile", "").split(",")).contains(profile))
-                .toList();
-
-        log.info("Instances with profile {} are {}", profile, instancesWithMatchingProfile.stream().map(ServiceInstance::getInstanceId).collect(Collectors.toList()));
-
-        var hazelcastInstancesWithMatchingProfile = hazelcastInstance.getCluster().getMembers().stream()
-                .filter(member -> Arrays.asList(member.getAttributes().getOrDefault("profile", "").split(",")).contains(profile)).toList();
-
-        log.info("Hazelcast Instances with profile {} are {}", profile, hazelcastInstancesWithMatchingProfile.stream().map(Member::getAddress).collect(Collectors.toList()));
-
-        log.info("Hazelcast members are {}", hazelcastInstance.getCluster().getMembers().stream()
-                .map(m -> "Address: %s, Attributes %s".formatted(m.getAddress(), m.getAttributes().toString())).collect(Collectors.toList()));
+        /*
+         * if (this.registration.isEmpty()) { // No distributed setup -> This instance has to execute it // TODO return null; } var instances =
+         * discoveryClient.getInstances(registration.get().getServiceId()); var instancesWithMatchingProfile = instances.stream().filter(instance ->
+         * Arrays.asList(instance.getMetadata().getOrDefault("profile", "").split(",")).contains(profile)) .toList(); log.info("Instances with profile {} are {}", profile,
+         * instancesWithMatchingProfile.stream().map(ServiceInstance::getInstanceId).collect(Collectors.toList())); var hazelcastInstancesWithMatchingProfile =
+         * hazelcastInstance.getCluster().getMembers().stream() .filter(member -> Arrays.asList(member.getAttributes().getOrDefault("profile",
+         * "").split(",")).contains(profile)).toList(); log.info("Hazelcast Instances with profile {} are {}", profile,
+         * hazelcastInstancesWithMatchingProfile.stream().map(Member::getAddress).collect(Collectors.toList())); log.info("Hazelcast members are {}",
+         * hazelcastInstance.getCluster().getMembers().stream() .map(m -> "Address: %s, Attributes %s".formatted(m.getAddress(),
+         * m.getAttributes().toString())).collect(Collectors.toList()));
+         */
 
         return hazelcastInstance.getExecutorService("test").submit(taskCallable, new ProfileMemberSelector(profile));
     }

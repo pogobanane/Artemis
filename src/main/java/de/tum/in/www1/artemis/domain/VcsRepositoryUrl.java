@@ -1,11 +1,12 @@
 package de.tum.in.www1.artemis.domain;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Objects;
 
 // TODO: we might want to rename this class to VcsRepositoryUri
-public class VcsRepositoryUrl {
+public class VcsRepositoryUrl implements Serializable {
 
     protected String username;
 
