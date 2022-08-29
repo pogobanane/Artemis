@@ -265,6 +265,8 @@ dependencies {
     implementation "org.commonmark:commonmark:0.19.0"
     implementation "de.tum.in.ase.athene:client:0.0.2"
 
+    implementation 'dev.failsafe:failsafe:3.2.4'
+
     annotationProcessor "org.hibernate:hibernate-jpamodelgen:${hibernate_version}"
     annotationProcessor ("org.glassfish.jaxb:jaxb-runtime:${jaxb_runtime_version}") {
         exclude group: "javax.ws.rs", module: "jsr311-api"

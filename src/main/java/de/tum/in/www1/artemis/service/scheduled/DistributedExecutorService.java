@@ -1,5 +1,6 @@
 package de.tum.in.www1.artemis.service.scheduled;
 
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -14,6 +15,9 @@ import org.springframework.stereotype.Service;
 import com.hazelcast.cluster.Member;
 import com.hazelcast.cluster.MemberSelector;
 import com.hazelcast.core.HazelcastInstance;
+
+import dev.failsafe.Failsafe;
+import dev.failsafe.RetryPolicy;
 
 @Service
 public class DistributedExecutorService {
@@ -45,7 +49,11 @@ public class DistributedExecutorService {
          * m.getAttributes().toString())).collect(Collectors.toList()));
          */
 
-        return hazelcastInstance.getExecutorService("test").submit(taskCallable, new ProfileMemberSelector(profile));
+        RetryPolicy<Object> retryPolicy = RetryPolicy.builder().handle(Exception.class).withBackoff(1, 30, ChronoUnit.SECONDS)
+                .onFailedAttempt(e -> log.error("Connection attempt failed", e.getLastException())).onRetry(e -> log.warn("Failure #{}. Retrying.", e.getAttemptCount()))
+                .onRetriesExceeded(e -> log.warn("Failed to connect. Max retries exceeded.")).build();
+
+        return Failsafe.with(retryPolicy).getAsync(() -> hazelcastInstance.getExecutorService("test").submit(taskCallable, new ProfileMemberSelector(profile)).get());
     }
 
     static class ProfileMemberSelector implements MemberSelector {
