@@ -6,10 +6,13 @@ import java.util.concurrent.Callable;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.hazelcast.spring.context.SpringAware;
+
 import de.tum.in.www1.artemis.domain.ProgrammingExercise;
 import de.tum.in.www1.artemis.service.archival.ArchivalReportEntry;
 import de.tum.in.www1.artemis.service.programming.ProgrammingExerciseExportService;
 
+@SpringAware
 public class ExportProgrammingExerciseRepositoriesCallable implements Callable<Path>, java.io.Serializable {
 
     private transient ProgrammingExerciseExportService programmingExerciseExportService;

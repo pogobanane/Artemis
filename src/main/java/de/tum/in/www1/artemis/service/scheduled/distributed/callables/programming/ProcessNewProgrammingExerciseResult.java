@@ -8,10 +8,13 @@ import javax.validation.constraints.NotNull;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.hazelcast.spring.context.SpringAware;
+
 import de.tum.in.www1.artemis.domain.Result;
 import de.tum.in.www1.artemis.domain.participation.ProgrammingExerciseParticipation;
 import de.tum.in.www1.artemis.service.programming.ProgrammingExerciseGradingService;
 
+@SpringAware
 public class ProcessNewProgrammingExerciseResult implements Callable<Optional<Result>>, java.io.Serializable {
 
     private transient ProgrammingExerciseGradingService programmingExerciseGradingService;
