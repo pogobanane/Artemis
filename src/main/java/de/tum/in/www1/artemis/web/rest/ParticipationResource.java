@@ -107,12 +107,11 @@ public class ParticipationResource {
     private final QuizScheduleService quizScheduleService;
 
     private final SubmittedAnswerRepository submittedAnswerRepository;
-    
+
     private final DistributedExecutorService distributedExecutorService;
 
-    public ParticipationResource(ParticipationService participationService, ProgrammingExerciseParticipationService programmingExerciseParticipationService,
-            CourseRepository courseRepository, QuizExerciseRepository quizExerciseRepository, ExerciseRepository exerciseRepository,
-            ProgrammingExerciseRepository programmingExerciseRepository, AuthorizationCheckService authCheckService,
+    public ParticipationResource(ParticipationService participationService, CourseRepository courseRepository, QuizExerciseRepository quizExerciseRepository,
+            ExerciseRepository exerciseRepository, ProgrammingExerciseRepository programmingExerciseRepository, AuthorizationCheckService authCheckService,
             Optional<ContinuousIntegrationService> continuousIntegrationService, UserRepository userRepository, StudentParticipationRepository studentParticipationRepository,
             AuditEventRepository auditEventRepository, GuidedTourConfiguration guidedTourConfiguration, TeamRepository teamRepository, FeatureToggleService featureToggleService,
             ProgrammingExerciseStudentParticipationRepository programmingExerciseStudentParticipationRepository, SubmissionRepository submissionRepository,
