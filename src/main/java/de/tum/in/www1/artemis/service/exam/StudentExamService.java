@@ -35,6 +35,7 @@ import de.tum.in.www1.artemis.service.ParticipationService;
 import de.tum.in.www1.artemis.service.SubmissionService;
 import de.tum.in.www1.artemis.service.SubmissionVersionService;
 import de.tum.in.www1.artemis.service.programming.ProgrammingExerciseParticipationService;
+import de.tum.in.www1.artemis.service.scheduled.DistributedExecutorService;
 import de.tum.in.www1.artemis.service.scheduled.ProgrammingExerciseScheduleService;
 import de.tum.in.www1.artemis.service.scheduled.distributed.callables.programming.FindStudentParticipationByExerciseAndStudentIdCallable;
 import de.tum.in.www1.artemis.service.scheduled.distributed.callables.programming.LockStudentRepositoryCallable;
