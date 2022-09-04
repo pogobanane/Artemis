@@ -34,8 +34,7 @@ import de.tum.in.www1.artemis.security.SecurityUtils;
 import de.tum.in.www1.artemis.service.ParticipationService;
 import de.tum.in.www1.artemis.service.SubmissionService;
 import de.tum.in.www1.artemis.service.SubmissionVersionService;
-import de.tum.in.www1.artemis.service.messaging.InstanceMessageSendService;
-import de.tum.in.www1.artemis.service.scheduled.DistributedExecutorService;
+import de.tum.in.www1.artemis.service.programming.ProgrammingExerciseParticipationService;
 import de.tum.in.www1.artemis.service.scheduled.ProgrammingExerciseScheduleService;
 import de.tum.in.www1.artemis.service.scheduled.distributed.callables.programming.FindStudentParticipationByExerciseAndStudentIdCallable;
 import de.tum.in.www1.artemis.service.scheduled.distributed.callables.programming.LockStudentRepositoryCallable;
@@ -51,8 +50,6 @@ import de.tum.in.www1.artemis.web.rest.errors.EntityNotFoundException;
 public class StudentExamService {
 
     private static final String EXAM_EXERCISE_START_STATUS_TOPIC = "/topic/exams/%s/exercise-start-status";
-
-    private static final String ENTITY_NAME = "studentExam";
 
     private final Logger log = LoggerFactory.getLogger(StudentExamService.class);
 
@@ -82,8 +79,6 @@ public class StudentExamService {
 
     private final ExamRepository examRepository;
 
-    private final InstanceMessageSendService instanceMessageSendService;
-
     private final CacheManager cacheManager;
 
     private final SimpMessageSendingOperations messagingTemplate;
@@ -92,9 +87,9 @@ public class StudentExamService {
 
     public StudentExamService(StudentExamRepository studentExamRepository, UserRepository userRepository, ParticipationService participationService,
             QuizSubmissionRepository quizSubmissionRepository, TextSubmissionRepository textSubmissionRepository, ModelingSubmissionRepository modelingSubmissionRepository,
-            SubmissionVersionService submissionVersionService, SubmissionService submissionService, ProgrammingSubmissionRepository programmingSubmissionRepository,
-            StudentParticipationRepository studentParticipationRepository, ExamQuizService examQuizService, ProgrammingExerciseRepository programmingExerciseRepository,
-            ExamRepository examRepository, InstanceMessageSendService instanceMessageSendService, CacheManager cacheManager, SimpMessageSendingOperations messagingTemplate,
+            SubmissionVersionService submissionVersionService, ProgrammingExerciseParticipationService programmingExerciseParticipationService, SubmissionService submissionService,
+            ProgrammingSubmissionRepository programmingSubmissionRepository, StudentParticipationRepository studentParticipationRepository, ExamQuizService examQuizService,
+            ProgrammingExerciseRepository programmingExerciseRepository, ExamRepository examRepository, CacheManager cacheManager, SimpMessageSendingOperations messagingTemplate,
             DistributedExecutorService distributedExecutorService) {
         this.participationService = participationService;
         this.studentExamRepository = studentExamRepository;
@@ -109,7 +104,6 @@ public class StudentExamService {
         this.submissionService = submissionService;
         this.programmingExerciseRepository = programmingExerciseRepository;
         this.examRepository = examRepository;
-        this.instanceMessageSendService = instanceMessageSendService;
         this.cacheManager = cacheManager;
         this.messagingTemplate = messagingTemplate;
         this.distributedExecutorService = distributedExecutorService;
