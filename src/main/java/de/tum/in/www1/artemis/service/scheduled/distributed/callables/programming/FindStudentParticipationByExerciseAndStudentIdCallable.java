@@ -4,10 +4,13 @@ import java.util.concurrent.Callable;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.hazelcast.spring.context.SpringAware;
+
 import de.tum.in.www1.artemis.domain.Exercise;
 import de.tum.in.www1.artemis.domain.participation.ProgrammingExerciseStudentParticipation;
 import de.tum.in.www1.artemis.service.programming.ProgrammingExerciseParticipationService;
 
+@SpringAware
 public class FindStudentParticipationByExerciseAndStudentIdCallable implements Callable<ProgrammingExerciseStudentParticipation>, java.io.Serializable {
 
     private transient ProgrammingExerciseParticipationService programmingExerciseParticipationService;
