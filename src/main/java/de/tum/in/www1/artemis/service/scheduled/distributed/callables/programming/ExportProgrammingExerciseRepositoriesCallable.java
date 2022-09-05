@@ -21,7 +21,7 @@ public class ExportProgrammingExerciseRepositoriesCallable implements Callable<P
 
     private final Boolean includingStudentRepos;
 
-    private final Path outputDir;
+    private final String outputDir;
 
     private final List<String> exportErrors;
 
@@ -31,14 +31,14 @@ public class ExportProgrammingExerciseRepositoriesCallable implements Callable<P
             List<ArchivalReportEntry> reportData) {
         this.programmingExercise = programmingExercise;
         this.includingStudentRepos = includingStudentRepos;
-        this.outputDir = outputDir;
+        this.outputDir = outputDir.toString();
         this.exportErrors = exportErrors;
         this.reportData = reportData;
     }
 
     @Override
     public Path call() {
-        return programmingExerciseExportService.exportProgrammingExerciseRepositories(programmingExercise, true, outputDir, exportErrors, reportData);
+        return programmingExerciseExportService.exportProgrammingExerciseRepositories(programmingExercise, true, Path.of(outputDir), exportErrors, reportData);
     }
 
     @Autowired
