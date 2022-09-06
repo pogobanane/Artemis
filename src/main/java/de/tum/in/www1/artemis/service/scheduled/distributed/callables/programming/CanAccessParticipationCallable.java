@@ -6,6 +6,8 @@ import javax.validation.constraints.NotNull;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.hazelcast.spring.context.SpringAware;
 
@@ -17,14 +19,18 @@ public class CanAccessParticipationCallable implements Callable<Boolean>, java.i
 
     private transient ProgrammingExerciseParticipationService programmingExerciseParticipationService;
 
+    private final SecurityContext securityContext;
+
     private final ProgrammingExerciseParticipation participation;
 
-    public CanAccessParticipationCallable(@NotNull ProgrammingExerciseParticipation participation) {
+    public CanAccessParticipationCallable(SecurityContext securityContext, @NotNull ProgrammingExerciseParticipation participation) {
+        this.securityContext = securityContext;
         this.participation = participation;
     }
 
     @Override
     public Boolean call() throws GitAPIException {
+        SecurityContextHolder.setContext(securityContext);
         return this.programmingExerciseParticipationService.canAccessParticipation(participation);
     }
 

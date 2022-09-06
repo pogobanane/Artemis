@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import de.tum.in.www1.artemis.config.Constants;
@@ -360,8 +361,8 @@ public class ResultResource {
         Participation participation = participationRepository.findByIdElseThrow(participationId);
 
         if (participation instanceof StudentParticipation && !authCheckService.canAccessParticipation((StudentParticipation) participation)
-                || participation instanceof ProgrammingExerciseParticipation && !distributedExecutorService
-                        .executeTaskOnMemberWithProfile(new CanAccessParticipationCallable((ProgrammingExerciseParticipation) participation), "scheduling")) {
+                || participation instanceof ProgrammingExerciseParticipation && !distributedExecutorService.executeTaskOnMemberWithProfile(
+                        new CanAccessParticipationCallable(SecurityContextHolder.getContext(), (ProgrammingExerciseParticipation) participation), "scheduling")) {
             throw new AccessForbiddenException();
         }
 
@@ -395,7 +396,8 @@ public class ResultResource {
             }
         }
         else if (participation instanceof ProgrammingExerciseParticipation) {
-            if (!distributedExecutorService.executeTaskOnMemberWithProfile(new CanAccessParticipationCallable((ProgrammingExerciseParticipation) participation), "scheduling")) {
+            if (!distributedExecutorService.executeTaskOnMemberWithProfile(
+                    new CanAccessParticipationCallable(SecurityContextHolder.getContext(), (ProgrammingExerciseParticipation) participation), "scheduling")) {
                 throw new AccessForbiddenException("participation", participationId);
             }
         }
