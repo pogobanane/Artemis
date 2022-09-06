@@ -8,6 +8,7 @@ import com.hazelcast.spring.context.SpringAware;
 
 import de.tum.in.www1.artemis.domain.Exercise;
 import de.tum.in.www1.artemis.domain.participation.ProgrammingExerciseStudentParticipation;
+import de.tum.in.www1.artemis.security.SecurityUtils;
 import de.tum.in.www1.artemis.service.programming.ProgrammingExerciseParticipationService;
 
 @SpringAware
@@ -26,6 +27,7 @@ public class FindStudentParticipationByExerciseAndStudentIdCallable implements C
 
     @Override
     public ProgrammingExerciseStudentParticipation call() {
+        SecurityUtils.setAuthorizationObject();
         return programmingExerciseParticipationService.findStudentParticipationByExerciseAndStudentId(exercise, username);
     }
 
