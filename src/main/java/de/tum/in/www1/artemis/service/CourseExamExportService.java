@@ -9,7 +9,6 @@ import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -366,16 +365,8 @@ public class CourseExamExportService {
             // Export programming exercise
             if (exercise instanceof ProgrammingExercise programmingExercise) {
                 // Download the repositories' template, solution, tests and students' repositories
-                try {
-                    exportedExercises.add(distributedExecutorService.executeTaskOnMemberWithProfile(
-                            new ExportProgrammingExerciseRepositoriesCallable(programmingExercise, true, outputDir, exportErrors, reportData), "scheduling").get());
-                }
-                catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                catch (ExecutionException e) {
-                    e.printStackTrace();
-                }
+                exportedExercises.add(distributedExecutorService.executeTaskOnMemberWithProfile(
+                        new ExportProgrammingExerciseRepositoriesCallable(programmingExercise, true, outputDir, exportErrors, reportData), "scheduling"));
                 continue;
             }
 

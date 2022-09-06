@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.stereotype.Service;
@@ -144,17 +143,8 @@ public class ExamImportService {
                 if (exercise.getExerciseType() == ExerciseType.PROGRAMMING) {
                     // Method to check, if the project already exists.
                     boolean invalidShortName = false;
-                    try {
-                        invalidShortName = distributedExecutorService
-                                .executeTaskOnMemberWithProfile(new PreCheckProjectExistsOnVCSOrCICallable((ProgrammingExercise) exercise, targetCourseShortName), "scheduling")
-                                .get();
-                    }
-                    catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    catch (ExecutionException e) {
-                        e.printStackTrace();
-                    }
+                    invalidShortName = distributedExecutorService
+                            .executeTaskOnMemberWithProfile(new PreCheckProjectExistsOnVCSOrCICallable((ProgrammingExercise) exercise, targetCourseShortName), "scheduling");
                     if (invalidShortName) {
                         // If the project already exists and thus the short name isn't valid, it is removed
                         exercise.setShortName("");
@@ -255,16 +245,8 @@ public class ExamImportService {
                     originalProgrammingExercise.setTasks(new ArrayList<>(templateTasks));
 
                     prepareProgrammingExerciseForExamImport((ProgrammingExercise) exerciseToCopy);
-                    try {
-                        exerciseCopied = distributedExecutorService.executeTaskOnMemberWithProfile(
-                                new ImportProgrammingExerciseCallable(originalProgrammingExercise, (ProgrammingExercise) exerciseToCopy, false, false), "scheduling").get();
-                    }
-                    catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    catch (ExecutionException e) {
-                        e.printStackTrace();
-                    }
+                    exerciseCopied = distributedExecutorService.executeTaskOnMemberWithProfile(
+                            new ImportProgrammingExerciseCallable(originalProgrammingExercise, (ProgrammingExercise) exerciseToCopy, false, false), "scheduling");
                 }
 
                 case FILE_UPLOAD -> {

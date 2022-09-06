@@ -6,7 +6,6 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 
 import javax.annotation.Nullable;
 
@@ -175,15 +174,7 @@ public class ResultResource {
 
         // Process the new result from the build result.
         Optional<Result> optResult = Optional.empty();
-        try {
-            optResult = distributedExecutorService.executeTaskOnMemberWithProfile(new ProcessNewProgrammingExerciseResult(participation, requestBody), "scheduling").get();
-        }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        catch (ExecutionException e) {
-            e.printStackTrace();
-        }
+        optResult = distributedExecutorService.executeTaskOnMemberWithProfile(new ProcessNewProgrammingExerciseResult(participation, requestBody), "scheduling");
 
         // Only notify the user about the new result if the result was created successfully.
         if (optResult.isPresent()) {
@@ -368,18 +359,10 @@ public class ResultResource {
         log.debug("REST request to get latest result for participation : {}", participationId);
         Participation participation = participationRepository.findByIdElseThrow(participationId);
 
-        try {
-            if (participation instanceof StudentParticipation && !authCheckService.canAccessParticipation((StudentParticipation) participation)
-                    || participation instanceof ProgrammingExerciseParticipation && !distributedExecutorService
-                            .executeTaskOnMemberWithProfile(new CanAccessParticipationCallable((ProgrammingExerciseParticipation) participation), "scheduling").get()) {
-                throw new AccessForbiddenException();
-            }
-        }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        catch (ExecutionException e) {
-            e.printStackTrace();
+        if (participation instanceof StudentParticipation && !authCheckService.canAccessParticipation((StudentParticipation) participation)
+                || participation instanceof ProgrammingExerciseParticipation && !distributedExecutorService
+                        .executeTaskOnMemberWithProfile(new CanAccessParticipationCallable((ProgrammingExerciseParticipation) participation), "scheduling")) {
+            throw new AccessForbiddenException();
         }
 
         Result result = resultRepository.findFirstWithFeedbacksByParticipationIdOrderByCompletionDateDescElseThrow(participation.getId());
@@ -412,17 +395,8 @@ public class ResultResource {
             }
         }
         else if (participation instanceof ProgrammingExerciseParticipation) {
-            try {
-                if (!distributedExecutorService.executeTaskOnMemberWithProfile(new CanAccessParticipationCallable((ProgrammingExerciseParticipation) participation), "scheduling")
-                        .get()) {
-                    throw new AccessForbiddenException("participation", participationId);
-                }
-            }
-            catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            catch (ExecutionException e) {
-                e.printStackTrace();
+            if (!distributedExecutorService.executeTaskOnMemberWithProfile(new CanAccessParticipationCallable((ProgrammingExerciseParticipation) participation), "scheduling")) {
+                throw new AccessForbiddenException("participation", participationId);
             }
         }
         else {

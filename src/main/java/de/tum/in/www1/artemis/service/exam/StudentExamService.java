@@ -368,9 +368,8 @@ public class StudentExamService {
                     try {
                         log.debug("lock student repositories for {}", currentUser);
                         ProgrammingExerciseStudentParticipation participation = distributedExecutorService
-                                .executeTaskOnMemberWithProfile(new FindStudentParticipationByExerciseAndStudentIdCallable(exercise, currentUser.getLogin()), "scheduling").get();
-                        distributedExecutorService.executeTaskOnMemberWithProfile(new LockStudentRepositoryCallable((ProgrammingExercise) exercise, participation), "scheduling")
-                                .get();
+                                .executeTaskOnMemberWithProfile(new FindStudentParticipationByExerciseAndStudentIdCallable(exercise, currentUser.getLogin()), "scheduling");
+                        distributedExecutorService.executeTaskOnMemberWithProfile(new LockStudentRepositoryCallable((ProgrammingExercise) exercise, participation), "scheduling");
                     }
                     catch (Exception e) {
                         log.error("Locking programming exercise {} submitted manually by {} failed", exercise.getId(), currentUser.getLogin(), e);
@@ -481,7 +480,7 @@ public class StudentExamService {
                             || ProgrammingExerciseScheduleService.getExamProgrammingExerciseUnlockDate(programmingExercise).isBefore(ZonedDateTime.now()))) {
                         // Note: only unlock the programming exercise student repository for the affected user (Important: Do NOT invoke unlockAll)
                         distributedExecutorService.executeTaskOnMemberWithProfile(
-                                new UnlockStudentRepositoryCallable(programmingExercise, (ProgrammingExerciseStudentParticipation) participation), "scheduling").get();
+                                new UnlockStudentRepositoryCallable(programmingExercise, (ProgrammingExerciseStudentParticipation) participation), "scheduling");
                     }
                     log.info("SUCCESS: Start exercise for student exam {} and exercise {} and student {}", studentExam.getId(), exercise.getId(), student.getId());
                 }

@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
@@ -952,11 +951,11 @@ public class ExamService {
                         .findByIdWithTemplateAndSolutionParticipationElseThrow(exercise.getId());
                 distributedExecutorService.executeTaskOnMemberWithProfile(
                         new CombineAllCommitsOfRepositoryIntoOneCallable(programmingExerciseWithTemplateParticipation.getTemplateParticipation().getVcsRepositoryUrl()),
-                        "scheduling").get();
+                        "scheduling");
 
                 log.debug("Finished combination of template commits for programming exercise {}", programmingExerciseWithTemplateParticipation);
             }
-            catch (InterruptedException | ExecutionException e) {
+            catch (Exception e) {
                 log.error("An error occurred when trying to combine template commits for exam {}.", exam.getId(), e);
             }
         }));

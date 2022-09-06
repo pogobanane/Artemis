@@ -7,7 +7,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.Principal;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -210,18 +209,10 @@ public class ParticipationResource {
         log.debug("REST request to resume Exercise : {}", exerciseId);
         var programmingExercise = programmingExerciseRepository.findByIdWithTemplateAndSolutionParticipationElseThrow(exerciseId);
         ProgrammingExerciseStudentParticipation participation = null;
-        try {
-            participation = distributedExecutorService
-                    .executeTaskOnMemberWithProfile(new FindStudentParticipationByExerciseAndStudentIdCallable(programmingExercise, principal.getName()), "scheduling").get();
-            // explicitly set the exercise here to make sure that the templateParticipation and solutionParticipation are initialized in case they should be used again
-            participation.setProgrammingExercise(programmingExercise);
-        }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        catch (ExecutionException e) {
-            e.printStackTrace();
-        }
+        participation = distributedExecutorService
+                .executeTaskOnMemberWithProfile(new FindStudentParticipationByExerciseAndStudentIdCallable(programmingExercise, principal.getName()), "scheduling");
+        // explicitly set the exercise here to make sure that the templateParticipation and solutionParticipation are initialized in case they should be used again
+        participation.setProgrammingExercise(programmingExercise);
 
         User user = userRepository.getUserWithGroupsAndAuthorities();
         checkAccessPermissionOwner(participation, user);
@@ -338,29 +329,13 @@ public class ParticipationResource {
 
             // when changing the individual due date after the regular due date, the repository might already have been locked
             updatedParticipations.stream().filter(exerciseDateService::isBeforeDueDate).forEach(participation -> {
-                try {
-                    distributedExecutorService.executeTaskOnMemberWithProfile(
-                            new UnlockStudentRepositoryCallable(programmingExercise, (ProgrammingExerciseStudentParticipation) participation), "scheduling").get();
-                }
-                catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                catch (ExecutionException e) {
-                    e.printStackTrace();
-                }
+                distributedExecutorService.executeTaskOnMemberWithProfile(
+                        new UnlockStudentRepositoryCallable(programmingExercise, (ProgrammingExerciseStudentParticipation) participation), "scheduling");
             });
             // the new due date may be in the past, students should no longer be able to make any changes
             updatedParticipations.stream().filter(exerciseDateService::isAfterDueDate).forEach(participation -> {
-                try {
-                    distributedExecutorService.executeTaskOnMemberWithProfile(
-                            new LockStudentRepositoryCallable(programmingExercise, (ProgrammingExerciseStudentParticipation) participation), "scheduling").get();
-                }
-                catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                catch (ExecutionException e) {
-                    e.printStackTrace();
-                }
+                distributedExecutorService.executeTaskOnMemberWithProfile(
+                        new LockStudentRepositoryCallable(programmingExercise, (ProgrammingExerciseStudentParticipation) participation), "scheduling");
             });
         }
 

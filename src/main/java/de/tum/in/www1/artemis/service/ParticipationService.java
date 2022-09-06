@@ -4,7 +4,6 @@ import static de.tum.in.www1.artemis.domain.enumeration.InitializationState.*;
 
 import java.time.ZonedDateTime;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -552,15 +551,7 @@ public class ParticipationService {
         // ignore participations without repository URL
         if (participation.getRepositoryUrl() != null) {
             versionControlService.get().deleteRepository(participation.getVcsRepositoryUrl());
-            try {
-                distributedExecutorService.executeTaskOnMemberWithProfile(new DeleteLocalRepositoryCallable(participation.getVcsRepositoryUrl()), "scheduling").get();
-            }
-            catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            catch (ExecutionException e) {
-                e.printStackTrace();
-            }
+            distributedExecutorService.executeTaskOnMemberWithProfile(new DeleteLocalRepositoryCallable(participation.getVcsRepositoryUrl()), "scheduling");
             participation.setRepositoryUrl(null);
             participation.setInitializationState(InitializationState.FINISHED);
             programmingExerciseStudentParticipationRepository.saveAndFlush(participation);
@@ -633,16 +624,8 @@ public class ParticipationService {
                     log.error("Could not delete repository: {}", ex.getMessage());
                 }
             }
-            try {
-                // delete local repository cache
-                distributedExecutorService.executeTaskOnMemberWithProfile(new DeleteLocalRepositoryCallable(repositoryUrl), "scheduling").get();
-            }
-            catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            catch (ExecutionException e) {
-                e.printStackTrace();
-            }
+            // delete local repository cache
+            distributedExecutorService.executeTaskOnMemberWithProfile(new DeleteLocalRepositoryCallable(repositoryUrl), "scheduling");
         }
 
         complaintResponseRepository.deleteByComplaint_Result_Participation_Id(participationId);

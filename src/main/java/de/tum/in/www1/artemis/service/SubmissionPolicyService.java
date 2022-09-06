@@ -1,7 +1,5 @@
 package de.tum.in.www1.artemis.service;
 
-import java.util.concurrent.ExecutionException;
-
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.stereotype.Service;
 
@@ -242,16 +240,8 @@ public class SubmissionPolicyService {
     private void lockParticipationsWhenSubmissionsGreaterLimit(ProgrammingExercise exercise, int submissionLimit) {
         for (StudentParticipation studentParticipation : exercise.getStudentParticipations()) {
             if (getParticipationSubmissionCount(studentParticipation) >= submissionLimit) {
-                try {
-                    distributedExecutorService.executeTaskOnMemberWithProfile(
-                            new LockStudentRepositoryCallable(exercise, (ProgrammingExerciseStudentParticipation) studentParticipation), "scheduling").get();
-                }
-                catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                catch (ExecutionException e) {
-                    e.printStackTrace();
-                }
+                distributedExecutorService
+                        .executeTaskOnMemberWithProfile(new LockStudentRepositoryCallable(exercise, (ProgrammingExerciseStudentParticipation) studentParticipation), "scheduling");
             }
         }
     }
@@ -259,16 +249,8 @@ public class SubmissionPolicyService {
     private void unlockParticipationsWhenSubmissionsGreaterLimit(ProgrammingExercise exercise, int submissionLimit) {
         for (StudentParticipation studentParticipation : exercise.getStudentParticipations()) {
             if (getParticipationSubmissionCount(studentParticipation) >= submissionLimit) {
-                try {
-                    distributedExecutorService.executeTaskOnMemberWithProfile(
-                            new UnlockStudentRepositoryCallable(exercise, (ProgrammingExerciseStudentParticipation) studentParticipation), "scheduling").get();
-                }
-                catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                catch (ExecutionException e) {
-                    e.printStackTrace();
-                }
+                distributedExecutorService.executeTaskOnMemberWithProfile(
+                        new UnlockStudentRepositoryCallable(exercise, (ProgrammingExerciseStudentParticipation) studentParticipation), "scheduling");
             }
         }
     }
@@ -316,16 +298,8 @@ public class SubmissionPolicyService {
         if (submissions == allowedSubmissions) {
             ProgrammingExercise programmingExercise = programmingExerciseRepository
                     .findByIdWithStudentParticipationsAndLegalSubmissionsElseThrow(lockRepositoryPolicy.getProgrammingExercise().getId());
-            try {
-                distributedExecutorService.executeTaskOnMemberWithProfile(
-                        new LockStudentRepositoryCallable(programmingExercise, (ProgrammingExerciseStudentParticipation) result.getParticipation()), "scheduling").get();
-            }
-            catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            catch (ExecutionException e) {
-                e.printStackTrace();
-            }
+            distributedExecutorService.executeTaskOnMemberWithProfile(
+                    new LockStudentRepositoryCallable(programmingExercise, (ProgrammingExerciseStudentParticipation) result.getParticipation()), "scheduling");
         }
         // This is the fallback behavior in case the VCS does not lock the repository for whatever reason when the
         // submission limit is reached.

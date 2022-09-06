@@ -11,7 +11,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.IsoFields;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -217,16 +216,7 @@ public class CourseService {
             throw new AccessForbiddenException();
         }
         course.setExercises(exerciseService.findAllForCourse(course, user));
-        try {
-            course.setLectures(
-                    distributedExecutorService.executeTaskOnMemberWithProfile(new FilterActiveAttachmentsLecturesUserCallable(course.getLectures(), user), "scheduling").get());
-        }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        catch (ExecutionException e) {
-            e.printStackTrace();
-        }
+        course.setLectures(distributedExecutorService.executeTaskOnMemberWithProfile(new FilterActiveAttachmentsLecturesUserCallable(course.getLectures(), user), "scheduling"));
         course.setLearningGoals(learningGoalService.findAllForCourse(course, user));
         course.setPrerequisites(learningGoalService.findAllPrerequisitesForCourse(course, user));
         if (authCheckService.isOnlyStudentInCourse(course, user)) {
@@ -259,16 +249,8 @@ public class CourseService {
                 .filter(course -> course.getEndDate() == null || course.getEndDate().isAfter(ZonedDateTime.now())).filter(course -> isCourseVisibleForUser(user, course))
                 .peek(course -> {
                     course.setExercises(exerciseService.findAllForCourse(course, user));
-                    try {
-                        course.setLectures(distributedExecutorService
-                                .executeTaskOnMemberWithProfile(new FilterActiveAttachmentsLecturesUserCallable(course.getLectures(), user), "scheduling").get());
-                    }
-                    catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    catch (ExecutionException e) {
-                        e.printStackTrace();
-                    }
+                    course.setLectures(
+                            distributedExecutorService.executeTaskOnMemberWithProfile(new FilterActiveAttachmentsLecturesUserCallable(course.getLectures(), user), "scheduling"));
                     if (authCheckService.isOnlyStudentInCourse(course, user)) {
                         course.setExams(examRepository.filterVisibleExams(course.getExams()));
                     }
@@ -353,15 +335,7 @@ public class CourseService {
 
     private void deleteLecturesOfCourse(Course course) {
         for (Lecture lecture : course.getLectures()) {
-            try {
-                distributedExecutorService.executeTaskOnMemberWithProfile(new DeleteLectureCallable(lecture), "scheduling").get();
-            }
-            catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            catch (ExecutionException e) {
-                e.printStackTrace();
-            }
+            distributedExecutorService.executeTaskOnMemberWithProfile(new DeleteLectureCallable(lecture), "scheduling");
         }
     }
 

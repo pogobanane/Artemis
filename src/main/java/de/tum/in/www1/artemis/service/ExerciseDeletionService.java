@@ -2,7 +2,6 @@ package de.tum.in.www1.artemis.service;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -179,15 +178,7 @@ public class ExerciseDeletionService {
         // Programming exercises have some special stuff that needs to be cleaned up (solution/template participation, build plans, etc.).
         if (exercise instanceof ProgrammingExercise) {
             // TODO: delete all schedules related to this programming exercise
-            try {
-                distributedExecutorService.executeTaskOnMemberWithProfile(new DeleteProgrammingExerciseCallable(exercise.getId(), deleteBaseReposBuildPlans), "scheduling").get();
-            }
-            catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            catch (ExecutionException e) {
-                e.printStackTrace();
-            }
+            distributedExecutorService.executeTaskOnMemberWithProfile(new DeleteProgrammingExerciseCallable(exercise.getId(), deleteBaseReposBuildPlans), "scheduling");
         }
         else {
             // delete text assessment knowledge if exercise is of type TextExercise and if no other exercise uses same knowledge

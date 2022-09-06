@@ -4,7 +4,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +17,7 @@ import com.hazelcast.cluster.MemberSelector;
 import com.hazelcast.core.HazelcastInstance;
 
 import dev.failsafe.Failsafe;
+import dev.failsafe.Fallback;
 import dev.failsafe.RetryPolicy;
 
 @Service
@@ -36,7 +37,7 @@ public class DistributedExecutorService {
         this.registration = registration;
     }
 
-    public <T> Future<T> executeTaskOnMemberWithProfile(Callable<T> taskCallable, String profile) {
+    public <T> T executeTaskOnMemberWithProfile(Callable<T> taskCallable, String profile) {
         /*
          * if (this.registration.isEmpty()) { // No distributed setup -> This instance has to execute it // TODO return null; } var instances =
          * discoveryClient.getInstances(registration.get().getServiceId()); var instancesWithMatchingProfile = instances.stream().filter(instance ->
@@ -49,11 +50,27 @@ public class DistributedExecutorService {
          * m.getAttributes().toString())).collect(Collectors.toList()));
          */
 
-        RetryPolicy<Object> retryPolicy = RetryPolicy.builder().handle(Exception.class).withBackoff(1, 30, ChronoUnit.SECONDS)
+        RetryPolicy<Object> retryPolicy = RetryPolicy.builder().handle(ExecutionException.class).withBackoff(1, 30, ChronoUnit.SECONDS)
                 .onFailedAttempt(e -> log.error("Connection attempt failed", e.getLastException())).onRetry(e -> log.warn("Failure #{}. Retrying.", e.getAttemptCount()))
                 .onRetriesExceeded(e -> log.warn("Failed to connect. Max retries exceeded.")).build();
 
-        return Failsafe.with(retryPolicy).getAsync(() -> hazelcastInstance.getExecutorService("test").submit(taskCallable, new ProfileMemberSelector(profile)).get());
+        Fallback<Object> fallbackException = Fallback.ofException(executionAttemptedEvent -> {
+            System.err.println("Fallback called");
+            throw executionAttemptedEvent.getLastException().getCause();
+        });
+
+        try {
+            return Failsafe.with(fallbackException).compose(retryPolicy)
+                    .getAsync(() -> hazelcastInstance.getExecutorService("test").submit(taskCallable, new ProfileMemberSelector(profile)).get()).get();
+        }
+        catch (ExecutionException e) {
+            log.error("Error during execution of task", e);
+            throw new RuntimeException(e.getCause());
+        }
+        catch (InterruptedException e) {
+            log.error("Interrupted during execution of task", e);
+            throw new RuntimeException(e.getCause());
+        }
     }
 
     static class ProfileMemberSelector implements MemberSelector {
