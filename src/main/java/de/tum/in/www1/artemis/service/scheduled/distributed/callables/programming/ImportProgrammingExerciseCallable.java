@@ -3,6 +3,8 @@ package de.tum.in.www1.artemis.service.scheduled.distributed.callables.programmi
 import java.util.concurrent.Callable;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.hazelcast.spring.context.SpringAware;
 
@@ -14,6 +16,8 @@ public class ImportProgrammingExerciseCallable implements Callable<ProgrammingEx
 
     private transient ProgrammingExerciseImportService programmingExerciseImportService;
 
+    private final SecurityContext securityContext;
+
     private final ProgrammingExercise originalProgrammingExercise;
 
     private final ProgrammingExercise newExercise;
@@ -22,8 +26,10 @@ public class ImportProgrammingExerciseCallable implements Callable<ProgrammingEx
 
     private final Boolean recreateBuildPlans;
 
-    public ImportProgrammingExerciseCallable(ProgrammingExercise originalProgrammingExercise, ProgrammingExercise newExercise, boolean updateTemplate, boolean recreateBuildPlans) {
+    public ImportProgrammingExerciseCallable(ProgrammingExercise originalProgrammingExercise, SecurityContext securityContext, ProgrammingExercise newExercise,
+            boolean updateTemplate, boolean recreateBuildPlans) {
         this.originalProgrammingExercise = originalProgrammingExercise;
+        this.securityContext = securityContext;
         this.newExercise = newExercise;
         this.updateTemplate = updateTemplate;
         this.recreateBuildPlans = recreateBuildPlans;
@@ -31,6 +37,7 @@ public class ImportProgrammingExerciseCallable implements Callable<ProgrammingEx
 
     @Override
     public ProgrammingExercise call() {
+        SecurityContextHolder.setContext(securityContext);
         return programmingExerciseImportService.importProgrammingExercise(originalProgrammingExercise, newExercise, updateTemplate, recreateBuildPlans);
     }
 

@@ -74,7 +74,7 @@ public class ProgrammingExercise extends Exercise {
     private Boolean sequentialTestRuns;
 
     @Column(name = "show_test_names_to_students", table = "programming_exercise_details")
-    private boolean showTestNamesToStudents;
+    private Boolean showTestNamesToStudents;
 
     @Nullable
     @Column(name = "build_and_test_student_submissions_after_due_date", table = "programming_exercise_details")
@@ -125,7 +125,7 @@ public class ProgrammingExercise extends Exercise {
     private Set<ExerciseHint> exerciseHints = new HashSet<>();
 
     @Column(name = "testwise_coverage_enabled", table = "programming_exercise_details")
-    private boolean testwiseCoverageEnabled;
+    private Boolean testwiseCoverageEnabled;
 
     @Column(name = "branch", table = "programming_exercise_details")
     private String branch;

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import de.tum.in.www1.artemis.domain.*;
@@ -245,8 +246,8 @@ public class ExamImportService {
                     originalProgrammingExercise.setTasks(new ArrayList<>(templateTasks));
 
                     prepareProgrammingExerciseForExamImport((ProgrammingExercise) exerciseToCopy);
-                    exerciseCopied = distributedExecutorService.executeTaskOnMemberWithProfile(
-                            new ImportProgrammingExerciseCallable(originalProgrammingExercise, (ProgrammingExercise) exerciseToCopy, false, false), "scheduling");
+                    exerciseCopied = distributedExecutorService.executeTaskOnMemberWithProfile(new ImportProgrammingExerciseCallable(originalProgrammingExercise,
+                            SecurityContextHolder.getContext(), (ProgrammingExercise) exerciseToCopy, false, false), "scheduling");
                 }
 
                 case FILE_UPLOAD -> {
