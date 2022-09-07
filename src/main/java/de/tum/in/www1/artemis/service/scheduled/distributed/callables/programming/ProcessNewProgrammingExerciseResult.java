@@ -27,11 +27,13 @@ public class ProcessNewProgrammingExerciseResult implements Callable<Optional<Re
     public ProcessNewProgrammingExerciseResult(@NotNull ProgrammingExerciseParticipation participation, @NotNull Object requestBody) {
         this.participation = participation;
         this.requestBody = requestBody;
+        System.err.println("Requestbody " + requestBody);
     }
 
     @Override
     public Optional<Result> call() throws GitAPIException {
         SecurityUtils.setAuthorizationObject();
+        System.err.println("Requestbody " + requestBody);
         return this.programmingExerciseGradingService.processNewProgrammingExerciseResult(participation, requestBody);
     }
 
