@@ -27,10 +27,6 @@ public class FilterActiveAttachmentsLecturesUserCallable implements Callable<Set
 
     @Override
     public Set<Lecture> call() throws Exception {
-        // TODO: Remove this
-        System.err.println("Function called - going to sleep now");
-        Thread.sleep(10000);
-        System.err.println("Sleep is over");
         return lectureService.filterActiveAttachments(lectures, user);
     }
 
