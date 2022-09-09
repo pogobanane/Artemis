@@ -11,8 +11,10 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Set;
 
+import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
 import org.gitlab4j.api.GitLabApiException;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -36,11 +38,13 @@ import de.tum.in.www1.artemis.service.connectors.bamboo.dto.BambooBuildResultDTO
 import de.tum.in.www1.artemis.service.connectors.gitlab.GitLabService;
 import de.tum.in.www1.artemis.service.connectors.jenkins.JenkinsService;
 import de.tum.in.www1.artemis.util.AbstractArtemisIntegrationTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 @SpringBootTest(properties = { "artemis.athene.token-validity-in-seconds=10800",
         "artemis.athene.base64-secret=YWVuaXF1YWRpNWNlaXJpNmFlbTZkb283dXphaVF1b29oM3J1MWNoYWlyNHRoZWUzb2huZ2FpM211bGVlM0VpcAo=" })
 @AutoConfigureMockMvc
-@AutoConfigureTestDatabase
+@RunWith(SpringRunner.class)
+@AutoConfigureEmbeddedDatabase(type = AutoConfigureEmbeddedDatabase.DatabaseType.POSTGRES)
 // NOTE: we use a common set of active profiles to reduce the number of application launches during testing. This significantly saves time and memory!
 @ActiveProfiles({ SPRING_PROFILE_TEST, "artemis", "gitlab", "jenkins", "athene", "scheduling" })
 @TestPropertySource(properties = { "info.guided-tour.course-group-tutors=artemis-artemistutorial-tutors", "info.guided-tour.course-group-students=artemis-artemistutorial-students",

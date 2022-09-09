@@ -61,10 +61,20 @@ public class DatabaseCleanupService implements InitializingBean {
     @Transactional // ok
     public void clearDatabase() {
         entityManager.flush();
-        entityManager.createNativeQuery("SET REFERENTIAL_INTEGRITY FALSE").executeUpdate();
-        tableNames.forEach(tableName -> entityManager.createNativeQuery("TRUNCATE TABLE " + tableName).executeUpdate());
-        joinTableNames.forEach(joinTableName -> entityManager.createNativeQuery("TRUNCATE TABLE " + joinTableName).executeUpdate());
-        entityManager.createNativeQuery("SET REFERENTIAL_INTEGRITY TRUE").executeUpdate();
+        /*tableNames.forEach(tableName -> entityManager.createNativeQuery("BEGIN;\n" +
+            "ALTER TABLE " + tableName + " DISABLE TRIGGER ALL;\n" +
+            "TRUNCATE TABLE " + tableName + ";\n" +
+            "ALTER TABLE " + tableName + " ENABLE TRIGGER ALL;\n" +
+            "COMMIT;").executeUpdate());*/
+        // entityManager.createNativeQuery("SET REFERENTIAL_INTEGRITY FALSE").executeUpdate();
+        tableNames.forEach(tableName -> entityManager.createNativeQuery("TRUNCATE TABLE " + tableName + " CASCADE").executeUpdate());
+        joinTableNames.forEach(joinTableName -> entityManager.createNativeQuery("TRUNCATE TABLE " + joinTableName + " CASCADE").executeUpdate());
+        /*joinTableNames.forEach(tableName -> entityManager.createNativeQuery("BEGIN;\n" +
+            "ALTER TABLE " + tableName + " DISABLE TRIGGER ALL;\n" +
+            "TRUNCATE TABLE " + tableName + ";\n" +
+            "ALTER TABLE " + tableName + " ENABLE TRIGGER ALL;\n" +
+            "COMMIT;").executeUpdate());*/
+        // entityManager.createNativeQuery("SET REFERENTIAL_INTEGRITY TRUE").executeUpdate();
 
     }
 }

@@ -31,9 +31,9 @@ spring:
             indent-output: true
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
-        url: jdbc:mysql://localhost:3306/Artemis?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC
-        username: root
-        password:
+        url: jdbc:postgresql://localhost:5432/artemis
+        username: artemis
+        password: artemis
         hikari:
             poolName: Hikari
             auto-commit: false
@@ -43,9 +43,9 @@ spring:
                 prepStmtCacheSqlLimit: 2048
                 useServerPrepStmts: true
     jpa:
-        database-platform: org.hibernate.dialect.MySQL8Dialect
-        database: MYSQL
-        show-sql: false
+        database-platform: org.hibernate.dialect.PostgreSQLDialect
+        database: POSTGRESQL
+        show-sql: true
     liquibase:
         contexts: dev
     mail:

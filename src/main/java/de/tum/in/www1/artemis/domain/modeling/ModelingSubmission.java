@@ -23,11 +23,11 @@ import de.tum.in.www1.artemis.domain.Submission;
 public class ModelingSubmission extends Submission {
 
     @Column(name = "model")
-    @Lob
+
     private String model;
 
     @Column(name = "explanation_text")
-    @Lob
+
     private String explanationText;
 
     @Transient

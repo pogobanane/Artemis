@@ -43,7 +43,7 @@ spring:
         name: Artemis
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
-        url: jdbc:h2:mem:Artemis;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+        url: jdbc:h2:mem:Artemis;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
         name:
         username:
         password:
@@ -59,7 +59,8 @@ spring:
     jmx:
         enabled: false
     jpa:
-        database-platform: tech.jhipster.domain.util.FixedH2Dialect
+        database-platform: org.hibernate.dialect.PostgreSQLDialect
+        database: POSTGRESQL
         open-in-view: false
         show-sql: false
         hibernate:
@@ -70,7 +71,8 @@ spring:
         properties:
             hibernate.jdbc.time_zone: UTC
             hibernate.id.new_generator_mappings: true
-            hibernate.connection.provider_disables_autocommit: true
+            hibernate.connection.autocommit: false
+            hibernate.connection.provider_disables_autocommit: false
             hibernate.cache.use_second_level_cache: true
             hibernate.cache.use_query_cache: false
             hibernate.generate_statistics: false
@@ -86,7 +88,9 @@ spring:
             hibernate.cache.hazelcast.use_lite_member: true
     liquibase:
         contexts: tests
-        enabled: false
+        enabled: true
+        driver-class-name: org.postgresql.Driver
+        #url: jdbc:postgres:mem:Artemis
     mail:
         host: localhost
     main:

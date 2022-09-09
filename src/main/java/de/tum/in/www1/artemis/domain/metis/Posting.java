@@ -38,12 +38,12 @@ public abstract class Posting extends DomainObject {
     @Column(name = "creation_date", updatable = false)
     private ZonedDateTime creationDate = ZonedDateTime.now();
 
-    @Lob
+
     @Column(name = "content")
     private String content;
 
     // To be used as soon as more advanced strategies for post similarity comparisons are developed
-    @Lob
+
     @Column(name = "tokenized_content")
     private String tokenizedContent;
 
