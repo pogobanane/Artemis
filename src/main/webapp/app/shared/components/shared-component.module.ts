@@ -12,6 +12,8 @@ import { NotReleasedTagComponent } from 'app/shared/components/not-released-tag.
 import { HelpIconComponentWithoutTranslationComponent } from 'app/shared/components/help-icon-without-translation.component';
 import { OpenCodeEditorButtonComponent } from 'app/shared/components/open-code-editor-button/open-code-editor-button.component';
 import { ArtemisCoursesRoutingModule } from 'app/overview/courses-routing.module';
+import { CopyIconButtonComponent } from 'app/shared/components/copy-icon-button/copy-icon-button.component';
+import { StartPracticeModeButtonComponent } from 'app/shared/components/start-practice-mode-button/start-practice-mode-button.component';
 
 @NgModule({
     imports: [ArtemisSharedModule, ArtemisCoursesRoutingModule, FeatureToggleModule, ClipboardModule],
@@ -22,6 +24,8 @@ import { ArtemisCoursesRoutingModule } from 'app/overview/courses-routing.module
         ConfirmAutofocusButtonComponent,
         ConfirmAutofocusModalComponent,
         CloneRepoButtonComponent,
+        CopyIconButtonComponent,
+        StartPracticeModeButtonComponent,
         OpenCodeEditorButtonComponent,
         ExerciseActionButtonComponent,
         CourseExamArchiveButtonComponent,
@@ -33,6 +37,8 @@ import { ArtemisCoursesRoutingModule } from 'app/overview/courses-routing.module
         HelpIconComponentWithoutTranslationComponent,
         ConfirmAutofocusButtonComponent,
         CloneRepoButtonComponent,
+        CopyIconButtonComponent,
+        StartPracticeModeButtonComponent,
         OpenCodeEditorButtonComponent,
         ExerciseActionButtonComponent,
         CourseExamArchiveButtonComponent,

@@ -5,7 +5,7 @@ import { InitializationState, Participation } from 'app/entities/participation/p
 import { ProgrammingExercise } from 'app/entities/programming-exercise.model';
 import { AssessmentType } from 'app/entities/assessment-type.model';
 import { QuizExercise } from 'app/entities/quiz/quiz-exercise.model';
-import { from, Observable, of } from 'rxjs';
+import { Observable, from, of } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ExerciseUpdateWarningService } from 'app/exercises/shared/exercise-update-warning/exercise-update-warning.service';
 import { ExerciseServicable } from 'app/exercises/shared/exercise/exercise.service';
@@ -185,7 +185,9 @@ export const participationStatus = (exercise: Exercise, testRun?: boolean): Part
 
     // The following evaluations are relevant for programming exercises in general and for modeling, text and file upload exercises that don't have participations.
     if (!studentParticipation || programmingExerciseStates.includes(studentParticipation.initializationState!)) {
-        if (exercise.type === ExerciseType.PROGRAMMING && !isStartExerciseAvailable(exercise as ProgrammingExercise) && !testRun) {
+        const relevantDueDate = getExerciseDueDate(exercise, studentParticipation);
+        const isAfterDueDate = relevantDueDate && dayjs().isAfter(relevantDueDate);
+        if (exercise.type === ExerciseType.PROGRAMMING && isAfterDueDate && !testRun) {
             return ParticipationStatus.EXERCISE_MISSED;
         } else {
             return ParticipationStatus.UNINITIALIZED;
@@ -197,13 +199,25 @@ export const participationStatus = (exercise: Exercise, testRun?: boolean): Part
 };
 
 /**
- * The start exercise button should be available for programming exercises when
- * - there is no due date
- * - now is before the due date
- * - test run after due date is deactivated and manual grading is deactivated
+ * Determines if the exercise can be started, this is the case if:
+ * - It is after the start date or the participant is at least a tutor
+ * - In case of a programming exercise it is not before the due date
+ * @param exercise the exercise that should be started
  */
-export const isStartExerciseAvailable = (exercise: ProgrammingExercise): boolean => {
-    return exercise.dueDate == undefined || dayjs().isBefore(exercise.dueDate!);
+export const isStartExerciseAvailable = (exercise: Exercise): boolean => {
+    return exercise.type !== ExerciseType.PROGRAMMING || !exercise.dueDate || dayjs().isBefore(exercise.dueDate);
+};
+
+/**
+ * Determines if the student can resume
+ * @param exercise the exercise that should be started
+ * @param studentParticipation the optional student participation with possibly an individual due date
+ */
+export const isResumeExerciseAvailable = (exercise: Exercise, studentParticipation?: StudentParticipation): boolean => {
+    if (!studentParticipation?.individualDueDate) {
+        return isStartExerciseAvailable(exercise);
+    }
+    return dayjs().isBefore(studentParticipation.individualDueDate);
 };
 
 /**

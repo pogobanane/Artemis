@@ -1,4 +1,4 @@
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
@@ -29,7 +29,7 @@ describe('FileUploadExercise Management Update Component', () => {
                 { provide: LocalStorageService, useClass: MockSyncStorage },
                 { provide: SessionStorageService, useClass: MockSyncStorage },
                 { provide: FileUploadExerciseService, useClass: MockFileUploadExerciseService },
-                { provide: ActivatedRoute, useValue: new MockActivatedRoute() },
+                { provide: ActivatedRoute, useValue: new MockActivatedRoute({}) },
                 MockProvider(TranslateService),
             ],
         })

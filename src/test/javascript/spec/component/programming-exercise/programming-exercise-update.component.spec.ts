@@ -1,4 +1,4 @@
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { DebugElement } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, UrlSegment } from '@angular/router';
@@ -106,7 +106,7 @@ describe('ProgrammingExercise Management Update Component', () => {
                 { provide: LocalStorageService, useClass: MockSyncStorage },
                 { provide: SessionStorageService, useClass: MockSyncStorage },
                 { provide: TranslateService, useClass: MockTranslateService },
-                { provide: ActivatedRoute, useValue: new MockActivatedRoute() },
+                { provide: ActivatedRoute, useValue: new MockActivatedRoute({}) },
             ],
         })
             .compileComponents()

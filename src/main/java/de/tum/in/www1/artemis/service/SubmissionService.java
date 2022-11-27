@@ -146,7 +146,8 @@ public class SubmissionService {
      * @param <T> the submission type
      * @return list of submissions
      */
-    public <T extends Submission> List<T> getAllSubmissionsAssessedByTutorForCorrectionRoundAndExercise(Long exerciseId, User tutor, boolean examMode, int correctionRound) {
+    public <T extends Submission> List<T> getAllSubmissionsAssessedByTutorForCorrectionRoundAndExerciseIgnoreTestRuns(Long exerciseId, User tutor, boolean examMode,
+            int correctionRound) {
         List<T> submissions;
         if (examMode) {
             var participations = this.studentParticipationRepository.findAllByParticipationExerciseIdAndResultAssessorAndCorrectionRoundIgnoreTestRuns(exerciseId, tutor);
@@ -156,7 +157,7 @@ public class SubmissionService {
                     .collect(Collectors.toCollection(ArrayList::new));
         }
         else {
-            submissions = this.submissionRepository.findAllByParticipationExerciseIdAndResultAssessor(exerciseId, tutor);
+            submissions = this.submissionRepository.findAllByParticipationExerciseIdAndResultAssessorIgnoreTestRuns(exerciseId, tutor);
         }
 
         submissions.forEach(submission -> submission.getLatestResult().setSubmission(null));
@@ -175,7 +176,7 @@ public class SubmissionService {
             // Get all participations of submissions that are submitted and do not already have a manual result.
             // No manual result means that no user has started an assessment for the corresponding submission yet.
             // Does not fetch participations for which the due date has not yet passed.
-            participations = studentParticipationRepository.findByExerciseIdWithLatestSubmissionWithoutManualResultsWithPassedIndividualDueDate(exercise.getId(),
+            participations = studentParticipationRepository.findByExerciseIdWithLatestSubmissionWithoutManualResultsWithPassedIndividualDueDateIgnoreTestRuns(exercise.getId(),
                     ZonedDateTime.now());
         }
 
@@ -315,7 +316,6 @@ public class SubmissionService {
     private void copyFeedbackToResult(Result result, List<Feedback> feedbacks) {
         feedbacks.forEach(feedback -> {
             Feedback newFeedback = feedback.copyFeedback();
-            newFeedback.setPositiveViaCredits();
             result.addFeedback(newFeedback);
         });
         resultRepository.save(result);
@@ -367,7 +367,6 @@ public class SubmissionService {
      */
     private Result copyResultContentAndAddToSubmission(Submission submission, Result newResult, Result oldResult) {
         newResult.setScore(oldResult.getScore());
-        newResult.setHasFeedback(oldResult.getHasFeedback());
         newResult.setRated(oldResult.isRated());
         newResult.copyProgrammingExerciseCounters(oldResult);
         var savedResult = resultRepository.save(newResult);
@@ -550,7 +549,7 @@ public class SubmissionService {
      * @return true, if the submission date was before the due date or the exercise has no due date.
      */
     private boolean isBeforeDueDate(Submission submission) {
-        return exerciseDateService.getDueDate(submission.getParticipation())
+        return ExerciseDateService.getDueDate(submission.getParticipation())
                 .map(dueDate -> submission.getSubmissionDate() != null && submission.getSubmissionDate().isBefore(dueDate)).orElse(true);
     }
 
