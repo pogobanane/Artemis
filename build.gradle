@@ -6,7 +6,7 @@ buildscript {
         mavenLocal()
         mavenCentral()
         maven {
-            url 'nexus.sleiss.me/content/repositories/ls1intum/'
+            url 'https://nexus.sleiss.me/content/repositories/ls1intum/'
         }
     }
 }
@@ -162,6 +162,9 @@ repositories {
     maven { url "https://repo.gradle.org/gradle/libs-releases" }
     maven { url "https://build.shibboleth.net/nexus/content/repositories/releases" }
     maven { url "https://build.shibboleth.net/maven/releases" }
+    maven {
+        url 'https://nexus.sleiss.me/content/repositories/ls1intum/'
+    }
 }
 
 dependencies {
