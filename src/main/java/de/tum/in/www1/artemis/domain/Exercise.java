@@ -80,7 +80,7 @@ public abstract class Exercise extends BaseExercise implements Completable {
     private TeamAssignmentConfig teamAssignmentConfig;
 
     @OneToMany(mappedBy = "exercise", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
-    // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @JsonIgnoreProperties("exercise")
     private Set<Team> teams = new HashSet<>();
 

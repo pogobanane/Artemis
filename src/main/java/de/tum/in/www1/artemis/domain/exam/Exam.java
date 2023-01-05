@@ -6,6 +6,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
 import com.fasterxml.jackson.annotation.*;
 
 import de.tum.in.www1.artemis.domain.Course;
@@ -17,7 +20,7 @@ import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "exam")
-// @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Exam extends DomainObject {
 

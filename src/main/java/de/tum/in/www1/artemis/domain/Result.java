@@ -71,7 +71,7 @@ public class Result extends DomainObject implements Comparable<Result> {
     @OneToMany(mappedBy = "result", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderColumn
     @JsonIgnoreProperties(value = "result", allowSetters = true)
-    // //@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE, include = "non-lazy")
+    // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @JsonView(QuizView.Before.class)
     private List<Feedback> feedbacks = new ArrayList<>();
 

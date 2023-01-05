@@ -42,7 +42,7 @@ public class ProgrammingSubmission extends Submission {
     @OneToMany(mappedBy = "programmingSubmission", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderColumn
     @JsonIgnoreProperties(value = "programmingSubmission", allowSetters = true)
-    // //@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     private List<BuildLogEntry> buildLogEntries = new ArrayList<>();
 
     /**

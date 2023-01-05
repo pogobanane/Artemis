@@ -3,6 +3,9 @@ package de.tum.in.www1.artemis.domain;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -13,7 +16,7 @@ import jakarta.persistence.*;
  */
 @Entity
 @Table(name = "grading_instruction")
-// @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class GradingInstruction extends DomainObject {
 

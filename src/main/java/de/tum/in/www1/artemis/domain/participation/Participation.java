@@ -67,7 +67,7 @@ public abstract class Participation extends DomainObject implements Participatio
      */
     @OneToMany(mappedBy = "participation")
     @JsonIgnoreProperties(value = "participation", allowSetters = true)
-    // //@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE, include = "non-lazy")
+    // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @JsonView(QuizView.Before.class)
     private Set<Result> results = new HashSet<>();
 
@@ -81,7 +81,7 @@ public abstract class Participation extends DomainObject implements Participatio
      */
     @OneToMany(mappedBy = "participation")
     @JsonIgnoreProperties({ "participation" })
-    // //@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE, include = "non-lazy")
+    // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     private Set<Submission> submissions = new HashSet<>();
 
     /**
