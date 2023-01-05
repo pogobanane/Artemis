@@ -713,7 +713,7 @@ class TextExerciseIntegrationTest extends AbstractSpringIntegrationBambooBitbuck
         List<GradingCriterion> gradingCriteria = database.addGradingInstructionsToExercise(textExercise);
         gradingCriterionRepository.saveAll(gradingCriteria);
         Feedback feedback = new Feedback();
-        feedback.setGradingInstruction(gradingCriteria.get(0).getStructuredGradingInstructions().get(0));
+        feedback.setGradingInstruction(gradingCriteria.get(0).getStructuredGradingInstructions().iterator().next());
         feedbackRepository.save(feedback);
 
         TextExercise receivedTextExercise = request.get("/api/text-exercises/" + textExercise.getId(), HttpStatus.OK, TextExercise.class);
@@ -1080,14 +1080,14 @@ class TextExerciseIntegrationTest extends AbstractSpringIntegrationBambooBitbuck
         database.addAssessmentWithFeedbackWithGradingInstructionsForExercise(textExercise, TEST_PREFIX + "instructor1");
 
         // change grading instruction score
-        gradingCriteria.get(0).getStructuredGradingInstructions().get(0).setCredits(3);
+        gradingCriteria.get(0).getStructuredGradingInstructions().iterator().next().setCredits(3);
         gradingCriteria.remove(1);
         textExercise.setGradingCriteria(gradingCriteria);
 
         TextExercise updatedTextExercise = request.putWithResponseBody("/api/text-exercises/" + textExercise.getId() + "/re-evaluate" + "?deleteFeedback=false", textExercise,
                 TextExercise.class, HttpStatus.OK);
         List<Result> updatedResults = database.getResultsForExercise(updatedTextExercise);
-        assertThat(updatedTextExercise.getGradingCriteria().get(0).getStructuredGradingInstructions().get(0).getCredits()).isEqualTo(3);
+        assertThat(updatedTextExercise.getGradingCriteria().get(0).getStructuredGradingInstructions().iterator().next().getCredits()).isEqualTo(3);
         assertThat(updatedResults.get(0).getScore()).isEqualTo(60);
         assertThat(updatedResults.get(0).getFeedbacks().get(0).getCredits()).isEqualTo(3);
     }
@@ -1247,7 +1247,7 @@ class TextExerciseIntegrationTest extends AbstractSpringIntegrationBambooBitbuck
         textExercise = textExerciseRepository.save(textExercise);
         List<GradingCriterion> gradingCriteria = database.addGradingInstructionsToExercise(textExercise);
         gradingCriterionRepository.saveAll(gradingCriteria);
-        GradingInstruction gradingInstruction = gradingCriteria.get(0).getStructuredGradingInstructions().get(0);
+        GradingInstruction gradingInstruction = gradingCriteria.get(0).getStructuredGradingInstructions().iterator().next();
         assertThat(gradingInstruction.getFeedback()).as("Test feedback should have student readable feedback").isNotEmpty();
 
         // Create example submission

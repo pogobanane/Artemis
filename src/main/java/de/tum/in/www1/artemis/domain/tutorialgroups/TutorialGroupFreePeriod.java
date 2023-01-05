@@ -2,9 +2,6 @@ package de.tum.in.www1.artemis.domain.tutorialgroups;
 
 import java.time.ZonedDateTime;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -14,13 +11,13 @@ import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "tutorial_group_free_period")
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+// @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class TutorialGroupFreePeriod extends DomainObject {
 
     @ManyToOne
     @JoinColumn(name = "tutorial_groups_configuration_id")
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @JsonIgnoreProperties(value = "tutorialFreePeriods", allowSetters = true)
     private TutorialGroupsConfiguration tutorialGroupsConfiguration;
 

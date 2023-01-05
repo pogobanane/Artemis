@@ -2,8 +2,6 @@ package de.tum.in.www1.artemis.domain;
 
 import java.time.Instant;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -14,7 +12,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "submission_version")
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+//// @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @EntityListeners(AuditingEntityListener.class)
 public class SubmissionVersion extends DomainObject {

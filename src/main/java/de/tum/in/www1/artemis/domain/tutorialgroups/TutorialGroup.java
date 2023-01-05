@@ -2,9 +2,6 @@ package de.tum.in.www1.artemis.domain.tutorialgroups;
 
 import java.util.*;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -18,7 +15,7 @@ import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "tutorial_group")
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+// @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class TutorialGroup extends DomainObject {
 
@@ -107,7 +104,7 @@ public class TutorialGroup extends DomainObject {
 
     @OneToMany(mappedBy = "tutorialGroup", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = "tutorialGroup, tutorialGroupSchedule", allowSetters = true)
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     private Set<TutorialGroupSession> tutorialGroupSessions = new HashSet<>();
 
     public TutorialGroupSchedule getTutorialGroupSchedule() {

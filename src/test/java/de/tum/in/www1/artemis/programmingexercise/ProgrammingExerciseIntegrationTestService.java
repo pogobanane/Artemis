@@ -607,7 +607,7 @@ class ProgrammingExerciseIntegrationTestService {
 
         assertThat(gradingCriteria.get(0).getStructuredGradingInstructions()).hasSize(1);
         assertThat(gradingCriteria.get(1).getStructuredGradingInstructions()).hasSize(3);
-        assertThat(gradingCriteria.get(0).getStructuredGradingInstructions().get(0).getInstructionDescription())
+        assertThat(gradingCriteria.get(0).getStructuredGradingInstructions().iterator().next().getInstructionDescription())
                 .isEqualTo("created first instruction with empty criteria for testing");
     }
 

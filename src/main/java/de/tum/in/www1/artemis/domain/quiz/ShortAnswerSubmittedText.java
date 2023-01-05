@@ -4,9 +4,6 @@ import static de.tum.in.www1.artemis.config.Constants.MAX_QUIZ_SHORT_ANSWER_TEXT
 
 import java.util.Objects;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -22,7 +19,7 @@ import me.xdrop.fuzzywuzzy.FuzzySearch;
  */
 @Entity
 @Table(name = "short_answer_submitted_text")
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+// @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ShortAnswerSubmittedText extends DomainObject {
 

@@ -157,7 +157,7 @@ class FileUploadExerciseIntegrationTest extends AbstractSpringIntegrationBambooB
         assertThat(receivedFileUploadExercise.getGradingCriteria().get(1).getTitle()).isEqualTo("test title");
 
         assertThat(gradingCriteria.get(0).getStructuredGradingInstructions()).hasSize(1);
-        assertThat(gradingCriteria.get(0).getStructuredGradingInstructions().get(0).getInstructionDescription())
+        assertThat(gradingCriteria.get(0).getStructuredGradingInstructions().iterator().next().getInstructionDescription())
                 .isEqualTo("created first instruction with empty criteria for testing");
     }
 
@@ -181,7 +181,7 @@ class FileUploadExerciseIntegrationTest extends AbstractSpringIntegrationBambooB
         assertThat(createdFileUploadExercise.getGradingCriteria().get(1).getTitle()).isEqualTo("test title");
 
         assertThat(gradingCriteria.get(0).getStructuredGradingInstructions()).hasSize(1);
-        assertThat(gradingCriteria.get(0).getStructuredGradingInstructions().get(0).getInstructionDescription())
+        assertThat(gradingCriteria.get(0).getStructuredGradingInstructions().iterator().next().getInstructionDescription())
                 .isEqualTo("created first instruction with empty criteria for testing");
     }
 
@@ -275,7 +275,7 @@ class FileUploadExerciseIntegrationTest extends AbstractSpringIntegrationBambooB
         gradingCriteria = database.addGradingInstructionsToExercise(fileUploadExercise);
         gradingCriterionRepository.saveAll(gradingCriteria);
         Feedback feedback = new Feedback();
-        feedback.setGradingInstruction(gradingCriteria.get(0).getStructuredGradingInstructions().get(0));
+        feedback.setGradingInstruction(gradingCriteria.get(0).getStructuredGradingInstructions().iterator().next());
         feedbackRepository.save(feedback);
 
         FileUploadExercise receivedFileUploadExercise = request.get("/api/file-upload-exercises/" + fileUploadExercise.getId(), HttpStatus.OK, FileUploadExercise.class);
@@ -492,14 +492,14 @@ class FileUploadExerciseIntegrationTest extends AbstractSpringIntegrationBambooB
         database.addAssessmentWithFeedbackWithGradingInstructionsForExercise(fileUploadExercise, TEST_PREFIX + "instructor1");
 
         // change grading instruction score
-        gradingCriteria.get(0).getStructuredGradingInstructions().get(0).setCredits(3);
+        gradingCriteria.get(0).getStructuredGradingInstructions().iterator().next().setCredits(3);
         gradingCriteria.remove(1);
         fileUploadExercise.setGradingCriteria(gradingCriteria);
 
         FileUploadExercise updatedFileUploadExercise = request.putWithResponseBody(
                 "/api/file-upload-exercises/" + fileUploadExercise.getId() + "/re-evaluate" + "?deleteFeedback=false", fileUploadExercise, FileUploadExercise.class, HttpStatus.OK);
         List<Result> updatedResults = database.getResultsForExercise(updatedFileUploadExercise);
-        assertThat(updatedFileUploadExercise.getGradingCriteria().get(0).getStructuredGradingInstructions().get(0).getCredits()).isEqualTo(3);
+        assertThat(updatedFileUploadExercise.getGradingCriteria().get(0).getStructuredGradingInstructions().iterator().next().getCredits()).isEqualTo(3);
         assertThat(updatedResults.get(0).getScore()).isEqualTo(60);
         assertThat(updatedResults.get(0).getFeedbacks().get(0).getCredits()).isEqualTo(3);
     }

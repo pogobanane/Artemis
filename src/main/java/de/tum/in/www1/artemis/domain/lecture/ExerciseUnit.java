@@ -6,7 +6,6 @@ import java.util.Set;
 
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.*;
-import org.hibernate.annotations.Cache;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -23,7 +22,7 @@ public class ExerciseUnit extends LectureUnit {
     // Note: Name, release date and learning goals will always be taken from associated exercise
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "exercise_id")
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     private Exercise exercise;
 
     public Exercise getExercise() {

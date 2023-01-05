@@ -3,9 +3,6 @@ package de.tum.in.www1.artemis.domain.exam;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -15,7 +12,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "exercise_group")
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+// @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ExerciseGroup extends DomainObject {
 
@@ -33,7 +30,7 @@ public class ExerciseGroup extends DomainObject {
     private Exam exam;
 
     @OneToMany(mappedBy = "exerciseGroup", fetch = FetchType.LAZY)
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @JsonIgnoreProperties(value = "exerciseGroup", allowSetters = true)
     private Set<Exercise> exercises = new HashSet<>();
 

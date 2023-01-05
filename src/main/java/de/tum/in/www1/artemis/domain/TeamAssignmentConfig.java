@@ -1,8 +1,5 @@
 package de.tum.in.www1.artemis.domain;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -17,7 +14,7 @@ import jakarta.validation.constraints.NotNull;
 @Entity
 @Table(name = "team_assignment_config")
 @TeamAssignmentConfigConstraints
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+// @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class TeamAssignmentConfig extends DomainObject {
 

@@ -38,9 +38,14 @@ import jakarta.persistence.*;
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 // Annotation necessary to distinguish between concrete implementations of Exercise when deserializing from JSON
-@JsonSubTypes({ @JsonSubTypes.Type(value = ProgrammingExercise.class, name = "programming"), @JsonSubTypes.Type(value = ModelingExercise.class, name = "modeling"),
-        @JsonSubTypes.Type(value = QuizExercise.class, name = "quiz"), @JsonSubTypes.Type(value = TextExercise.class, name = "text"),
-        @JsonSubTypes.Type(value = FileUploadExercise.class, name = "file-upload"), })
+@JsonSubTypes({
+// @formatter:off
+    @JsonSubTypes.Type(value = ProgrammingExercise.class, name = "programming"),
+    @JsonSubTypes.Type(value = ModelingExercise.class, name = "modeling"),
+    @JsonSubTypes.Type(value = QuizExercise.class, name = "quiz"),
+    @JsonSubTypes.Type(value = TextExercise.class, name = "text"),
+    @JsonSubTypes.Type(value = FileUploadExercise.class, name = "file-upload"), })
+    // @formatter:on
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public abstract class Exercise extends BaseExercise implements Completable {
 
@@ -75,7 +80,7 @@ public abstract class Exercise extends BaseExercise implements Completable {
     private TeamAssignmentConfig teamAssignmentConfig;
 
     @OneToMany(mappedBy = "exercise", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @JsonIgnoreProperties("exercise")
     private Set<Team> teams = new HashSet<>();
 
@@ -101,7 +106,7 @@ public abstract class Exercise extends BaseExercise implements Completable {
     private List<GradingCriterion> gradingCriteria = new ArrayList<>();
 
     @OneToMany(mappedBy = "exercise", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @JsonIgnoreProperties("exercise")
     private Set<StudentParticipation> studentParticipations = new HashSet<>();
 
@@ -819,9 +824,9 @@ public abstract class Exercise extends BaseExercise implements Completable {
      * @param gradingInstructionCopyTracker  The mapping from original GradingInstruction Ids to new GradingInstruction instances.
      * @return A clone of the grading instruction list of the grading criterion
      */
-    private List<GradingInstruction> copyGradingInstruction(GradingCriterion originalGradingCriterion, GradingCriterion newGradingCriterion,
+    private Set<GradingInstruction> copyGradingInstruction(GradingCriterion originalGradingCriterion, GradingCriterion newGradingCriterion,
             Map<Long, GradingInstruction> gradingInstructionCopyTracker) {
-        List<GradingInstruction> newGradingInstructions = new ArrayList<>();
+        Set<GradingInstruction> newGradingInstructions = new HashSet<>();
         for (GradingInstruction originalGradingInstruction : originalGradingCriterion.getStructuredGradingInstructions()) {
             GradingInstruction newGradingInstruction = new GradingInstruction();
             newGradingInstruction.setCredits(originalGradingInstruction.getCredits());

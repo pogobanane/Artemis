@@ -31,6 +31,7 @@ import jakarta.validation.constraints.NotNull;
  */
 @Entity
 @DiscriminatorValue(value = "Q")
+@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonTypeName("quiz")
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class QuizExercise extends Exercise {
@@ -77,12 +78,12 @@ public class QuizExercise extends Exercise {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderColumn
     @JoinColumn(name = "exercise_id")
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @JsonView(QuizView.During.class)
     private List<QuizQuestion> quizQuestions = new ArrayList<>();
 
     @OneToMany(mappedBy = "quizExercise", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @JsonView(QuizView.Before.class)
     private Set<QuizBatch> quizBatches = new HashSet<>();
 

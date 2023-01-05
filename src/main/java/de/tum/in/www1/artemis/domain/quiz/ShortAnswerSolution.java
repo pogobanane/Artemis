@@ -3,9 +3,6 @@ package de.tum.in.www1.artemis.domain.quiz;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -19,7 +16,7 @@ import jakarta.persistence.*;
  */
 @Entity
 @Table(name = "short_answer_solution")
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+// @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ShortAnswerSolution extends TempIdObject {
 
@@ -38,7 +35,7 @@ public class ShortAnswerSolution extends TempIdObject {
     // added additionally, could possibly be created within artemis.jh?
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "solution")
     @JsonIgnore
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     private Set<ShortAnswerMapping> mappings = new HashSet<>();
 
     public String getText() {

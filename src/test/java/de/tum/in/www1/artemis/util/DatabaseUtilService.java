@@ -2027,18 +2027,19 @@ public class DatabaseUtilService {
 
     public List<GradingCriterion> addGradingInstructionsToExercise(Exercise exercise) {
         GradingCriterion emptyCriterion = ModelFactory.generateGradingCriterion(null);
-        List<GradingInstruction> instructionWithNoCriteria = ModelFactory.generateGradingInstructions(emptyCriterion, 1, 0);
-        instructionWithNoCriteria.get(0).setCredits(1);
-        instructionWithNoCriteria.get(0).setUsageCount(0);
+        Set<GradingInstruction> instructionWithNoCriteria = ModelFactory.generateGradingInstructions(emptyCriterion, 1, 0);
+        var firstInstruction = instructionWithNoCriteria.iterator().next();
+        firstInstruction.setCredits(1);
+        firstInstruction.setUsageCount(0);
         emptyCriterion.setExercise(exercise);
         emptyCriterion.setStructuredGradingInstructions(instructionWithNoCriteria);
 
         GradingCriterion testCriterion = ModelFactory.generateGradingCriterion("test title");
-        List<GradingInstruction> instructions = ModelFactory.generateGradingInstructions(testCriterion, 3, 1);
+        Set<GradingInstruction> instructions = ModelFactory.generateGradingInstructions(testCriterion, 3, 1);
         testCriterion.setStructuredGradingInstructions(instructions);
 
         GradingCriterion testCriterion2 = ModelFactory.generateGradingCriterion("test title2");
-        List<GradingInstruction> instructionsWithBigLimit = ModelFactory.generateGradingInstructions(testCriterion2, 1, 4);
+        Set<GradingInstruction> instructionsWithBigLimit = ModelFactory.generateGradingInstructions(testCriterion2, 1, 4);
         testCriterion2.setStructuredGradingInstructions(instructionsWithBigLimit);
 
         testCriterion.setExercise(exercise);
@@ -3323,10 +3324,7 @@ public class DatabaseUtilService {
         submission.addResult(result);
         submission.getParticipation().addResult(result);
         submission = textSubmissionRepo.save(submission);
-        resultRepo.save(result);
         studentParticipationRepo.save(participation);
-
-        submission = textSubmissionRepo.save(submission);
         return submission;
     }
 
@@ -4375,7 +4373,7 @@ public class DatabaseUtilService {
 
         // add feedback which is associated with structured grading instructions
         Feedback feedback = new Feedback();
-        feedback.setGradingInstruction(exercise.getGradingCriteria().get(0).getStructuredGradingInstructions().get(0));
+        feedback.setGradingInstruction(exercise.getGradingCriteria().get(0).getStructuredGradingInstructions().iterator().next());
         addFeedbackToResult(feedback, result);
         return studentParticipation;
     }

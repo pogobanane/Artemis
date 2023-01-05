@@ -2,8 +2,6 @@ package de.tum.in.www1.artemis.domain.metis;
 
 import java.time.ZonedDateTime;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.data.annotation.CreatedDate;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -22,7 +20,7 @@ import jakarta.persistence.*;
 @ReactionConstraints
 @Table(name = "reaction", uniqueConstraints = { @UniqueConstraint(columnNames = { "emoji_id", "user_id", "post_id" }),
         @UniqueConstraint(columnNames = { "emoji_id", "user_id", "answer_post_id" }) })
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+// @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Reaction extends DomainObject {
 

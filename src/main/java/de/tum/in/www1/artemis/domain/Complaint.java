@@ -5,9 +5,6 @@ import static de.tum.in.www1.artemis.config.Constants.COMPLAINT_TEXT_LIMIT;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -22,7 +19,7 @@ import jakarta.validation.constraints.Size;
  */
 @Entity
 @Table(name = "complaint")
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+// @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Complaint extends DomainObject {
 

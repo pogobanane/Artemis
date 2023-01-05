@@ -4,6 +4,9 @@ import static de.tum.in.www1.artemis.domain.enumeration.ExerciseType.MODELING;
 
 import java.time.ZonedDateTime;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -18,6 +21,7 @@ import jakarta.persistence.*;
  */
 @Entity
 @DiscriminatorValue(value = "M")
+@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonTypeName("modeling")
 @SecondaryTable(name = "model_exercise_details")
 @JsonInclude(JsonInclude.Include.NON_EMPTY)

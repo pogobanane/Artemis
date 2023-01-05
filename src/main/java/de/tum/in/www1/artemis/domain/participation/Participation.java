@@ -4,9 +4,6 @@ import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
 import com.fasterxml.jackson.annotation.*;
 
 import de.tum.in.www1.artemis.domain.*;
@@ -25,7 +22,7 @@ import jakarta.persistence.*;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "discriminator", discriminatorType = DiscriminatorType.STRING)
 @DiscriminatorValue(value = "P")
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+//// @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 // Annotation necessary to distinguish between concrete implementations of Exercise when deserializing from JSON
 @JsonSubTypes({ @JsonSubTypes.Type(value = StudentParticipation.class, name = "student"),
@@ -33,6 +30,7 @@ import jakarta.persistence.*;
         @JsonSubTypes.Type(value = TemplateProgrammingExerciseParticipation.class, name = "template"),
         @JsonSubTypes.Type(value = SolutionProgrammingExerciseParticipation.class, name = "solution"), })
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+// @Cacheable
 public abstract class Participation extends DomainObject implements ParticipationInterface {
 
     @Enumerated(EnumType.STRING)
@@ -69,7 +67,7 @@ public abstract class Participation extends DomainObject implements Participatio
      */
     @OneToMany(mappedBy = "participation")
     @JsonIgnoreProperties(value = "participation", allowSetters = true)
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    // //@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE, include = "non-lazy")
     @JsonView(QuizView.Before.class)
     private Set<Result> results = new HashSet<>();
 
@@ -83,7 +81,7 @@ public abstract class Participation extends DomainObject implements Participatio
      */
     @OneToMany(mappedBy = "participation")
     @JsonIgnoreProperties({ "participation" })
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    // //@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE, include = "non-lazy")
     private Set<Submission> submissions = new HashSet<>();
 
     /**

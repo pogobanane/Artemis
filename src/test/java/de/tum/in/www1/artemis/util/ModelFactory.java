@@ -754,8 +754,8 @@ public class ModelFactory {
         return criterion;
     }
 
-    public static List<GradingInstruction> generateGradingInstructions(GradingCriterion criterion, int numberOfTestInstructions, int usageCount) {
-        var instructions = new ArrayList<GradingInstruction>();
+    public static Set<GradingInstruction> generateGradingInstructions(GradingCriterion criterion, int numberOfTestInstructions, int usageCount) {
+        Set<GradingInstruction> instructions = new HashSet<>();
         while (numberOfTestInstructions > 0) {
             var exampleInstruction1 = new GradingInstruction();
             exampleInstruction1.setGradingCriterion(criterion);
@@ -851,8 +851,8 @@ public class ModelFactory {
     public static List<Feedback> applySGIonFeedback(Exercise receivedExercise) {
         List<Feedback> feedbacks = ModelFactory.generateFeedback();
 
-        var gradingInstructionWithNoLimit = receivedExercise.getGradingCriteria().get(0).getStructuredGradingInstructions().get(0);
-        var gradingInstructionWithLimit = receivedExercise.getGradingCriteria().get(1).getStructuredGradingInstructions().get(0);
+        var gradingInstructionWithNoLimit = receivedExercise.getGradingCriteria().get(0).getStructuredGradingInstructions().iterator().next();
+        var gradingInstructionWithLimit = receivedExercise.getGradingCriteria().get(1).getStructuredGradingInstructions().iterator().next();
 
         feedbacks.get(0).setGradingInstruction(gradingInstructionWithLimit);
         feedbacks.get(0).setCredits(gradingInstructionWithLimit.getCredits()); // score +1P

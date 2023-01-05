@@ -97,7 +97,7 @@ class ModelingExerciseIntegrationTest extends AbstractSpringIntegrationBambooBit
 
         assertThat(gradingCriteria.get(0).getStructuredGradingInstructions()).hasSize(1);
         assertThat(gradingCriteria.get(1).getStructuredGradingInstructions()).hasSize(3);
-        assertThat(gradingCriteria.get(0).getStructuredGradingInstructions().get(0).getInstructionDescription())
+        assertThat(gradingCriteria.get(0).getStructuredGradingInstructions().iterator().next().getInstructionDescription())
                 .isEqualTo("created first instruction with empty criteria for testing");
     }
 
@@ -114,7 +114,7 @@ class ModelingExerciseIntegrationTest extends AbstractSpringIntegrationBambooBit
         gradingCriteria = database.addGradingInstructionsToExercise(classExercise);
         gradingCriterionRepository.saveAll(gradingCriteria);
         Feedback feedback = new Feedback();
-        feedback.setGradingInstruction(gradingCriteria.get(0).getStructuredGradingInstructions().get(0));
+        feedback.setGradingInstruction(gradingCriteria.get(0).getStructuredGradingInstructions().iterator().next());
         feedbackRepository.save(feedback);
 
         ModelingExercise receivedModelingExercise = request.get("/api/modeling-exercises/" + classExercise.getId(), HttpStatus.OK, ModelingExercise.class);
@@ -234,9 +234,9 @@ class ModelingExerciseIntegrationTest extends AbstractSpringIntegrationBambooBit
         ModelingExercise createdModelingExercise = request.postWithResponseBody("/api/modeling-exercises", modelingExercise, ModelingExercise.class, HttpStatus.CREATED);
         assertThat(createdModelingExercise.getGradingCriteria().get(1).getStructuredGradingInstructions()).hasSize(currentInstructionsSize + 1);
 
-        modelingExercise.getGradingCriteria().get(1).getStructuredGradingInstructions().get(0).setInstructionDescription("UPDATE");
+        modelingExercise.getGradingCriteria().get(1).getStructuredGradingInstructions().iterator().next().setInstructionDescription("UPDATE");
         createdModelingExercise = request.postWithResponseBody("/api/modeling-exercises", modelingExercise, ModelingExercise.class, HttpStatus.CREATED);
-        assertThat(createdModelingExercise.getGradingCriteria().get(1).getStructuredGradingInstructions().get(0).getInstructionDescription()).isEqualTo("UPDATE");
+        assertThat(createdModelingExercise.getGradingCriteria().get(1).getStructuredGradingInstructions().iterator().next().getInstructionDescription()).isEqualTo("UPDATE");
 
         modelingExercise.getGradingCriteria().get(1).setStructuredGradingInstructions(null);
         createdModelingExercise = request.postWithResponseBody("/api/modeling-exercises", modelingExercise, ModelingExercise.class, HttpStatus.CREATED);
@@ -749,14 +749,14 @@ class ModelingExerciseIntegrationTest extends AbstractSpringIntegrationBambooBit
         database.addAssessmentWithFeedbackWithGradingInstructionsForExercise(classExercise, TEST_PREFIX + "instructor1");
 
         // change grading instruction score
-        gradingCriteria.get(0).getStructuredGradingInstructions().get(0).setCredits(3);
+        gradingCriteria.get(0).getStructuredGradingInstructions().iterator().next().setCredits(3);
         gradingCriteria.remove(1);
         classExercise.setGradingCriteria(gradingCriteria);
 
         ModelingExercise updatedModelingExercise = request.putWithResponseBody("/api/modeling-exercises/" + classExercise.getId() + "/re-evaluate" + "?deleteFeedback=false",
                 classExercise, ModelingExercise.class, HttpStatus.OK);
         List<Result> updatedResults = database.getResultsForExercise(updatedModelingExercise);
-        assertThat(updatedModelingExercise.getGradingCriteria().get(0).getStructuredGradingInstructions().get(0).getCredits()).isEqualTo(3);
+        assertThat(updatedModelingExercise.getGradingCriteria().get(0).getStructuredGradingInstructions().iterator().next().getCredits()).isEqualTo(3);
         assertThat(updatedResults.get(0).getScore()).isEqualTo(60);
         assertThat(updatedResults.get(0).getFeedbacks().get(0).getCredits()).isEqualTo(3);
     }
@@ -946,7 +946,7 @@ class ModelingExerciseIntegrationTest extends AbstractSpringIntegrationBambooBit
         modelingExercise = modelingExerciseRepository.save(modelingExercise);
         List<GradingCriterion> gradingCriteria = database.addGradingInstructionsToExercise(modelingExercise);
         gradingCriterionRepository.saveAll(gradingCriteria);
-        GradingInstruction gradingInstruction = gradingCriteria.get(0).getStructuredGradingInstructions().get(0);
+        GradingInstruction gradingInstruction = gradingCriteria.get(0).getStructuredGradingInstructions().iterator().next();
         assertThat(gradingInstruction.getFeedback()).as("Test feedback should have student readable feedback").isNotEmpty();
 
         // Create example submission

@@ -2,8 +2,6 @@ package de.tum.in.www1.artemis.domain.analytics;
 
 import java.time.Instant;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.data.annotation.CreatedDate;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -20,7 +18,7 @@ import jakarta.persistence.*;
  */
 @Entity
 @Table(name = "text_assessment_event")
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+// @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class TextAssessmentEvent extends DomainObject {
 

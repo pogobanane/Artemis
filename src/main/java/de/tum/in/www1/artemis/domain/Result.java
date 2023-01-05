@@ -7,8 +7,6 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.*;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -34,7 +32,7 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "result")
 @EntityListeners({ AuditingEntityListener.class, ResultListener.class })
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+//// @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Result extends DomainObject implements Comparable<Result> {
 
@@ -73,7 +71,7 @@ public class Result extends DomainObject implements Comparable<Result> {
     @OneToMany(mappedBy = "result", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderColumn
     @JsonIgnoreProperties(value = "result", allowSetters = true)
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    // //@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE, include = "non-lazy")
     @JsonView(QuizView.Before.class)
     private List<Feedback> feedbacks = new ArrayList<>();
 

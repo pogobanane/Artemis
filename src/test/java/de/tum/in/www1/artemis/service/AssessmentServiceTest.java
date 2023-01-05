@@ -96,9 +96,9 @@ class AssessmentServiceTest extends AbstractSpringIntegrationBambooBitbucketJira
 
     private List<Feedback> createFeedback(Exercise exercise) {
 
-        var gradingInstructionNoLimit = exercise.getGradingCriteria().get(0).getStructuredGradingInstructions().get(0);
-        var gradingInstructionLimited = exercise.getGradingCriteria().get(1).getStructuredGradingInstructions().get(0);
-        var gradingInstructionBigLimit = exercise.getGradingCriteria().get(2).getStructuredGradingInstructions().get(0);
+        var gradingInstructionNoLimit = exercise.getGradingCriteria().get(0).getStructuredGradingInstructions().iterator().next();
+        var gradingInstructionLimited = exercise.getGradingCriteria().get(1).getStructuredGradingInstructions().iterator().next();
+        var gradingInstructionBigLimit = exercise.getGradingCriteria().get(2).getStructuredGradingInstructions().iterator().next();
 
         var feedbacks = new ArrayList<Feedback>();
         var feedbackAppliedSGINoLimit = new Feedback();
