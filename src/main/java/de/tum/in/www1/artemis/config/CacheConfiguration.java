@@ -71,6 +71,16 @@ public class CacheConfiguration {
         this.registration = registration;
     }
 
+    @Autowired(required = false) // ok
+    public void setGitProperties(GitProperties gitProperties) {
+        this.gitProperties = gitProperties;
+    }
+
+    @Autowired(required = false) // ok
+    public void setBuildProperties(BuildProperties buildProperties) {
+        this.buildProperties = buildProperties;
+    }
+
     @PreDestroy
     public void destroy() {
         log.info("Closing Cache Manager");
@@ -172,16 +182,6 @@ public class CacheConfiguration {
         config.setProperty("hazelcast.socket.bind.any", "false");
         config.setProperty("hazelcast.socket.server.bind.any", "false");
         config.setProperty("hazelcast.socket.client.bind.any", "false");
-    }
-
-    @Autowired(required = false) // ok
-    public void setGitProperties(GitProperties gitProperties) {
-        this.gitProperties = gitProperties;
-    }
-
-    @Autowired(required = false) // ok
-    public void setBuildProperties(BuildProperties buildProperties) {
-        this.buildProperties = buildProperties;
     }
 
     @Bean

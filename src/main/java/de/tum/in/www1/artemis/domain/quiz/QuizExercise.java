@@ -6,8 +6,6 @@ import java.time.ZonedDateTime;
 import java.util.*;
 
 import org.hibernate.Hibernate;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.fasterxml.jackson.annotation.*;
 
@@ -31,8 +29,6 @@ import jakarta.validation.constraints.NotNull;
  */
 @Entity
 @DiscriminatorValue(value = "Q")
-@Cacheable
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonTypeName("quiz")
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class QuizExercise extends Exercise {

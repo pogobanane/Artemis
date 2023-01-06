@@ -105,8 +105,8 @@ public class RepositoryProgrammingExerciseParticipationResource extends Reposito
         // Error case 5: The student can reset the repository only before and a tutor/instructor only after the due date has passed
         if (repositoryAction == RepositoryActionType.RESET) {
             boolean isOwner = true; // true for Solution- and TemplateProgrammingExerciseParticipation
-            if (participation instanceof StudentParticipation) {
-                isOwner = authCheckService.isOwnerOfParticipation((StudentParticipation) participation);
+            if (participation instanceof StudentParticipation studentParticipation) {
+                isOwner = authCheckService.isOwnerOfParticipation(studentParticipation);
             }
             if (isStudent && programmingParticipation.isLocked()) {
                 // TODO: change to AccessForbiddenException

@@ -48,7 +48,7 @@ public class ParticipantScoreSchedulerService {
 
     public static int DEFAULT_WAITING_TIME_FOR_SCHEDULED_TASKS = 500;
 
-    private final Logger logger = LoggerFactory.getLogger(ParticipantScoreSchedulerService.class);
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final TaskScheduler scheduler;
 
@@ -105,6 +105,7 @@ public class ParticipantScoreSchedulerService {
      */
     @PostConstruct
     public void startup() {
+        log.debug("Startup ParticipantScoreSchedulerService");
         isRunning.set(true);
         scheduleTasks();
     }
@@ -118,6 +119,7 @@ public class ParticipantScoreSchedulerService {
      */
     @PreDestroy
     public void shutdown() {
+        log.debug("Shutdown ParticipantScoreSchedulerService");
         isRunning.set(false);
         // Stop all running tasks, we will reschedule them on startup again
         scheduledTasks.values().forEach(future -> future.cancel(true));
@@ -131,7 +133,7 @@ public class ParticipantScoreSchedulerService {
      */
     @Scheduled(cron = "0 * * * * *")
     protected void scheduleTasks() {
-        logger.info("Schedule tasks to process...");
+        log.info("Schedule tasks to process...");
         SecurityUtils.setAuthorizationObject();
         if (isRunning.get()) {
             executeScheduledTasks();
@@ -144,7 +146,7 @@ public class ParticipantScoreSchedulerService {
      */
     public void executeScheduledTasks() {
         if (!isRunning.get()) {
-            logger.debug("Cannot execute scheduled tasks, because the service is not running");
+            log.debug("Cannot execute scheduled tasks, because the service is not running");
             return;
         }
         // Find all results that were added after the last run (on startup: last time we modified a participant score)
@@ -171,7 +173,7 @@ public class ParticipantScoreSchedulerService {
             }
         });
 
-        logger.info("Processing of {} results and {} participant scores.", resultsToProcess.size(), participantScoresToProcess.size());
+        log.info("Processing of {} results and {} participant scores.", resultsToProcess.size(), participantScoresToProcess.size());
     }
 
     /**
@@ -182,7 +184,7 @@ public class ParticipantScoreSchedulerService {
      */
     public void scheduleTask(@NotNull Long exerciseId, @NotNull Long participantId, Long resultIdToBeDeleted) {
         if (!isRunning.get()) {
-            logger.debug("Cannot schedule task, because the service is not running");
+            log.debug("Cannot schedule task, because the service is not running");
             return;
         }
         scheduleTask(exerciseId, participantId, Instant.now(), resultIdToBeDeleted);
@@ -207,7 +209,7 @@ public class ParticipantScoreSchedulerService {
         var schedulingTime = ZonedDateTime.now().plus(DEFAULT_WAITING_TIME_FOR_SCHEDULED_TASKS, ChronoUnit.MILLIS);
         var future = scheduler.schedule(() -> this.executeTask(exerciseId, participantId, resultLastModified, resultIdToBeDeleted), schedulingTime.toInstant());
         scheduledTasks.put(participantScoreHash, future);
-        logger.debug("Scheduled task for exercise {} and participant {} at {}.", exerciseId, participantId, schedulingTime);
+        log.debug("Scheduled task for exercise {} and participant {} at {}.", exerciseId, participantId, schedulingTime);
     }
 
     /**
@@ -219,14 +221,14 @@ public class ParticipantScoreSchedulerService {
      */
     private void executeTask(Long exerciseId, Long participantId, Instant resultLastModified, Long resultIdToBeDeleted) {
         long start = System.currentTimeMillis();
-        logger.info("Processing exercise {} and participant {} to update participant scores.", exerciseId, participantId);
+        log.info("Processing exercise {} and participant {} to update participant scores.", exerciseId, participantId);
         try {
             SecurityUtils.setAuthorizationObject();
 
             var exercise = exerciseRepository.findById(exerciseId).orElse(null);
             if (exercise == null) {
                 // If the exercise was deleted, we can delete all participant scores for it as well and skip
-                logger.debug("Exercise {} no longer exists, deleting all participant scores for it.", exerciseId);
+                log.debug("Exercise {} no longer exists, deleting all participant scores for it.", exerciseId);
                 participantScoreRepository.deleteAllByExerciseId(exerciseId);
                 return;
             }
@@ -238,7 +240,7 @@ public class ParticipantScoreSchedulerService {
                 participant = teamRepository.findById(participantId).orElse(null);
                 if (participant == null) {
                     // If the team was deleted, we can delete all participant scores for it as well and skip
-                    logger.debug("Team {} no longer exists, deleting all participant scores for it.", participantId);
+                    log.debug("Team {} no longer exists, deleting all participant scores for it.", participantId);
                     teamScoreRepository.deleteAllByTeamId(participantId);
                     return;
                 }
@@ -249,7 +251,7 @@ public class ParticipantScoreSchedulerService {
                 participant = userRepository.findById(participantId).orElse(null);
                 if (participant == null) {
                     // If the user was deleted, we can delete all participant scores for it as well and skip
-                    logger.debug("User {} no longer exists, deleting all participant scores for them.", participantId);
+                    log.debug("User {} no longer exists, deleting all participant scores for them.", participantId);
                     studentScoreRepository.deleteAllByUserId(participantId);
                     return;
                 }
@@ -261,7 +263,7 @@ public class ParticipantScoreSchedulerService {
                 if (lastModified != null && lastModified.isAfter(resultLastModified)) {
                     // The participant score was already updated after the last modified date of the result that this task
                     // We assume we already processed the result with the last task that ran and therefore skip the processing
-                    logger.debug("Participant score {} is already up-to-date, skipping.", participantScore.get().getId());
+                    log.debug("Participant score {} is already up-to-date, skipping.", participantScore.get().getId());
                     return;
                 }
             }
@@ -270,7 +272,7 @@ public class ParticipantScoreSchedulerService {
                     // A participant score for this exercise/participant combination does not exist and this task was triggered because a result will be deleted
                     // It is very likely that the whole participation or exercise is about to be deleted and their participant scores were already removed
                     // We do not need to do anything in that case
-                    logger.debug("Result {} will be deleted and participant score for its participation is already gone, skipping.", resultIdToBeDeleted);
+                    log.debug("Result {} will be deleted and participant score for its participation is already gone, skipping.", resultIdToBeDeleted);
                     return;
                 }
             }
@@ -304,13 +306,13 @@ public class ParticipantScoreSchedulerService {
             }
         }
         catch (Exception e) {
-            logger.error("Exception while processing participant score for exercise {} and participant {} for participant scores:", exerciseId, participantId, e);
+            log.error("Exception while processing participant score for exercise {} and participant {} for participant scores:", exerciseId, participantId, e);
         }
         finally {
             scheduledTasks.remove(new ParticipantScoreId(exerciseId, participantId).hashCode());
         }
         long end = System.currentTimeMillis();
-        logger.info("Updating the participant score for exercise {} and participant {} took {} ms.", exerciseId, participantId, end - start);
+        log.info("Updating the participant score for exercise {} and participant {} took {} ms.", exerciseId, participantId, end - start);
     }
 
     /**
@@ -331,12 +333,12 @@ public class ParticipantScoreSchedulerService {
             if (participantScore.getId() != null) {
                 // Delete the participant score if it exists in the database
                 participantScoreRepository.delete(participantScore);
-                logger.debug("Deleted participant score {}.", participantScore.getId());
+                log.debug("Deleted participant score {}.", participantScore.getId());
             }
         }
         else {
             participantScoreRepository.save(participantScore);
-            logger.debug("Updated participant score {}.", participantScore.getId());
+            log.debug("Updated participant score {}.", participantScore.getId());
         }
     }
 

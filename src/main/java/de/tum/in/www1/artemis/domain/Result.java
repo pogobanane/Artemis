@@ -32,7 +32,7 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "result")
 @EntityListeners({ AuditingEntityListener.class, ResultListener.class })
-//// @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+// @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Result extends DomainObject implements Comparable<Result> {
 

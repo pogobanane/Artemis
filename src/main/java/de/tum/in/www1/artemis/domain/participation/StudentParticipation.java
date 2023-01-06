@@ -3,9 +3,6 @@ package de.tum.in.www1.artemis.domain.participation;
 import java.util.Optional;
 import java.util.Set;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -18,8 +15,6 @@ import jakarta.persistence.*;
 
 @Entity
 @DiscriminatorValue(value = "SP")
-@Cacheable
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class StudentParticipation extends Participation {
 
