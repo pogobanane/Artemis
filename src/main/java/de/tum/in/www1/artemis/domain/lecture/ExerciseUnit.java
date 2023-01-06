@@ -6,7 +6,6 @@ import java.util.Set;
 
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.*;
-import org.hibernate.annotations.Cache;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -17,8 +16,6 @@ import jakarta.persistence.Entity;
 
 @Entity
 @DiscriminatorValue("E")
-@Cacheable
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ExerciseUnit extends LectureUnit {
 
