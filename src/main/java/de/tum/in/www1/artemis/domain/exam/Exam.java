@@ -20,6 +20,7 @@ import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "exam")
+@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Exam extends DomainObject {

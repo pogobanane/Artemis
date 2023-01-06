@@ -1,15 +1,21 @@
 package de.tum.in.www1.artemis.domain.participation;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import de.tum.in.www1.artemis.domain.ProgrammingExercise;
+import jakarta.persistence.Cacheable;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToOne;
 
 @Entity
 @DiscriminatorValue(value = "TPEP")
+@Cacheable
+@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class TemplateProgrammingExerciseParticipation extends AbstractBaseProgrammingExerciseParticipation {
 

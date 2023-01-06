@@ -24,12 +24,18 @@ import jakarta.validation.constraints.NotNull;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "discriminator", discriminatorType = DiscriminatorType.STRING)
 @DiscriminatorValue(value = "S")
-//// @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+// @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "submissionExerciseType")
 // Annotation necessary to distinguish between concrete implementations of Submission when deserializing from JSON
-@JsonSubTypes({ @JsonSubTypes.Type(value = ProgrammingSubmission.class, name = "programming"), @JsonSubTypes.Type(value = ModelingSubmission.class, name = "modeling"),
-        @JsonSubTypes.Type(value = QuizSubmission.class, name = "quiz"), @JsonSubTypes.Type(value = TextSubmission.class, name = "text"),
-        @JsonSubTypes.Type(value = FileUploadSubmission.class, name = "file-upload"), })
+// @formatter:off
+@JsonSubTypes({
+    @JsonSubTypes.Type(value = ProgrammingSubmission.class, name = "programming"),
+    @JsonSubTypes.Type(value = ModelingSubmission.class, name = "modeling"),
+    @JsonSubTypes.Type(value = QuizSubmission.class, name = "quiz"),
+    @JsonSubTypes.Type(value = TextSubmission.class, name = "text"),
+    @JsonSubTypes.Type(value = FileUploadSubmission.class, name = "file-upload")
+})
+// @formatter:on
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public abstract class Submission extends DomainObject implements Comparable<Submission> {
 

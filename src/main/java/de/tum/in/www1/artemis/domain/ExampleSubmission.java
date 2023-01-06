@@ -17,6 +17,7 @@ import jakarta.persistence.*;
  */
 @Entity
 @Table(name = "example_submission")
+@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ExampleSubmission extends DomainObject {
@@ -32,7 +33,7 @@ public class ExampleSubmission extends DomainObject {
     private Submission submission;
 
     @ManyToMany(mappedBy = "trainedExampleSubmissions")
-    // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @JsonIgnoreProperties({ "trainedExampleSubmissions", "assessedExercise" })
     private Set<TutorParticipation> tutorParticipations = new HashSet<>();
 

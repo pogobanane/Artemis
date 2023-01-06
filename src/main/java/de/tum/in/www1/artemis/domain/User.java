@@ -36,6 +36,7 @@ import jakarta.validation.constraints.Size;
  */
 @Entity
 @Table(name = "jhi_user")
+@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class User extends AbstractAuditingEntity implements Participant {
@@ -125,6 +126,7 @@ public class User extends AbstractAuditingEntity implements Participant {
      */
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "user_groups", joinColumns = @JoinColumn(name = "user_id"))
+    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @Column(name = "`groups`")
     private Set<String> groups = new HashSet<>();
 
@@ -141,12 +143,12 @@ public class User extends AbstractAuditingEntity implements Participant {
     @ManyToMany
     @JoinTable(name = "user_organization", joinColumns = { @JoinColumn(name = "user_id", referencedColumnName = "id") }, inverseJoinColumns = {
             @JoinColumn(name = "organization_id", referencedColumnName = "id") })
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @JsonIgnoreProperties("user")
     private Set<Organization> organizations = new HashSet<>();
 
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @JsonIgnoreProperties(value = "student", allowSetters = true)
     public Set<TutorialGroupRegistration> tutorialGroupRegistrations = new HashSet<>();
 

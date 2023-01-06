@@ -4,6 +4,7 @@ import static de.tum.in.www1.artemis.domain.enumeration.ExerciseType.TEXT;
 
 import java.util.List;
 
+import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -19,7 +20,8 @@ import jakarta.persistence.*;
  */
 @Entity
 @DiscriminatorValue(value = "T")
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+@Cacheable
+@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonTypeName("text")
 @SecondaryTable(name = "text_exercise_details")
 @JsonInclude(JsonInclude.Include.NON_EMPTY)

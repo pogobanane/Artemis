@@ -32,6 +32,7 @@ import jakarta.persistence.*;
  */
 @Entity
 @DiscriminatorValue(value = "P")
+@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonTypeName("programming")
 @SecondaryTable(name = "programming_exercise_details")

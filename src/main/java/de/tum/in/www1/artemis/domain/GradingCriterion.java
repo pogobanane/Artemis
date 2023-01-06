@@ -16,6 +16,7 @@ import jakarta.persistence.*;
  */
 @Entity
 @Table(name = "grading_criterion")
+@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class GradingCriterion extends DomainObject {

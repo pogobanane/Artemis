@@ -17,6 +17,7 @@ import jakarta.persistence.*;
  */
 @Entity
 @DiscriminatorValue(value = "F")
+@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonTypeName("file-upload")
 @JsonInclude(JsonInclude.Include.NON_EMPTY)

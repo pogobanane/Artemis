@@ -662,7 +662,7 @@ class ExerciseIntegrationTest extends AbstractSpringIntegrationBambooBitbucketJi
         exercise.setSecondCorrectionEnabled(true);
         exerciseRepository.save(exercise);
         Boolean bool = request.putWithResponseBody("/api/exercises/" + exercise.getId() + "/toggle-second-correction", null, Boolean.class, HttpStatus.OK);
-        assertThat(bool).isFalse();
+        assertThat(bool).as("second correction should be disabled").isFalse();
     }
 
     @Test

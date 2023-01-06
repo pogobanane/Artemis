@@ -21,6 +21,7 @@ import jakarta.persistence.*;
  */
 @Entity
 @DiscriminatorValue(value = "M")
+@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonTypeName("modeling")
 @SecondaryTable(name = "model_exercise_details")

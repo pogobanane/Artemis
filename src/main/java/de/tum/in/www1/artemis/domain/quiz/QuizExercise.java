@@ -31,6 +31,7 @@ import jakarta.validation.constraints.NotNull;
  */
 @Entity
 @DiscriminatorValue(value = "Q")
+@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonTypeName("quiz")
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
