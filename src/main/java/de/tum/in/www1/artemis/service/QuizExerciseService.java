@@ -91,6 +91,7 @@ public class QuizExerciseService {
 
         // fix references in all questions (step 1/2)
         for (var quizQuestion : quizExercise.getQuizQuestions()) {
+            quizQuestion.setExercise(quizExercise);
             if (quizQuestion instanceof MultipleChoiceQuestion mcQuestion) {
                 var quizQuestionStatistic = (MultipleChoiceQuestionStatistic) mcQuestion.getQuizQuestionStatistic();
                 if (quizQuestionStatistic == null) {
@@ -204,7 +205,7 @@ public class QuizExerciseService {
         // Note: save will automatically remove deleted questions from the exercise and deleted answer options from the questions
         // and delete the now orphaned entries from the database
         log.debug("Save quiz to database: {}", quizExercise);
-        quizExercise = quizExerciseRepository.saveAndFlush(quizExercise);
+        quizExercise = quizExerciseRepository.save(quizExercise);
 
         // fix references in all drag and drop questions and short answer questions (step 2/2)
         for (QuizQuestion quizQuestion : quizExercise.getQuizQuestions()) {

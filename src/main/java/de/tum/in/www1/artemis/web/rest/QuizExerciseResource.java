@@ -521,7 +521,7 @@ public class QuizExerciseResource {
         }
 
         // save quiz exercise
-        quizExercise = quizExerciseRepository.saveAndFlush(quizExercise);
+        quizExercise = quizExerciseRepository.save(quizExercise);
         // reload the quiz exercise with questions and statistics to prevent problems with proxy objects
         quizExercise = quizExerciseRepository.findByIdWithQuestionsAndStatisticsElseThrow(quizExercise.getId());
         quizScheduleService.updateQuizExercise(quizExercise);

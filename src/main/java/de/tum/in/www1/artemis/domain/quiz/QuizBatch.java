@@ -3,6 +3,7 @@ package de.tum.in.www1.artemis.domain.quiz;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
+import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -20,7 +21,8 @@ import jakarta.persistence.*;
  */
 @Entity
 @Table(name = "quiz_batch")
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+@Cacheable
+@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class QuizBatch extends DomainObject {
 

@@ -1269,9 +1269,8 @@ class QuizExerciseIntegrationTest extends AbstractSpringIntegrationBambooBitbuck
         quizExercise.setDuration(180);
         quizExerciseService.endQuiz(quizExercise, ZonedDateTime.now().minusMinutes(2));
         quizExerciseService.save(quizExercise);
-        QuizExercise updatedQuizExercise = request.putWithResponseBody("/api/quiz-exercises/" + quizExercise.getId() + "/open-for-practice", quizExercise, QuizExercise.class,
-                HttpStatus.OK);
-        assertThat(updatedQuizExercise.isIsOpenForPractice()).isTrue();
+        var updatedQuiz = request.putWithResponseBody("/api/quiz-exercises/" + quizExercise.getId() + "/open-for-practice", quizExercise, QuizExercise.class, HttpStatus.OK);
+        assertThat(updatedQuiz.isIsOpenForPractice()).isTrue();
     }
 
     private static List<Arguments> testPerformJoin_args() {

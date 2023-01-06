@@ -72,9 +72,9 @@ public class QuizExercise extends Exercise {
     @JoinColumn(unique = true)
     private QuizPointStatistic quizPointStatistic;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "exercise", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderColumn
-    @JoinColumn(name = "exercise_id")
+    @JsonIgnoreProperties(value = "exercise", allowSetters = true)
     // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @JsonView(QuizView.During.class)
     private List<QuizQuestion> quizQuestions = new ArrayList<>();
