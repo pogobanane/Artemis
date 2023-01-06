@@ -13,6 +13,7 @@ import jakarta.persistence.*;
  */
 @Entity
 @Table(name = "bonus")
+@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Bonus extends DomainObject {

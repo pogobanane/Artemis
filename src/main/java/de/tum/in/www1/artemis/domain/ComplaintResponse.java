@@ -6,6 +6,9 @@ import static de.tum.in.www1.artemis.config.Constants.COMPLAINT_RESPONSE_TEXT_LI
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -21,7 +24,8 @@ import jakarta.validation.constraints.Size;
  */
 @Entity
 @Table(name = "complaint_response")
-// @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+@Cacheable
+@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ComplaintResponse extends AbstractAuditingEntity {
 
