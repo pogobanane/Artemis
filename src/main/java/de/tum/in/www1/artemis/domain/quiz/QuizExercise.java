@@ -6,6 +6,8 @@ import java.time.ZonedDateTime;
 import java.util.*;
 
 import org.hibernate.Hibernate;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.fasterxml.jackson.annotation.*;
 
@@ -75,7 +77,7 @@ public class QuizExercise extends Exercise {
     @OneToMany(mappedBy = "exercise", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderColumn
     @JsonIgnoreProperties(value = "exercise", allowSetters = true)
-    // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @JsonView(QuizView.During.class)
     private List<QuizQuestion> quizQuestions = new ArrayList<>();
 

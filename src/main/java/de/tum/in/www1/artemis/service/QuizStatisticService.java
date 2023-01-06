@@ -73,35 +73,12 @@ public class QuizStatisticService {
             quizPointStatistic.setQuiz(quizExercise);
             quizExercise.recalculatePointCounters();
         }
+        loadQuestionStatisticDetails(quizExercise);
         for (QuizQuestion quizQuestion : quizExercise.getQuizQuestions()) {
-            if (quizQuestion.getQuizQuestionStatistic() != null) {
-                if (quizQuestion instanceof MultipleChoiceQuestion mcQuestion) {
-                    var quizQuestionStatistic = (MultipleChoiceQuestionStatistic) mcQuestion.getQuizQuestionStatistic();
-                    if (!Hibernate.isInitialized(quizQuestionStatistic) || !Hibernate.isInitialized(quizQuestionStatistic.getAnswerCounters())) {
-                        // Note: load the quizQuestionStatistic from database with answerCounters
-                        quizQuestionStatistic = multipleChoiceQuestionStatisticRepository.findByIdWithAnswerCounters(quizQuestionStatistic.getId());
-                        mcQuestion.setQuizQuestionStatistic(quizQuestionStatistic);
-                    }
-                }
-                else if (quizQuestion instanceof DragAndDropQuestion dndQuestion) {
-                    var quizQuestionStatistic = (DragAndDropQuestionStatistic) dndQuestion.getQuizQuestionStatistic();
-                    if (!Hibernate.isInitialized(quizQuestionStatistic) || !Hibernate.isInitialized(quizQuestionStatistic.getDropLocationCounters())) {
-                        // Note: load the quizQuestionStatistic from database with dropLocationCounters
-                        quizQuestionStatistic = dragAndDropQuestionStatisticRepository.findByIdWithDropLocationCounters(quizQuestionStatistic.getId());
-                        dndQuestion.setQuizQuestionStatistic(quizQuestionStatistic);
-                    }
-                }
-                else if (quizQuestion instanceof ShortAnswerQuestion saQuestion) {
-                    var quizQuestionStatistic = (ShortAnswerQuestionStatistic) saQuestion.getQuizQuestionStatistic();
-                    if (!Hibernate.isInitialized(quizQuestionStatistic) || !Hibernate.isInitialized(quizQuestionStatistic.getShortAnswerSpotCounters())) {
-                        // Note: load the quizQuestionStatistic from database with shortAnswerSpotCounters
-                        quizQuestionStatistic = shortAnswerQuestionStatisticRepository.findByIdWithShortAnswerSpotCounters(quizQuestionStatistic.getId());
-                        saQuestion.setQuizQuestionStatistic(quizQuestionStatistic);
-                    }
-                }
-                quizQuestion.getQuizQuestionStatistic().resetStatistic();
-            }
+            quizQuestion.getQuizQuestionStatistic().setQuizQuestion(quizQuestion);
+            quizQuestion.getQuizQuestionStatistic().resetStatistic();
         }
+        quizExercise.reconnectJSONIgnoreAttributes();
 
         // add the Results in every participation of the given quizExercise to the statistics
         for (Participation participation : studentParticipationRepository.findByExerciseId(quizExercise.getId())) {
@@ -208,24 +185,28 @@ public class QuizStatisticService {
      */
     public void loadQuestionStatisticDetails(QuizExercise quizExercise) {
 
-        if (quizExercise.getQuizPointStatistic() != null) {
+        if (quizExercise.getQuizPointStatistic() != null && !Hibernate.isInitialized(quizExercise.getQuizPointStatistic())) {
             quizExercise.setQuizPointStatistic(quizPointStatisticRepository.findByIdWithPointCounters(quizExercise.getQuizPointStatistic().getId()));
         }
 
         for (var quizQuestion : quizExercise.getQuizQuestions()) {
-            QuizQuestionStatistic statistic;
-            if (quizQuestion instanceof MultipleChoiceQuestion mcQuestion && mcQuestion.getQuizQuestionStatistic() != null) {
+            QuizQuestionStatistic statistic = quizQuestion.getQuizQuestionStatistic();
+            // TODO: it could be the case that statistic is a proxy
+            if (quizQuestion instanceof MultipleChoiceQuestion mcQuestion && statistic != null) {
                 // Note: load the quizQuestionStatistic from database with answerCounters
+                // TODO: only load if necessary
                 statistic = multipleChoiceQuestionStatisticRepository.findByIdWithAnswerCounters(mcQuestion.getQuizQuestionStatistic().getId());
                 quizQuestion.setQuizQuestionStatistic(statistic);
             }
-            else if (quizQuestion instanceof DragAndDropQuestion dndQuestion && dndQuestion.getQuizQuestionStatistic() != null) {
+            else if (quizQuestion instanceof DragAndDropQuestion dndQuestion && statistic != null) {
                 // Note: load the quizQuestionStatistic from database with dropLocationCounters
+                // TODO: only load if necessary
                 statistic = dragAndDropQuestionStatisticRepository.findByIdWithDropLocationCounters(dndQuestion.getQuizQuestionStatistic().getId());
                 quizQuestion.setQuizQuestionStatistic(statistic);
             }
-            else if (quizQuestion instanceof ShortAnswerQuestion saQuestion && saQuestion.getQuizQuestionStatistic() != null) {
+            else if (quizQuestion instanceof ShortAnswerQuestion saQuestion && statistic != null) {
                 // Note: load the quizQuestionStatistic from database with shortAnswerSpotCounters
+                // TODO: only load if necessary
                 statistic = shortAnswerQuestionStatisticRepository.findByIdWithShortAnswerSpotCounters(saQuestion.getQuizQuestionStatistic().getId());
                 quizQuestion.setQuizQuestionStatistic(statistic);
             }

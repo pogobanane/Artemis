@@ -35,6 +35,7 @@ import de.tum.in.www1.artemis.web.rest.dto.QuizBatchJoinDTO;
 import de.tum.in.www1.artemis.web.rest.dto.SearchResultPageDTO;
 import de.tum.in.www1.artemis.web.rest.errors.AccessForbiddenException;
 import de.tum.in.www1.artemis.web.rest.errors.BadRequestAlertException;
+import de.tum.in.www1.artemis.web.rest.errors.EntityNotFoundException;
 import de.tum.in.www1.artemis.web.rest.util.HeaderUtil;
 
 /** REST controller for managing QuizExercise. */
@@ -45,6 +46,8 @@ public class QuizExerciseResource {
     private final Logger log = LoggerFactory.getLogger(QuizExerciseResource.class);
 
     private static final String ENTITY_NAME = "quizExercise";
+
+    private final QuizQuestionService quizQuestionService;
 
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
@@ -92,7 +95,7 @@ public class QuizExerciseResource {
             QuizExerciseImportService quizExerciseImportService, AuthorizationCheckService authCheckService, CourseRepository courseRepository,
             GroupNotificationService groupNotificationService, ExerciseService exerciseService, ExamDateService examDateService, QuizMessagingService quizMessagingService,
             GroupNotificationScheduleService groupNotificationScheduleService, StudentParticipationRepository studentParticipationRepository, QuizBatchService quizBatchService,
-            QuizBatchRepository quizBatchRepository, SubmissionRepository submissionRepository) {
+            QuizBatchRepository quizBatchRepository, SubmissionRepository submissionRepository, QuizQuestionService quizQuestionService) {
         this.quizExerciseService = quizExerciseService;
         this.quizExerciseRepository = quizExerciseRepository;
         this.exerciseDeletionService = exerciseDeletionServiceService;
@@ -112,6 +115,7 @@ public class QuizExerciseResource {
         this.quizBatchService = quizBatchService;
         this.quizBatchRepository = quizBatchRepository;
         this.submissionRepository = submissionRepository;
+        this.quizQuestionService = quizQuestionService;
     }
 
     /**
@@ -317,6 +321,7 @@ public class QuizExerciseResource {
         if (!authCheckService.isAllowedToSeeExercise(quizExercise, null)) {
             throw new AccessForbiddenException();
         }
+        quizQuestionService.loadQuestionWithDetailsIfNecessary(quizExercise);
         quizStatisticService.recalculateStatistics(quizExercise);
         // fetch the quiz exercise again to make sure the latest changes are included
         quizExercise = quizExerciseRepository.findByIdWithQuestionsAndStatisticsElseThrow(quizExercise.getId());
@@ -335,7 +340,7 @@ public class QuizExerciseResource {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<QuizExercise> getQuizExerciseForStudent(@PathVariable Long quizExerciseId) {
         log.info("REST request to get quiz exercise : {}", quizExerciseId);
-        QuizExercise quizExercise = quizExerciseRepository.findByIdWithQuestionsElseThrow(quizExerciseId);
+        var quizExercise = quizExerciseRepository.findWithEagerQuestionsDetailsById(quizExerciseId).orElseThrow(() -> new EntityNotFoundException("Quiz Exercise", quizExerciseId));
         User user = userRepository.getUserWithGroupsAndAuthorities();
         if (!authCheckService.isAllowedToSeeExercise(quizExercise, user)) {
             throw new AccessForbiddenException();

@@ -25,10 +25,7 @@ import de.tum.in.www1.artemis.repository.StudentParticipationRepository;
 import de.tum.in.www1.artemis.repository.UserRepository;
 import de.tum.in.www1.artemis.security.Role;
 import de.tum.in.www1.artemis.security.SecurityUtils;
-import de.tum.in.www1.artemis.service.AuthorizationCheckService;
-import de.tum.in.www1.artemis.service.ParticipationService;
-import de.tum.in.www1.artemis.service.QuizSubmissionService;
-import de.tum.in.www1.artemis.service.WebsocketMessagingService;
+import de.tum.in.www1.artemis.service.*;
 import de.tum.in.www1.artemis.service.exam.ExamSubmissionService;
 import de.tum.in.www1.artemis.web.rest.util.HeaderUtil;
 import jakarta.validation.Valid;
@@ -43,6 +40,8 @@ public class QuizSubmissionResource {
     private final Logger log = LoggerFactory.getLogger(QuizSubmissionResource.class);
 
     private static final String ENTITY_NAME = "quizSubmission";
+
+    private final QuizQuestionService quizQuestionService;
 
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
@@ -65,7 +64,7 @@ public class QuizSubmissionResource {
 
     public QuizSubmissionResource(QuizExerciseRepository quizExerciseRepository, QuizSubmissionService quizSubmissionService, ParticipationService participationService,
             WebsocketMessagingService messagingService, UserRepository userRepository, AuthorizationCheckService authCheckService, ExamSubmissionService examSubmissionService,
-            StudentParticipationRepository studentParticipationRepository) {
+            StudentParticipationRepository studentParticipationRepository, QuizQuestionService quizQuestionService) {
         this.quizExerciseRepository = quizExerciseRepository;
         this.quizSubmissionService = quizSubmissionService;
         this.participationService = participationService;
@@ -74,6 +73,7 @@ public class QuizSubmissionResource {
         this.authCheckService = authCheckService;
         this.examSubmissionService = examSubmissionService;
         this.studentParticipationRepository = studentParticipationRepository;
+        this.quizQuestionService = quizQuestionService;
     }
 
     /**
@@ -148,6 +148,8 @@ public class QuizSubmissionResource {
         // we set the exercise again to prevent issues with lazy loaded quiz questions
         participation.setExercise(quizExercise);
 
+        quizQuestionService.loadQuestionWithDetailsIfNecessary(quizExercise);
+
         // update and save submission
         Result result = quizSubmissionService.submitForPractice(quizSubmission, quizExercise, participation);
         // The quizScheduler is usually responsible for updating the participation to FINISHED in the database. If quizzes where the student did not participate are used for
@@ -188,7 +190,7 @@ public class QuizSubmissionResource {
 
         QuizExercise quizExercise = quizExerciseRepository.findByIdWithQuestionsElseThrow(exerciseId);
         authCheckService.checkHasAtLeastRoleForExerciseElseThrow(Role.TEACHING_ASSISTANT, quizExercise, null);
-
+        quizQuestionService.loadQuestionWithDetailsIfNecessary(quizExercise);
         // update submission
         quizSubmission.setSubmitted(true);
         quizSubmission.setType(SubmissionType.MANUAL);

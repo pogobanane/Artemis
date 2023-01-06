@@ -37,6 +37,7 @@ import de.tum.in.www1.artemis.domain.quiz.SubmittedAnswer;
 import de.tum.in.www1.artemis.repository.*;
 import de.tum.in.www1.artemis.security.SecurityUtils;
 import de.tum.in.www1.artemis.service.QuizMessagingService;
+import de.tum.in.www1.artemis.service.QuizQuestionService;
 import de.tum.in.www1.artemis.service.QuizStatisticService;
 import de.tum.in.www1.artemis.service.scheduled.cache.Cache;
 import de.tum.in.www1.artemis.web.rest.errors.EntityNotFoundException;
@@ -70,9 +71,11 @@ public class QuizScheduleService {
 
     private final QuizExerciseRepository quizExerciseRepository;
 
+    private final QuizQuestionService quizQuestionService;
+
     public QuizScheduleService(SimpMessageSendingOperations messagingTemplate, StudentParticipationRepository studentParticipationRepository, UserRepository userRepository,
             QuizSubmissionRepository quizSubmissionRepository, HazelcastInstance hazelcastInstance, QuizExerciseRepository quizExerciseRepository,
-            QuizMessagingService quizMessagingService, QuizStatisticService quizStatisticService) {
+            QuizMessagingService quizMessagingService, QuizStatisticService quizStatisticService, QuizQuestionService quizQuestionService) {
         this.messagingTemplate = messagingTemplate;
         this.studentParticipationRepository = studentParticipationRepository;
         this.userRepository = userRepository;
@@ -83,6 +86,7 @@ public class QuizScheduleService {
         this.scheduledProcessQuizSubmissions = hazelcastInstance.getCPSubsystem().getAtomicReference(HAZELCAST_PROCESS_CACHE_HANDLER);
         this.threadPoolTaskScheduler = hazelcastInstance.getScheduledExecutorService(Constants.HAZELCAST_QUIZ_SCHEDULER);
         this.quizCache = new QuizCache(hazelcastInstance);
+        this.quizQuestionService = quizQuestionService;
     }
 
     /**
@@ -501,6 +505,8 @@ public class QuizScheduleService {
                     try {
                         Collection<Result> newResultsForQuiz = cachedQuiz.getResults().values();
                         // load lazy objects in question statistics
+                        // TODO: check if loading the lazy object
+                        quizQuestionService.loadQuestionWithDetailsIfNecessary(quizExercise);
                         quizStatisticService.loadQuestionStatisticDetails(quizExercise);
                         // Update the statistics
                         quizStatisticService.updateStatistics(newResultsForQuiz, quizExercise);

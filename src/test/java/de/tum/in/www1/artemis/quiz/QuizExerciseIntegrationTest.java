@@ -1222,10 +1222,9 @@ class QuizExerciseIntegrationTest extends AbstractSpringIntegrationBambooBitbuck
     void testPerformStartNow() throws Exception {
         quizExercise = createQuizOnServer(ZonedDateTime.now().plusHours(5), null, QuizMode.SYNCHRONIZED);
         quizExercise.setReleaseDate(ZonedDateTime.now().minusHours(5));
-        quizExercise = quizExerciseService.save(quizExercise);
+        quizExercise = request.putWithResponseBody("/api/quiz-exercises", quizExercise, QuizExercise.class, HttpStatus.OK);
 
-        QuizExercise updatedQuizExercise = request.putWithResponseBody("/api/quiz-exercises/" + quizExercise.getId() + "/start-now", quizExercise, QuizExercise.class,
-                HttpStatus.OK);
+        var updatedQuizExercise = request.putWithResponseBody("/api/quiz-exercises/" + quizExercise.getId() + "/start-now", quizExercise, QuizExercise.class, HttpStatus.OK);
         long millis = ChronoUnit.MILLIS.between(updatedQuizExercise.getQuizBatches().stream().findAny().get().getStartTime(), ZonedDateTime.now());
         // actually the two dates should be "exactly" the same, but for the sake of slow CI testing machines and to prevent flaky tests, we live with the following rule
         assertThat(millis).isCloseTo(0, byLessThan(2000L));
@@ -1238,7 +1237,7 @@ class QuizExerciseIntegrationTest extends AbstractSpringIntegrationBambooBitbuck
     void testPerformStartNow_invalidMode(QuizMode quizMode) throws Exception {
         quizExercise = createQuizOnServer(ZonedDateTime.now().plusHours(5), null, quizMode);
         quizExercise.setReleaseDate(ZonedDateTime.now().minusHours(5));
-        quizExercise = quizExerciseService.save(quizExercise);
+        quizExerciseRepository.save(quizExercise);
 
         request.putWithResponseBody("/api/quiz-exercises/" + quizExercise.getId() + "/start-now", quizExercise, QuizExercise.class, HttpStatus.BAD_REQUEST);
     }

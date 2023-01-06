@@ -51,11 +51,13 @@ public class QuizExerciseService {
 
     private final ShortAnswerQuestionStatisticRepository shortAnswerQuestionStatisticRepository;
 
+    private final QuizQuestionService quizQuestionService;
+
     public QuizExerciseService(QuizExerciseRepository quizExerciseRepository, DragAndDropMappingRepository dragAndDropMappingRepository, ResultRepository resultRepository,
             ShortAnswerMappingRepository shortAnswerMappingRepository, QuizSubmissionRepository quizSubmissionRepository, QuizScheduleService quizScheduleService,
             QuizStatisticService quizStatisticService, QuizBatchService quizBatchService, AuthorizationCheckService authCheckService,
             MultipleChoiceQuestionStatisticRepository multipleChoiceQuestionStatisticRepository, DragAndDropQuestionStatisticRepository dragAndDropQuestionStatisticRepository,
-            ShortAnswerQuestionStatisticRepository shortAnswerQuestionStatisticRepository) {
+            ShortAnswerQuestionStatisticRepository shortAnswerQuestionStatisticRepository, QuizQuestionService quizQuestionService) {
         this.quizExerciseRepository = quizExerciseRepository;
         this.dragAndDropMappingRepository = dragAndDropMappingRepository;
         this.shortAnswerMappingRepository = shortAnswerMappingRepository;
@@ -68,6 +70,7 @@ public class QuizExerciseService {
         this.multipleChoiceQuestionStatisticRepository = multipleChoiceQuestionStatisticRepository;
         this.dragAndDropQuestionStatisticRepository = dragAndDropQuestionStatisticRepository;
         this.shortAnswerQuestionStatisticRepository = shortAnswerQuestionStatisticRepository;
+        this.quizQuestionService = quizQuestionService;
     }
 
     /**
@@ -407,6 +410,8 @@ public class QuizExerciseService {
      * @return the updated quiz exercise with the changed statistics
      */
     public QuizExercise reEvaluate(QuizExercise quizExercise, QuizExercise originalQuizExercise) {
+        // load lazy attributes of original quiz exercise
+        quizQuestionService.loadQuestionWithDetailsIfNecessary(originalQuizExercise);
 
         quizExercise.undoUnallowedChanges(originalQuizExercise);
         boolean updateOfResultsAndStatisticsNecessary = quizExercise.checkIfRecalculationIsNecessary(originalQuizExercise);
