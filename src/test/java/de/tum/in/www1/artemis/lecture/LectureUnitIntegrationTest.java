@@ -15,8 +15,8 @@ import org.springframework.security.test.context.support.WithMockUser;
 import de.tum.in.www1.artemis.AbstractSpringIntegrationBambooBitbucketJiraTest;
 import de.tum.in.www1.artemis.domain.Course;
 import de.tum.in.www1.artemis.domain.DomainObject;
-import de.tum.in.www1.artemis.domain.Lecture;
 import de.tum.in.www1.artemis.domain.lecture.*;
+import de.tum.in.www1.artemis.domain.lecture.Lecture;
 import de.tum.in.www1.artemis.repository.*;
 
 class LectureUnitIntegrationTest extends AbstractSpringIntegrationBambooBitbucketJiraTest {

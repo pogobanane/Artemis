@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import de.tum.in.www1.artemis.domain.Attachment;
+import de.tum.in.www1.artemis.domain.lecture.Attachment;
 import de.tum.in.www1.artemis.web.rest.errors.EntityNotFoundException;
 import jakarta.validation.constraints.NotNull;
 

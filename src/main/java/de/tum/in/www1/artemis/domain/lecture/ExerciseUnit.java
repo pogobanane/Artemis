@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.*;
+import org.hibernate.annotations.Cache;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -16,13 +17,14 @@ import jakarta.persistence.Entity;
 
 @Entity
 @DiscriminatorValue("E")
+@Cacheable
+@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ExerciseUnit extends LectureUnit {
 
     // Note: Name, release date and learning goals will always be taken from associated exercise
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name = "exercise_id")
-    // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     private Exercise exercise;
 
     public Exercise getExercise() {
@@ -60,7 +62,7 @@ public class ExerciseUnit extends LectureUnit {
 
     @Override
     public Set<LearningGoal> getLearningGoals() {
-        return exercise == null || !Hibernate.isPropertyInitialized(exercise, "learningGoals") ? new HashSet<>() : exercise.getLearningGoals();
+        return exercise == null || !Hibernate.isInitialized(exercise.getLearningGoals()) ? new HashSet<>() : exercise.getLearningGoals();
     }
 
     @Override

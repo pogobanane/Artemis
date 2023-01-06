@@ -87,7 +87,7 @@ spring:
         database-platform: org.hibernate.dialect.H2Dialect # Alternatives org.hibernate.dialect.H2Dialect / org.hibernate.dialect.PostgreSQL10Dialect / org.hibernate.dialect.MySQL8Dialect
         database: h2        # Alternatives h2 / POSTGRESQL / MYSQL
         open-in-view: false
-        show-sql: true
+        show-sql: false
         hibernate:
             ddl-auto: none
             naming:
@@ -96,7 +96,7 @@ spring:
         properties:
 #            hibernate.max_fetch_depth: 2    # at least temporarily reduced to 2 due to changes/issues in Hibernate 6, should also improve the server performance
             hibernate.format_sql: false
-            hibernate.use_sql_comments: true
+            hibernate.use_sql_comments: false
             hibernate.id.new_generator_mappings: true
             hibernate.connection.provider_disables_autocommit: false
             hibernate.connection.autocommit: false

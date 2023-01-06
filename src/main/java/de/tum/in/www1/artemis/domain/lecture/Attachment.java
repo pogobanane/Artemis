@@ -1,35 +1,40 @@
-package de.tum.in.www1.artemis.domain;
+package de.tum.in.www1.artemis.domain.lecture;
 
 import java.io.Serializable;
 import java.nio.file.Path;
 import java.time.ZonedDateTime;
-
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import de.tum.in.www1.artemis.config.Constants;
+import de.tum.in.www1.artemis.domain.DomainObject;
 import de.tum.in.www1.artemis.domain.enumeration.AttachmentType;
-import de.tum.in.www1.artemis.domain.lecture.AttachmentUnit;
 import de.tum.in.www1.artemis.service.FilePathService;
 import de.tum.in.www1.artemis.service.FileService;
 import jakarta.persistence.*;
 
+// @formatter:off
 /*
  * NOTE: The file management is necessary to differentiate between temporary and used files and to delete used files when the corresponding attachment is deleted or it is replaced
- * by another file. The workflow is as follows: 1. user uploads a file -> this is a temporary file, because at this point the corresponding attachment might not exist yet. 2. user
- * saves the attachment -> now we move the temporary file which is addressed in link to a permanent location and update the value in link accordingly. => This happens
- * in @PrePersist and @PostPersist 3. user might upload another file to replace the existing file -> this new file is a temporary file at first 4. user saves changes (with the new
- * link pointing to the new temporary file) -> now we delete the old file in the permanent location and move the new file to a permanent location and update the value in link
- * accordingly. => This happens in @PreUpdate and uses @PostLoad to know the old path 5. When attachment is deleted, the file in the permanent location is deleted => This happens
- * in @PostRemove
+ * by another file. The workflow is as follows:
+ * 1. user uploads a file
+ *      -> this is a temporary file, because at this point the corresponding attachment might not exist yet.
+ * 2. user saves the attachment
+ *      -> now we move the temporary file which is addressed in link to a permanent location and update the value in link accordingly.
+ *      => This happens in @PrePersist and @PostPersist
+ * 3. user might upload another file to replace the existing file
+ *      -> this new file is a temporary file at first
+ * 4. user saves changes (with the new link pointing to the new temporary file)
+ *      -> now we delete the old file in the permanent location and move the new file to a permanent location and update the value in link accordingly.
+ *      => This happens in @PreUpdate and uses @PostLoad to know the old path
+ * 5. When attachment is deleted, the file in the permanent location is deleted
+ *      => This happens in @PostRemove
  */
+// @formatter:on
 @Entity
 @Table(name = "attachment")
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Attachment extends DomainObject implements Serializable {
 
