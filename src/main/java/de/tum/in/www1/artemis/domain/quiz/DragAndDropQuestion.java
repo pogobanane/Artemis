@@ -35,21 +35,18 @@ public class DragAndDropQuestion extends QuizQuestion {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @OrderColumn
     @JoinColumn(name = "question_id")
-    // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @JsonView(QuizView.Before.class)
     private List<DropLocation> dropLocations = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @OrderColumn
     @JoinColumn(name = "question_id")
-    // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @JsonView(QuizView.Before.class)
     private List<DragItem> dragItems = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @OrderColumn(name = "correct_mappings_order")
     @JoinColumn(name = "question_id")
-    // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @JsonView(QuizView.After.class)
     private List<DragAndDropMapping> correctDragAndDropMappings = new ArrayList<>();
 

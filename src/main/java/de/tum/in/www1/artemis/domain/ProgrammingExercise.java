@@ -8,8 +8,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import org.hibernate.Hibernate;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,17 +100,17 @@ public class ProgrammingExercise extends Exercise {
     private SolutionProgrammingExerciseParticipation solutionParticipation;
 
     @OneToMany(mappedBy = "exercise", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @JsonIgnoreProperties("exercise")
+    // Note: no @Cache because this would lead to problems when deleting the exercise without first deleting the test cases manually
     private Set<ProgrammingExerciseTestCase> testCases = new HashSet<>();
 
     @OneToMany(mappedBy = "exercise", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @JsonIgnoreProperties("exercise")
+    // Note: no @Cache because this would lead to problems when deleting the exercise without first deleting the tasks manually
     private List<ProgrammingExerciseTask> tasks = new ArrayList<>();
 
     @OneToMany(mappedBy = "exercise", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    // Note: no @Cache because this would lead to problems when deleting the exercise without first deleting the static code analysis categories manually
     @JsonIgnoreProperties("exercise")
     private Set<StaticCodeAnalysisCategory> staticCodeAnalysisCategories = new HashSet<>();
 

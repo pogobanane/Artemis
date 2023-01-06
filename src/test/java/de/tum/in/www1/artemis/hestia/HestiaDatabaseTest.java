@@ -21,6 +21,7 @@ import de.tum.in.www1.artemis.repository.*;
 import de.tum.in.www1.artemis.repository.hestia.CodeHintRepository;
 import de.tum.in.www1.artemis.repository.hestia.ProgrammingExerciseSolutionEntryRepository;
 import de.tum.in.www1.artemis.repository.hestia.ProgrammingExerciseTaskRepository;
+import de.tum.in.www1.artemis.service.programming.ProgrammingExerciseService;
 
 /**
  * This class tests the database relations of the Hestia domain models.
@@ -45,6 +46,9 @@ class HestiaDatabaseTest extends AbstractSpringIntegrationBambooBitbucketJiraTes
 
     @Autowired
     private CodeHintRepository codeHintRepository;
+
+    @Autowired
+    private ProgrammingExerciseService programmingExerciseService;
 
     private Long programmingExerciseId;
 
@@ -85,7 +89,7 @@ class HestiaDatabaseTest extends AbstractSpringIntegrationBambooBitbucketJiraTes
     @Test
     void deleteProgrammingExerciseWithTask() {
         addOneTaskToProgrammingExercise();
-        programmingExerciseRepository.deleteById(programmingExerciseId);
+        programmingExerciseService.delete(programmingExerciseId, false);
         assertThat(programmingExerciseTaskRepository.findByExerciseId(programmingExerciseId)).isEmpty();
     }
 
@@ -104,7 +108,7 @@ class HestiaDatabaseTest extends AbstractSpringIntegrationBambooBitbucketJiraTes
     @Test
     void deleteProgrammingExerciseWithTestCasesAndSolutionEntries() {
         addTestCasesWithSolutionEntriesToProgrammingExercise();
-        programmingExerciseRepository.deleteById(programmingExerciseId);
+        programmingExerciseService.delete(programmingExerciseId, false);
         assertThat(programmingExerciseTestCaseRepository.findByExerciseId(programmingExerciseId)).isEmpty();
         assertThat(programmingExerciseSolutionEntryRepository.findByExerciseIdWithTestCases(programmingExerciseId)).isEmpty();
     }
@@ -166,7 +170,7 @@ class HestiaDatabaseTest extends AbstractSpringIntegrationBambooBitbucketJiraTes
     @Test
     void deleteProgrammingExerciseWithCodeHint() {
         addCodeHintToProgrammingExercise();
-        programmingExerciseRepository.deleteById(programmingExerciseId);
+        programmingExerciseService.delete(programmingExerciseId, false);
         assertThat(programmingExerciseTaskRepository.findByExerciseId(programmingExerciseId)).isEmpty();
         assertThat(programmingExerciseSolutionEntryRepository.findByExerciseIdWithTestCases(programmingExerciseId)).isEmpty();
         assertThat(codeHintRepository.findByExerciseId(programmingExerciseId)).isEmpty();

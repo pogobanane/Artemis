@@ -22,21 +22,18 @@ public class ShortAnswerQuestion extends QuizQuestion {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @OrderColumn
     @JoinColumn(name = "question_id")
-    // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @JsonView(QuizView.Before.class)
     private List<ShortAnswerSpot> spots = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @OrderColumn
     @JoinColumn(name = "question_id")
-    // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @JsonView(QuizView.Before.class)
     private List<ShortAnswerSolution> solutions = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @OrderColumn(name = "correct_mappings_order")
     @JoinColumn(name = "question_id")
-    // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @JsonView(QuizView.After.class)
     private List<ShortAnswerMapping> correctShortAnswerMappings = new ArrayList<>();
 

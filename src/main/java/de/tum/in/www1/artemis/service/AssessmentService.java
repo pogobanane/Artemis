@@ -16,6 +16,7 @@ import de.tum.in.www1.artemis.service.exam.ExamDateService;
 import de.tum.in.www1.artemis.service.programming.ProgrammingAssessmentService;
 import de.tum.in.www1.artemis.web.rest.errors.BadRequestAlertException;
 import de.tum.in.www1.artemis.web.rest.errors.EntityNotFoundException;
+import jakarta.annotation.Nullable;
 
 @Service
 public class AssessmentService {
@@ -232,12 +233,13 @@ public class AssessmentService {
      * <p>
      * For programming exercises we use a different approach see {@link ProgrammingAssessmentService#saveManualAssessment(Result)}
      *
-     * @param submission the file upload submission to which the feedback belongs to
+     * @param submission   the file upload submission to which the feedback belongs to
      * @param feedbackList the assessment as a feedback list that should be added to the result of the corresponding submission
-     * @param resultId resultId of the submission we what to save the @feedbackList to, null if no result exists
+     * @param resultId     resultId of the submission we what to save the @feedbackList to, null if no result exists
+     * @param assessor     the user who has created the manual assessment
      * @return result that was saved in the database
      */
-    public Result saveManualAssessment(final Submission submission, final List<Feedback> feedbackList, Long resultId) {
+    public Result saveManualAssessment(final Submission submission, final List<Feedback> feedbackList, Long resultId, @Nullable User assessor) {
         Result result = submission.getResults().stream().filter(res -> res.getId().equals(resultId)).findAny().orElse(null);
 
         if (result == null) {
@@ -251,8 +253,10 @@ public class AssessmentService {
 
         result.setExampleResult(submission.isExampleSubmission());
         result.setAssessmentType(AssessmentType.MANUAL);
-        User user = userRepository.getUser();
-        result.setAssessor(user);
+        if (assessor == null) {
+            assessor = userRepository.getUser();
+        }
+        result.setAssessor(assessor);
 
         result.updateAllFeedbackItems(feedbackList, false);
         result.determineAssessmentType();
@@ -262,9 +266,8 @@ public class AssessmentService {
             submission.addResult(result);
             submissionRepository.save(submission);
         }
-        // Workaround to prevent the assessor turning into a proxy object after saving
-        var assessor = result.getAssessor();
         result = resultRepository.save(result);
+        // Set the assessor again so that it is not a proxy
         result.setAssessor(assessor);
         return result;
     }

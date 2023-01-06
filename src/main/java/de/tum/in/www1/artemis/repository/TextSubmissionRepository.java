@@ -13,7 +13,6 @@ import org.springframework.stereotype.Repository;
 
 import de.tum.in.www1.artemis.domain.TextSubmission;
 import de.tum.in.www1.artemis.domain.enumeration.Language;
-import de.tum.in.www1.artemis.web.rest.errors.BadRequestAlertException;
 import de.tum.in.www1.artemis.web.rest.errors.EntityNotFoundException;
 import jakarta.validation.constraints.NotNull;
 
@@ -91,14 +90,14 @@ public interface TextSubmissionRepository extends JpaRepository<TextSubmission, 
 
     @NotNull
     default TextSubmission getTextSubmissionWithResultAndTextBlocksAndFeedbackByResultIdElseThrow(long resultId) {
-        return findWithEagerResultAndTextBlocksAndFeedbackByResults_Id(resultId) // TODO should be EntityNotFoundException
-                .orElseThrow(() -> new BadRequestAlertException("No text submission found for the given result.", "textSubmission", "textSubmissionNotFound"));
+        return findWithEagerResultAndTextBlocksAndFeedbackByResults_Id(resultId)
+                .orElseThrow(() -> new EntityNotFoundException("No text submission found for the given result " + resultId));
     }
 
     @NotNull
     default TextSubmission findByIdWithEagerParticipationExerciseResultAssessorElseThrow(long submissionId) {
-        return findByIdWithEagerParticipationExerciseResultAssessor(submissionId) // TODO should be EntityNotFoundException
-                .orElseThrow(() -> new BadRequestAlertException("No text submission found for the given submission.", "textSubmission", "textSubmissionNotFound"));
+        return findByIdWithEagerParticipationExerciseResultAssessor(submissionId)
+                .orElseThrow(() -> new EntityNotFoundException("No text submission found for the given submission " + submissionId));
     }
 
     default List<TextSubmission> getTextSubmissionsWithTextBlocksByExerciseIdAndLanguage(long exerciseId, Language language) {

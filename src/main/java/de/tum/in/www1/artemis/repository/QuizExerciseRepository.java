@@ -60,6 +60,16 @@ public interface QuizExerciseRepository extends JpaRepository<QuizExercise, Long
             """)
     Optional<QuizExercise> findWithEagerQuestionsAndStatisticsById(Long quizExerciseId);
 
+    @EntityGraph(type = LOAD, attributePaths = { "quizQuestions", "quizQuestions.answerOptions", // MC
+            "quizQuestions.spots", // SA
+            "quizQuestions.solutions", // SA
+            "quizQuestions.correctShortAnswerMappings", // SA
+            "quizQuestions.dropLocations", // DnD
+            "quizQuestions.dragItems", // DnD
+            "quizQuestions.correctDragAndDropMappings" // DnD
+    })
+    Optional<QuizExercise> findWithEagerQuestionsDetailsById(Long quizExerciseId);
+
     @EntityGraph(type = LOAD, attributePaths = { "quizQuestions" })
     Optional<QuizExercise> findWithEagerQuestionsById(Long quizExerciseId);
 

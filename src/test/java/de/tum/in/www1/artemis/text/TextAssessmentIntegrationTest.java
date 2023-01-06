@@ -1207,8 +1207,9 @@ class TextAssessmentIntegrationTest extends AbstractSpringIntegrationBambooBitbu
     @WithMockUser(username = TEST_PREFIX + "tutor1", roles = "TA")
     void retrieveConflictingTextSubmissions_forNonExistingSubmission() throws Exception {
         List<TextSubmission> textSubmissions = prepareTextSubmissionsWithFeedbackAndConflict();
-        List<TextSubmission> conflictingTextSubmissions = request.getList("/api/participations/" + textSubmissions.get(0).getParticipation().getId() + "/submissions/123/feedbacks/"
-                + textSubmissions.get(0).getLatestResult().getFeedbacks().get(0).getId() + "/feedback-conflicts", HttpStatus.BAD_REQUEST, TextSubmission.class);
+        List<TextSubmission> conflictingTextSubmissions = request.getList("/api/participations/" + textSubmissions.get(0).getParticipation().getId()
+                + "/submissions/12768567453/feedbacks/" + textSubmissions.get(0).getLatestResult().getFeedbacks().get(0).getId() + "/feedback-conflicts", HttpStatus.NOT_FOUND,
+                TextSubmission.class);
         assertThat(conflictingTextSubmissions).as("passed submission should not be found").isNull();
     }
 

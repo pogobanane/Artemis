@@ -36,7 +36,6 @@ import de.tum.in.www1.artemis.repository.metis.PostRepository;
 import de.tum.in.www1.artemis.repository.plagiarism.PlagiarismCaseRepository;
 import de.tum.in.www1.artemis.repository.plagiarism.PlagiarismComparisonRepository;
 import de.tum.in.www1.artemis.util.ModelFactory;
-import de.tum.in.www1.artemis.web.rest.errors.BadRequestAlertException;
 import de.tum.in.www1.artemis.web.rest.errors.EntityNotFoundException;
 
 class TextSubmissionIntegrationTest extends AbstractSpringIntegrationBambooBitbucketJiraTest {
@@ -108,8 +107,8 @@ class TextSubmissionIntegrationTest extends AbstractSpringIntegrationBambooBitbu
     void testRepositoryMethods() {
         assertThrows(EntityNotFoundException.class, () -> submissionRepository.findByIdWithParticipationExerciseResultAssessorElseThrow(Long.MAX_VALUE));
         assertThrows(EntityNotFoundException.class, () -> submissionRepository.findByIdWithEagerResultsAndFeedbackAndTextBlocksElseThrow(Long.MAX_VALUE));
-        assertThrows(BadRequestAlertException.class, () -> submissionRepository.getTextSubmissionWithResultAndTextBlocksAndFeedbackByResultIdElseThrow(Long.MAX_VALUE));
-        assertThrows(BadRequestAlertException.class, () -> submissionRepository.findByIdWithEagerParticipationExerciseResultAssessorElseThrow(Long.MAX_VALUE));
+        assertThrows(EntityNotFoundException.class, () -> submissionRepository.getTextSubmissionWithResultAndTextBlocksAndFeedbackByResultIdElseThrow(Long.MAX_VALUE));
+        assertThrows(EntityNotFoundException.class, () -> submissionRepository.findByIdWithEagerParticipationExerciseResultAssessorElseThrow(Long.MAX_VALUE));
     }
 
     @Test

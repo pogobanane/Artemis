@@ -23,7 +23,6 @@ public class MultipleChoiceQuestion extends QuizQuestion {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @OrderColumn
     @JoinColumn(name = "question_id")
-    // @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @JsonView(QuizView.Before.class)
     private List<AnswerOption> answerOptions = new ArrayList<>();
 

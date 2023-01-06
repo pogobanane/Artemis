@@ -39,6 +39,7 @@ import de.tum.in.www1.artemis.security.SecurityUtils;
 import de.tum.in.www1.artemis.service.QuizMessagingService;
 import de.tum.in.www1.artemis.service.QuizStatisticService;
 import de.tum.in.www1.artemis.service.scheduled.cache.Cache;
+import de.tum.in.www1.artemis.web.rest.errors.EntityNotFoundException;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
@@ -630,7 +631,10 @@ public class QuizScheduleService {
                 result.setCompletionDate(quizSubmission.getSubmissionDate());
                 result.setSubmission(quizSubmission);
 
-                // calculate scores and update result and submission accordingly
+                // calculate scores and update result & submission accordingly: before we have to load the proxy objects of all questions in the quiz exercise properly
+                var quizWithDetails = quizExerciseRepository.findWithEagerQuestionsDetailsById(quizExercise.getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Quiz Exercise", quizExercise.getId()));
+                quizExercise.setQuizQuestions(quizWithDetails.getQuizQuestions());
                 quizSubmission.calculateAndUpdateScores(quizExercise);
                 result.evaluateQuizSubmission();
 

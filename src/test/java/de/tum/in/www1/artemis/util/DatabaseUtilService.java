@@ -3390,9 +3390,8 @@ public class DatabaseUtilService {
 
     public Result addModelingAssessmentForSubmission(ModelingExercise exercise, ModelingSubmission submission, String path, String login, boolean submit) throws Exception {
         List<Feedback> feedbackList = loadAssessmentFomResources(path);
-        Result result = assessmentService.saveManualAssessment(submission, feedbackList, null);
+        Result result = assessmentService.saveManualAssessment(submission, feedbackList, null, getUserByLogin(login));
         result.setParticipation(submission.getParticipation().results(null));
-        result.setAssessor(getUserByLogin(login));
         resultRepo.save(result);
         if (submit) {
             assessmentService.submitManualAssessment(result.getId(), exercise, submission.getSubmissionDate());
@@ -3407,9 +3406,8 @@ public class DatabaseUtilService {
         feedbacks.add(feedback1);
         feedbacks.add(feedback2);
 
-        Result result = assessmentService.saveManualAssessment(submission, feedbacks, null);
+        Result result = assessmentService.saveManualAssessment(submission, feedbacks, null, getUserByLogin(login));
         result.setParticipation(submission.getParticipation().results(null));
-        result.setAssessor(getUserByLogin(login));
         resultRepo.save(result);
         if (submit) {
             assessmentService.submitManualAssessment(result.getId(), exercise, submission.getSubmissionDate());

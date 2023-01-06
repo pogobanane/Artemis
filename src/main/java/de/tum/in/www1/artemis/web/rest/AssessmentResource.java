@@ -119,7 +119,8 @@ public abstract class AssessmentResource {
             throw new AccessForbiddenException("The user is not allowed to override the assessment");
         }
 
-        Result result = assessmentService.saveManualAssessment(submission, feedbackList, resultId);
+        log.debug("saveAssessment: input validation done");
+        Result result = assessmentService.saveManualAssessment(submission, feedbackList, resultId, user);
         if (submit) {
             result = assessmentService.submitManualAssessment(result.getId(), exercise, submission.getSubmissionDate());
             Optional<User> optionalStudent = ((StudentParticipation) submission.getParticipation()).getStudent();
@@ -127,6 +128,7 @@ public abstract class AssessmentResource {
                 singleUserNotificationService.checkNotificationForAssessmentExerciseSubmission(exercise, optionalStudent.get(), result);
             }
         }
+        log.debug("saveAssessment: result saved (submitted={})", submit);
         var participation = result.getParticipation();
         // remove information about the student for tutors to ensure double-blind assessment
         if (!isAtLeastInstructor) {
@@ -152,10 +154,10 @@ public abstract class AssessmentResource {
         // as parameter resultId is not set, we use the latest Result, if no latest Result exists, we use null
         Result result;
         if (submission.getLatestResult() == null) {
-            result = assessmentService.saveManualAssessment(submission, feedbacks, null);
+            result = assessmentService.saveManualAssessment(submission, feedbacks, null, user);
         }
         else {
-            result = assessmentService.saveManualAssessment(submission, feedbacks, submission.getLatestResult().getId());
+            result = assessmentService.saveManualAssessment(submission, feedbacks, submission.getLatestResult().getId(), user);
         }
         result = resultRepository.submitResult(result, exercise, Optional.empty());
         return ResponseEntity.ok(result);
