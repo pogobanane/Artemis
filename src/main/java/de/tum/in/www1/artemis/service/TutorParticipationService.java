@@ -101,7 +101,7 @@ public class TutorParticipationService {
         tutorParticipation.setStatus(exampleSubmissionsCount == 0 ? TRAINED : REVIEWED_INSTRUCTIONS);
         tutorParticipation.setTutor(tutor);
         tutorParticipation.setAssessedExercise(exercise);
-        return tutorParticipationRepository.saveAndFlush(tutorParticipation);
+        return tutorParticipationRepository.save(tutorParticipation);
     }
 
     /**

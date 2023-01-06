@@ -19,10 +19,7 @@ import de.tum.in.www1.artemis.domain.enumeration.FeedbackType;
 import de.tum.in.www1.artemis.domain.enumeration.TutorParticipationStatus;
 import de.tum.in.www1.artemis.domain.modeling.ModelingExercise;
 import de.tum.in.www1.artemis.domain.participation.TutorParticipation;
-import de.tum.in.www1.artemis.repository.ExerciseRepository;
-import de.tum.in.www1.artemis.repository.GradingCriterionRepository;
-import de.tum.in.www1.artemis.repository.GradingInstructionRepository;
-import de.tum.in.www1.artemis.repository.ResultRepository;
+import de.tum.in.www1.artemis.repository.*;
 import de.tum.in.www1.artemis.service.ExampleSubmissionService;
 import de.tum.in.www1.artemis.service.SubmissionService;
 import de.tum.in.www1.artemis.service.TutorParticipationService;
@@ -54,6 +51,9 @@ class TutorParticipationIntegrationTest extends AbstractSpringIntegrationBambooB
 
     @Autowired
     private GradingCriterionRepository gradingCriterionRepository;
+
+    @Autowired
+    private ExampleSubmissionRepository exampleSubmissionRepository;
 
     private ModelingExercise modelingExercise;
 
@@ -104,14 +104,7 @@ class TutorParticipationIntegrationTest extends AbstractSpringIntegrationBambooB
     @Test
     @WithMockUser(username = TEST_PREFIX + "tutor1", roles = "TA")
     void testTutorParticipateInTextExerciseWithExampleSubmissionAddingUnnecessaryFeedbackBadRequest() throws Exception {
-        ExampleSubmission exampleSubmission = prepareTextExampleSubmission(true);
-
-        // Tutor reviewed the instructions.
-        var tutor = database.getUserByLogin(TEST_PREFIX + "tutor1");
-        var tutorParticipation = new TutorParticipation().tutor(tutor).status(TutorParticipationStatus.REVIEWED_INSTRUCTIONS);
-        tutorParticipationService.createNewParticipation(textExercise, tutor);
-        exampleSubmission.addTutorParticipations(tutorParticipation);
-        exampleSubmissionService.save(exampleSubmission);
+        ExampleSubmission exampleSubmission = setupExampleSubmission(prepareTextExampleSubmission(true));
 
         exampleSubmission.getSubmission().getLatestResult().addFeedback(ModelFactory.createManualTextFeedback(1D, textBlockIds.get(1)));
         var path = "/api/exercises/" + textExercise.getId() + "/assess-example-submission";
@@ -124,7 +117,17 @@ class TutorParticipationIntegrationTest extends AbstractSpringIntegrationBambooB
     @Test
     @WithMockUser(username = TEST_PREFIX + "tutor1", roles = "TA")
     void testTutorParticipateInTextExerciseWithExampleSubmissionAddingUnnecessaryUnreferencedFeedbackBadRequest() throws Exception {
-        ExampleSubmission exampleSubmission = prepareTextExampleSubmission(true);
+        ExampleSubmission exampleSubmission = setupExampleSubmission(prepareTextExampleSubmission(true));
+
+        exampleSubmission.getSubmission().getLatestResult().addFeedback(ModelFactory.createPositiveFeedback(FeedbackType.MANUAL_UNREFERENCED));
+        var path = "/api/exercises/" + textExercise.getId() + "/assess-example-submission";
+        request.postWithResponseBody(path, exampleSubmission, TutorParticipation.class, HttpStatus.BAD_REQUEST);
+    }
+
+    private ExampleSubmission setupExampleSubmission(ExampleSubmission exampleSubmission) {
+        // reload the example submission from the database to avoid issues with sub elements that have been saved to the database, but not updated in the exampleSubmission object
+        // used here
+        exampleSubmission = exampleSubmissionRepository.findByIdWithResultsFeedbacksAndTutorParticipations(exampleSubmission.getId()).get();
 
         // Tutor reviewed the instructions.
         var tutor = database.getUserByLogin(TEST_PREFIX + "tutor1");
@@ -132,10 +135,7 @@ class TutorParticipationIntegrationTest extends AbstractSpringIntegrationBambooB
         tutorParticipationService.createNewParticipation(textExercise, tutor);
         exampleSubmission.addTutorParticipations(tutorParticipation);
         exampleSubmissionService.save(exampleSubmission);
-
-        exampleSubmission.getSubmission().getLatestResult().addFeedback(ModelFactory.createPositiveFeedback(FeedbackType.MANUAL_UNREFERENCED));
-        var path = "/api/exercises/" + textExercise.getId() + "/assess-example-submission";
-        request.postWithResponseBody(path, exampleSubmission, TutorParticipation.class, HttpStatus.BAD_REQUEST);
+        return exampleSubmission;
     }
 
     /**
@@ -145,14 +145,7 @@ class TutorParticipationIntegrationTest extends AbstractSpringIntegrationBambooB
     @Test
     @WithMockUser(username = TEST_PREFIX + "tutor1", roles = "TA")
     void testTutorParticipateInModelingExerciseWithExampleSubmissionAddingUnnecessaryFeedbackBadRequest() throws Exception {
-        ExampleSubmission exampleSubmission = prepareModelingExampleSubmission(true);
-
-        // Tutor reviewed the instructions.
-        var tutor = database.getUserByLogin(TEST_PREFIX + "tutor1");
-        var tutorParticipation = new TutorParticipation().tutor(tutor).status(TutorParticipationStatus.REVIEWED_INSTRUCTIONS);
-        tutorParticipationService.createNewParticipation(textExercise, tutor);
-        exampleSubmission.addTutorParticipations(tutorParticipation);
-        exampleSubmissionService.save(exampleSubmission);
+        ExampleSubmission exampleSubmission = setupExampleSubmission(prepareModelingExampleSubmission(true));
 
         exampleSubmission.getSubmission().getLatestResult().addFeedback(ModelFactory.createManualTextFeedback(1D, "6aba5764-d102-4740-9675-b2bd0a4f2680"));
         var path = "/api/exercises/" + textExercise.getId() + "/assess-example-submission";
@@ -165,14 +158,7 @@ class TutorParticipationIntegrationTest extends AbstractSpringIntegrationBambooB
     @Test
     @WithMockUser(username = TEST_PREFIX + "tutor1", roles = "TA")
     void testTutorParticipateInModelingExerciseWithExampleSubmissionAddingUnnecessaryUnreferencedFeedbackBadRequest() throws Exception {
-        ExampleSubmission exampleSubmission = prepareModelingExampleSubmission(true);
-
-        // Tutor reviewed the instructions.
-        var tutor = database.getUserByLogin(TEST_PREFIX + "tutor1");
-        var tutorParticipation = new TutorParticipation().tutor(tutor).status(TutorParticipationStatus.REVIEWED_INSTRUCTIONS);
-        tutorParticipationService.createNewParticipation(textExercise, tutor);
-        exampleSubmission.addTutorParticipations(tutorParticipation);
-        exampleSubmissionService.save(exampleSubmission);
+        ExampleSubmission exampleSubmission = setupExampleSubmission(prepareModelingExampleSubmission(true));
 
         exampleSubmission.getSubmission().getLatestResult().addFeedback(ModelFactory.createPositiveFeedback(FeedbackType.MANUAL_UNREFERENCED));
         var path = "/api/exercises/" + textExercise.getId() + "/assess-example-submission";

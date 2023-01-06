@@ -31,22 +31,34 @@ public interface ExampleSubmissionRepository extends JpaRepository<ExampleSubmis
     @EntityGraph(type = LOAD, attributePaths = { "submission", "submission.results" })
     Set<ExampleSubmission> findAllWithResultByExerciseId(long exerciseId);
 
-    @EntityGraph(type = LOAD, attributePaths = { "submission", "submission.results" })
     @Query("""
-            SELECT DISTINCT exampleSubmission
-            FROM ExampleSubmission exampleSubmission
-                LEFT JOIN FETCH exampleSubmission.tutorParticipations
-            WHERE exampleSubmission.id = :exampleSubmissionId
+            SELECT DISTINCT es
+            FROM ExampleSubmission es
+                LEFT JOIN FETCH es.tutorParticipations
+                LEFT JOIN FETCH es.submission s
+                LEFT JOIN FETCH s.results r
+                LEFT JOIN FETCH r.feedbacks
+            WHERE es.id = :exampleSubmissionId
+            """)
+    Optional<ExampleSubmission> findByIdWithResultsFeedbacksAndTutorParticipations(@Param("exampleSubmissionId") long exampleSubmissionId);
+
+    @Query("""
+            SELECT DISTINCT es
+            FROM ExampleSubmission es
+                LEFT JOIN FETCH es.tutorParticipations
+                LEFT JOIN FETCH es.submission s
+                LEFT JOIN FETCH s.results
+            WHERE es.id = :exampleSubmissionId
             """)
     Optional<ExampleSubmission> findByIdWithResultsAndTutorParticipations(@Param("exampleSubmissionId") long exampleSubmissionId);
 
     @Query("""
-            SELECT DISTINCT exampleSubmission
-            FROM ExampleSubmission exampleSubmission
-                LEFT JOIN FETCH exampleSubmission.submission s
+            SELECT DISTINCT es
+            FROM ExampleSubmission es
+                LEFT JOIN FETCH es.submission s
                 LEFT JOIN FETCH s.results r
                 LEFT JOIN FETCH r.feedbacks
-            WHERE exampleSubmission.id = :exampleSubmissionId
+            WHERE es.id = :exampleSubmissionId
             """)
     Optional<ExampleSubmission> findByIdWithResultsAndFeedback(@Param("exampleSubmissionId") long exampleSubmissionId);
 
