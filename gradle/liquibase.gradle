@@ -31,6 +31,10 @@ task initPaths(dependsOn: compileJava) {
 }
 
 def liquibaseCommand(command) {
+    liquibaseCommand(command, null)
+}
+
+def liquibaseCommand(command, String[] additionalLiquibaseArgs) {
     javaexec {
         if (OperatingSystem.current().isWindows()) {
             classpath files(pathingLiquibaseJar.archivePath)
@@ -44,8 +48,9 @@ def liquibaseCommand(command) {
         args "--referenceUrl=hibernate:spring:de.tum.in.www1.artemis.domain?dialect=org.hibernate.dialect.MySQL8Dialect&hibernate.physical_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy&hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy"
         args "--username=root"
         args "--password="
-        args "--url=jdbc:mysql://localhost:3306/ArTEMiS?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC"
+        args "--url=jdbc:mysql://localhost:3306/Artemis?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC"
         args "--driver=com.mysql.cj.jdbc.Driver"
+        additionalLiquibaseArgs.each { val -> args val }
         args command
     }
 }
@@ -65,6 +70,23 @@ task liquibaseClearChecksums(dependsOn: initPaths) {
 task liquibaseGenerateChangelog(dependsOn: initPaths) {
     doLast {
         liquibaseCommand("generateChangelog")
+    }
+}
+
+/*
+   Testdata Changelog Generation Helper
+   dumps the included tables in csv files and creates changelogs
+   manual work:
+   1) strip everything except the loaddata parts from the changelogs
+   2) set the databaseChangeLog to context="testdata"
+   3) add the changelog to master.xml
+*/
+task liquibaseGenerateChangelogTestdata(dependsOn: initPaths) {
+    doLast {
+        liquibaseCommand("generateChangelog",
+            "--diffTypes=tables,columns,data",
+            "--includeObjects=table:jhi_user,table:jhi_user_authority",
+            "--dataOutputDirectory=src/main/resources/config/liquibase/testdata")
     }
 }
 
