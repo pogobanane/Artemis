@@ -255,17 +255,21 @@ public class CourseService {
      * @return an unmodifiable list of all courses including exercises, lectures and exams for the user
      */
     public List<Course> findAllActiveWithExercisesAndLecturesAndExamsForUser(User user) {
-        return courseRepository.findAllActiveWithLecturesAndExams().stream()
-                // filter old courses and courses the user should not be able to see
-                // skip old courses that have already finished
-                .filter(course -> course.getEndDate() == null || course.getEndDate().isAfter(ZonedDateTime.now())).filter(course -> isCourseVisibleForUser(user, course))
-                .peek(course -> {
-                    course.setExercises(exerciseService.findAllForCourse(course, user));
-                    course.setLectures(lectureService.filterActiveAttachments(course.getLectures(), user));
-                    if (authCheckService.isOnlyStudentInCourse(course, user)) {
-                        course.setExams(examRepository.filterVisibleExams(course.getExams()));
-                    }
-                }).toList();
+        var userVisibleCourses = courseRepository.findAllActiveWithLecturesAndExams().stream()
+                // remove old courses that have already finished
+                .filter(course -> course.getEndDate() == null || course.getEndDate().isAfter(ZonedDateTime.now()))
+                // remove courses the user should not be able to see
+                .filter(course -> isCourseVisibleForUser(user, course));
+
+        // TODO: find all exercises for all courses of the user in one db call to improve the performance, then we would need to map them to the correct course
+
+        return userVisibleCourses.peek(course -> {
+            course.setExercises(exerciseService.findAllForCourse(course, user));
+            course.setLectures(lectureService.filterActiveAttachments(course.getLectures(), user));
+            if (authCheckService.isOnlyStudentInCourse(course, user)) {
+                course.setExams(examRepository.filterVisibleExams(course.getExams()));
+            }
+        }).toList();
     }
 
     private boolean isCourseVisibleForUser(User user, Course course) {
@@ -404,7 +408,7 @@ public class CourseService {
     /**
      * Add multiple users to the course so that they can access it
      * The passed list of UserDTOs must include the registration number (the other entries are currently ignored and can be left out)
-     * Note: registration based on other user attributes (e.g. email, name, login) is currently NOT supported
+     * Note: registration based on other user attributes (e.g. name) is currently NOT supported
      * <p>
      * This method first tries to find the user in the internal Artemis user database (because the user is most probably already using Artemis).
      * In case the user cannot be found, we additionally search the (TUM) LDAP in case it is configured properly.
@@ -422,7 +426,8 @@ public class CourseService {
         for (var studentDto : studentDTOs) {
             var registrationNumber = studentDto.getRegistrationNumber();
             var login = studentDto.getLogin();
-            Optional<User> optionalStudent = userService.findUserAndAddToCourse(registrationNumber, courseGroupName, courseGroupRole, login);
+            var email = studentDto.getEmail();
+            Optional<User> optionalStudent = userService.findUserAndAddToCourse(registrationNumber, courseGroupName, courseGroupRole, login, email);
             if (optionalStudent.isEmpty()) {
                 notFoundStudentsDTOs.add(studentDto);
             }
