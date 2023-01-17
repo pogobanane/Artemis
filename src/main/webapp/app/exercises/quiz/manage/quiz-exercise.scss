@@ -1,5 +1,6 @@
 @import '../../../../content/scss/_artemis-mixins.scss';
 
+.edit-mc-question,
 .edit-dnd-question,
 .edit-sa-question {
     .dnd-instructions {
@@ -184,12 +185,6 @@
 /* highlight drop location in light blue when selecting a drag item */
 .cdk-drop-list-receiving {
     background: rgba(173, 216, 230, 0.8) !important;
-}
-
-/* change highlight color to light green when dragging the item above a drop location */
-.cdk-drop-list-dragging {
-    background: rgb(144, 238, 144) !important;
-    cursor: pointer !important;
 }
 
 .cdk-drag {

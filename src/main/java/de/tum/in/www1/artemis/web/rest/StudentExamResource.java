@@ -136,13 +136,14 @@ public class StudentExamResource {
         StudentExam studentExam = studentExamRepository.findByIdWithExercisesAndSessionsElseThrow(studentExamId);
 
         examService.loadQuizExercisesForStudentExam(studentExam);
+        studentExamRepository.fetchAllQuizQuestions(List.of(studentExam));
 
         // fetch participations, submissions and results for these exercises, note: exams only contain individual exercises for now
         // fetching all participations at once is more effective
         List<StudentParticipation> participations = studentParticipationRepository.findByStudentExamWithEagerSubmissionsResult(studentExam, true);
 
         // fetch all submitted answers for quizzes
-        submittedAnswerRepository.loadQuizSubmissionsSubmittedAnswers(participations);
+        submittedAnswerRepository.loadQuizSubmissionsSubmittedAnswers(participations, studentExam.getQuizExamSubmission());
 
         // connect the exercises and student participations correctly and make sure all relevant associations are available
         for (Exercise exercise : studentExam.getExercises()) {
@@ -150,6 +151,8 @@ public class StudentExamResource {
             examService.filterParticipationForExercise(studentExam, exercise, participations, true);
         }
         studentExam.getUser().setVisibleRegistrationNumber();
+
+        examService.loadQuizExamSubmissionResultSubmittedAnswers(studentExam);
 
         StudentExamWithGradeDTO studentExamWithGradeDTO = examService.calculateStudentResultWithGradeAndPoints(studentExam, participations);
 

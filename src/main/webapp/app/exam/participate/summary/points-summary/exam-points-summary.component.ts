@@ -17,6 +17,9 @@ export class ExamPointsSummaryComponent implements OnInit {
     readonly IncludedInOverallScore = IncludedInOverallScore;
     readonly BonusStrategy = BonusStrategy;
     @Input() studentExamWithGrade: StudentExamWithGradeDTO;
+    @Input() exercises: Exercise[];
+    @Input() hasQuizExam?: boolean;
+    @Input() quizExamMaxPoints: number | undefined;
 
     gradingScaleExists = false;
     isBonus = false;
@@ -65,6 +68,10 @@ export class ExamPointsSummaryComponent implements OnInit {
 
     getAchievedPointsSum() {
         return this.studentExamWithGrade?.studentResult.overallPointsAchieved ?? 0;
+    }
+
+    getQuizExamAchievedPointsSum() {
+        return this.studentExamWithGrade.studentResult.quizExamOverallPointsAchieved ?? 0;
     }
 
     /**

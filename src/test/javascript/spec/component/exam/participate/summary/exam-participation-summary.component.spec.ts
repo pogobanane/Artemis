@@ -51,6 +51,8 @@ import { NgbCollapseMocksModule } from '../../../../helpers/mocks/directive/ngbC
 import { MockExamParticipationService } from '../../../../helpers/mocks/service/mock-exam-participation.service';
 import { MockLocalStorageService } from '../../../../helpers/mocks/service/mock-local-storage.service';
 import { MockArtemisServerDateService } from '../../../../helpers/mocks/service/mock-server-date.service';
+import { QuizExamSubmission } from 'app/entities/quiz/quiz-exam-submission.model';
+import { Result } from 'app/entities/result.model';
 
 let fixture: ComponentFixture<ExamParticipationSummaryComponent>;
 let component: ExamParticipationSummaryComponent;
@@ -111,6 +113,7 @@ const studentExam = {
     exam,
     user,
     exercises,
+    numberOfExamSessions: 1,
 } as StudentExam;
 
 const studentExamForTestExam = {
@@ -118,6 +121,7 @@ const studentExamForTestExam = {
     exam: testExam,
     user,
     exercises,
+    numberOfExamSessions: 1,
 } as StudentExam;
 const gradeInfo: StudentExamWithGradeDTO = {
     maxPoints: 100,
@@ -422,5 +426,22 @@ describe('ExamParticipationSummaryComponent', () => {
         expect(component.isBeforeStudentReviewEnd()).toBeFalse();
 
         expect(dateSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it('should return QuizExercise given Exercise', () => {
+        const quizExercise = new QuizExercise(undefined, undefined);
+        const exercise = quizExercise as Exercise;
+        expect(component.asQuizExercise(exercise)).toEqual(quizExercise);
+    });
+
+    it('should set quizExamResult', () => {
+        const studentExam = new StudentExam();
+        const quizExamSubmission = new QuizExamSubmission();
+        const result = new Result();
+        quizExamSubmission.results = [result];
+        studentExam.hasQuizExam = true;
+        studentExam.quizExamSubmission = quizExamSubmission;
+        component.studentExam = studentExam;
+        expect(component.quizExamResult).toEqual(result);
     });
 });

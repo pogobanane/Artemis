@@ -19,6 +19,8 @@ import { ProgrammingSubmission } from 'app/entities/programming-submission.model
 import { captureException } from '@sentry/browser';
 import { Participation, ParticipationType } from 'app/entities/participation/participation.model';
 import { SubmissionService } from 'app/exercises/shared/submission/submission.service';
+import { Course } from 'app/entities/course.model';
+import { QuizExercise } from 'app/entities/quiz/quiz-exercise.model';
 
 export type EntityResponseType = HttpResponse<Result>;
 export type EntityArrayResponseType = HttpResponse<Result[]>;
@@ -51,6 +53,21 @@ export class ResultService implements IResultService {
         return this.http
             .get<Result>(`${this.resultResourceUrl}/${resultId}`, { observe: 'response' })
             .pipe(map((res: EntityResponseType) => this.convertResultResponseDatesFromServer(res)));
+    }
+
+    /**
+     * Generates the result string for the quiz exam.
+     * If either of the arguments is undefined the error is forwarded to sentry and an empty string is returned
+     * @param result the result containing all necessary information like the achieved points
+     * @param course the course of which the quiz exam belongs to
+     * @param maxPoints the max points of the quiz exam
+     * @param short flag that indicates if the resultString should use the short format
+     */
+    getQuizExamResultString(result: Result | undefined, course: Course | undefined, maxPoints: number, short?: boolean): string {
+        const exercise = new QuizExercise(course, undefined);
+        exercise.course = course;
+        exercise.maxPoints = maxPoints;
+        return this.getResultString(result, exercise, short);
     }
 
     /**

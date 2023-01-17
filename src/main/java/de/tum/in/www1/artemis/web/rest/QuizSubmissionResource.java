@@ -17,19 +17,14 @@ import de.tum.in.www1.artemis.domain.enumeration.AssessmentType;
 import de.tum.in.www1.artemis.domain.enumeration.InitializationState;
 import de.tum.in.www1.artemis.domain.enumeration.SubmissionType;
 import de.tum.in.www1.artemis.domain.participation.StudentParticipation;
-import de.tum.in.www1.artemis.domain.quiz.QuizExercise;
-import de.tum.in.www1.artemis.domain.quiz.QuizSubmission;
-import de.tum.in.www1.artemis.domain.quiz.SubmittedAnswer;
+import de.tum.in.www1.artemis.domain.quiz.*;
 import de.tum.in.www1.artemis.exception.QuizSubmissionException;
 import de.tum.in.www1.artemis.repository.QuizExerciseRepository;
 import de.tum.in.www1.artemis.repository.StudentParticipationRepository;
 import de.tum.in.www1.artemis.repository.UserRepository;
 import de.tum.in.www1.artemis.security.Role;
 import de.tum.in.www1.artemis.security.SecurityUtils;
-import de.tum.in.www1.artemis.service.AuthorizationCheckService;
-import de.tum.in.www1.artemis.service.ParticipationService;
-import de.tum.in.www1.artemis.service.QuizSubmissionService;
-import de.tum.in.www1.artemis.service.WebsocketMessagingService;
+import de.tum.in.www1.artemis.service.*;
 import de.tum.in.www1.artemis.service.exam.ExamSubmissionService;
 import de.tum.in.www1.artemis.web.rest.util.HeaderUtil;
 
@@ -51,7 +46,9 @@ public class QuizSubmissionResource {
 
     private final QuizExerciseRepository quizExerciseRepository;
 
-    private final QuizSubmissionService quizSubmissionService;
+    private final QuizExerciseSubmissionService quizSubmissionService;
+
+    private final QuizExamSubmissionService quizExamSubmissionService;
 
     private final ParticipationService participationService;
 
@@ -63,14 +60,15 @@ public class QuizSubmissionResource {
 
     private final ExamSubmissionService examSubmissionService;
 
-    public QuizSubmissionResource(QuizExerciseRepository quizExerciseRepository, QuizSubmissionService quizSubmissionService, ParticipationService participationService,
-            WebsocketMessagingService messagingService, UserRepository userRepository, AuthorizationCheckService authCheckService, ExamSubmissionService examSubmissionService,
-            StudentParticipationRepository studentParticipationRepository) {
+    public QuizSubmissionResource(QuizExerciseRepository quizExerciseRepository, QuizExerciseSubmissionService quizSubmissionService, ParticipationService participationService,
+            WebsocketMessagingService messagingService, UserRepository userRepository, QuizExamSubmissionService quizExamSubmissionService,
+            AuthorizationCheckService authCheckService, ExamSubmissionService examSubmissionService, StudentParticipationRepository studentParticipationRepository) {
         this.quizExerciseRepository = quizExerciseRepository;
         this.quizSubmissionService = quizSubmissionService;
         this.participationService = participationService;
         this.messagingService = messagingService;
         this.userRepository = userRepository;
+        this.quizExamSubmissionService = quizExamSubmissionService;
         this.authCheckService = authCheckService;
         this.examSubmissionService = examSubmissionService;
         this.studentParticipationRepository = studentParticipationRepository;
@@ -186,7 +184,7 @@ public class QuizSubmissionResource {
         // update submission
         quizSubmission.setSubmitted(true);
         quizSubmission.setType(SubmissionType.MANUAL);
-        quizSubmission.calculateAndUpdateScores(quizExercise);
+        quizSubmission.calculateAndUpdateScores(quizExercise.getQuizQuestions());
 
         // create Participation stub
         StudentParticipation participation = new StudentParticipation().exercise(quizExercise);
@@ -205,31 +203,36 @@ public class QuizSubmissionResource {
     /**
      * PUT /exercises/:exerciseId/submissions/exam : Update a QuizSubmission for exam mode
      *
-     * @param exerciseId     the id of the exercise for which to update the submission
-     * @param quizSubmission the quizSubmission to update
+     * @param exerciseId             the id of the exercise for which to update the submission
+     * @param abstractQuizSubmission the quizSubmission to update
      * @return the ResponseEntity with status 200 and body the result or the appropriate error code.
      */
     @PutMapping("exercises/{exerciseId}/submissions/exam")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<QuizSubmission> submitQuizForExam(@PathVariable Long exerciseId, @Valid @RequestBody QuizSubmission quizSubmission) {
+    public ResponseEntity<AbstractQuizSubmission> submitQuizForExam(@PathVariable Long exerciseId, @Valid @RequestBody AbstractQuizSubmission abstractQuizSubmission) {
         long start = System.currentTimeMillis();
-        log.debug("REST request to submit QuizSubmission for exam : {}", quizSubmission);
+        log.debug("REST request to submit QuizSubmission for exam : {}", abstractQuizSubmission);
 
         // recreate pointers back to submission in each submitted answer
-        for (SubmittedAnswer submittedAnswer : quizSubmission.getSubmittedAnswers()) {
-            submittedAnswer.setSubmission(quizSubmission);
+        for (SubmittedAnswer submittedAnswer : abstractQuizSubmission.getSubmittedAnswers()) {
+            submittedAnswer.setSubmission(abstractQuizSubmission);
         }
 
-        QuizExercise quizExercise = quizExerciseRepository.findByIdWithQuestionsElseThrow(exerciseId);
         User user = userRepository.getUserWithGroupsAndAuthorities();
+        AbstractQuizSubmission updatedQuizSubmission = null;
+        if (abstractQuizSubmission instanceof QuizSubmission quizSubmission) {
+            QuizExercise quizExercise = quizExerciseRepository.findByIdWithQuestionsElseThrow(exerciseId);
 
-        // Apply further checks if it is an exam submission
-        examSubmissionService.checkSubmissionAllowanceElseThrow(quizExercise, user);
+            // Apply further checks if it is an exam submission
+            examSubmissionService.checkSubmissionAllowanceElseThrow(quizExercise, user);
 
-        // Prevent multiple submissions (currently only for exam submissions)
-        quizSubmission = (QuizSubmission) examSubmissionService.preventMultipleSubmissions(quizExercise, quizSubmission, user);
-
-        QuizSubmission updatedQuizSubmission = quizSubmissionService.saveSubmissionForExamMode(quizExercise, quizSubmission, user);
+            // Prevent multiple submissions (currently only for exam submissions)
+            quizSubmission = (QuizSubmission) examSubmissionService.preventMultipleSubmissions(quizExercise, quizSubmission, user);
+            updatedQuizSubmission = quizSubmissionService.saveSubmissionForExamMode(quizExercise, quizSubmission, user);
+        }
+        else if (abstractQuizSubmission instanceof QuizExamSubmission quizExamSubmission) {
+            updatedQuizSubmission = quizExamSubmissionService.saveSubmissionForExamMode(null, quizExamSubmission, user);
+        }
         long end = System.currentTimeMillis();
         log.info("submitQuizForExam took {}ms for exercise {} and user {}", end - start, exerciseId, user.getLogin());
         return ResponseEntity.ok(updatedQuizSubmission);

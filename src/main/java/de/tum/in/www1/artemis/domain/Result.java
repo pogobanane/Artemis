@@ -21,6 +21,7 @@ import com.google.common.base.Strings;
 import de.tum.in.www1.artemis.domain.enumeration.AssessmentType;
 import de.tum.in.www1.artemis.domain.enumeration.FeedbackType;
 import de.tum.in.www1.artemis.domain.enumeration.SubmissionType;
+import de.tum.in.www1.artemis.domain.exam.QuizResult;
 import de.tum.in.www1.artemis.domain.hestia.CoverageFileReport;
 import de.tum.in.www1.artemis.domain.participation.Participation;
 import de.tum.in.www1.artemis.domain.participation.StudentParticipation;
@@ -37,7 +38,7 @@ import de.tum.in.www1.artemis.service.listeners.ResultListener;
 @EntityListeners({ AuditingEntityListener.class, ResultListener.class })
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class Result extends DomainObject implements Comparable<Result> {
+public class Result extends DomainObject implements Comparable<Result>, QuizResult {
 
     @Column(name = "completion_date")
     @JsonView(QuizView.Before.class)
@@ -589,5 +590,11 @@ public class Result extends DomainObject implements Comparable<Result> {
             return getId().compareTo(other.getId());
         }
         return getCompletionDate().compareTo(other.getCompletionDate());
+    }
+
+    @Override
+    @JsonIgnore
+    public Result getEntity() {
+        return this;
     }
 }

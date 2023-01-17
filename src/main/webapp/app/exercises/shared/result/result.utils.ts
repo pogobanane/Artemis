@@ -128,9 +128,9 @@ export const evaluateTemplateStatus = (
     if (isModelingOrTextOrFileUpload(participation)) {
         // Based on its submission we test if the participation is in due time of the given exercise.
 
-        const inDueTime = isParticipationInDueTime(participation, exercise);
-        const dueDate = getExerciseDueDate(exercise, participation);
-        const assessmentDueDate = exercise.assessmentDueDate;
+        const inDueTime = isParticipationInDueTime(participation, exercise as Exercise);
+        const dueDate = getExerciseDueDate(exercise as Exercise, participation);
+        const assessmentDueDate = (exercise as Exercise).assessmentDueDate;
 
         if (inDueTime && initializedResultWithScore(result)) {
             // Submission is in due time of exercise and has a result with score

@@ -23,15 +23,11 @@ import de.tum.in.www1.artemis.web.rest.dto.SearchResultPageDTO;
 import de.tum.in.www1.artemis.web.rest.util.PageUtil;
 
 @Service
-public class QuizExerciseService {
+public class QuizExerciseService extends QuizService<QuizExercise> {
 
     private final Logger log = LoggerFactory.getLogger(QuizExerciseService.class);
 
     private final QuizExerciseRepository quizExerciseRepository;
-
-    private final DragAndDropMappingRepository dragAndDropMappingRepository;
-
-    private final ShortAnswerMappingRepository shortAnswerMappingRepository;
 
     private final ResultRepository resultRepository;
 
@@ -39,18 +35,17 @@ public class QuizExerciseService {
 
     private final QuizScheduleService quizScheduleService;
 
-    private final QuizStatisticService quizStatisticService;
-
     private final QuizBatchService quizBatchService;
+
+    private final QuizStatisticService quizStatisticService;
 
     private final ExerciseSpecificationService exerciseSpecificationService;
 
     public QuizExerciseService(QuizExerciseRepository quizExerciseRepository, DragAndDropMappingRepository dragAndDropMappingRepository, ResultRepository resultRepository,
             ShortAnswerMappingRepository shortAnswerMappingRepository, QuizSubmissionRepository quizSubmissionRepository, QuizScheduleService quizScheduleService,
             QuizStatisticService quizStatisticService, QuizBatchService quizBatchService, ExerciseSpecificationService exerciseSpecificationService) {
+        super(dragAndDropMappingRepository, shortAnswerMappingRepository);
         this.quizExerciseRepository = quizExerciseRepository;
-        this.dragAndDropMappingRepository = dragAndDropMappingRepository;
-        this.shortAnswerMappingRepository = shortAnswerMappingRepository;
         this.resultRepository = resultRepository;
         this.quizSubmissionRepository = quizSubmissionRepository;
         this.quizScheduleService = quizScheduleService;
@@ -62,141 +57,11 @@ public class QuizExerciseService {
     /**
      * Save the given quizExercise to the database and make sure that objects with references to one another are saved in the correct order to avoid PersistenceExceptions
      *
-     * @param quizExercise the quiz exercise to save
+     * @param quizConfiguration the quiz exercise to save
      * @return the saved quiz exercise
      */
-    public QuizExercise save(QuizExercise quizExercise) {
-
-        quizExercise.setMaxPoints(quizExercise.getOverallQuizPoints());
-
-        // create a quizPointStatistic if it does not yet exist
-        if (quizExercise.getQuizPointStatistic() == null) {
-            var quizPointStatistic = new QuizPointStatistic();
-            quizExercise.setQuizPointStatistic(quizPointStatistic);
-            quizPointStatistic.setQuiz(quizExercise);
-        }
-        // make sure the pointers in the statistics are correct
-        quizExercise.recalculatePointCounters();
-
-        // fix references in all questions (step 1/2)
-        for (var quizQuestion : quizExercise.getQuizQuestions()) {
-            if (quizQuestion instanceof MultipleChoiceQuestion mcQuestion) {
-                var quizQuestionStatistic = (MultipleChoiceQuestionStatistic) mcQuestion.getQuizQuestionStatistic();
-                if (quizQuestionStatistic == null) {
-                    quizQuestionStatistic = new MultipleChoiceQuestionStatistic();
-                    mcQuestion.setQuizQuestionStatistic(quizQuestionStatistic);
-                    quizQuestionStatistic.setQuizQuestion(mcQuestion);
-                }
-
-                for (var answerOption : mcQuestion.getAnswerOptions()) {
-                    quizQuestionStatistic.addAnswerOption(answerOption);
-                }
-
-                // if an answerOption was removed then remove the associated AnswerCounters implicitly
-                Set<AnswerCounter> answerCounterToDelete = new HashSet<>();
-                for (AnswerCounter answerCounter : quizQuestionStatistic.getAnswerCounters()) {
-                    if (answerCounter.getId() != null) {
-                        if (!(mcQuestion.getAnswerOptions().contains(answerCounter.getAnswer()))) {
-                            answerCounter.setAnswer(null);
-                            answerCounterToDelete.add(answerCounter);
-                        }
-                    }
-                }
-                quizQuestionStatistic.getAnswerCounters().removeAll(answerCounterToDelete);
-            }
-            else if (quizQuestion instanceof DragAndDropQuestion dndQuestion) {
-                var quizQuestionStatistic = (DragAndDropQuestionStatistic) dndQuestion.getQuizQuestionStatistic();
-                if (quizQuestionStatistic == null) {
-                    quizQuestionStatistic = new DragAndDropQuestionStatistic();
-                    dndQuestion.setQuizQuestionStatistic(quizQuestionStatistic);
-                    quizQuestionStatistic.setQuizQuestion(dndQuestion);
-                }
-
-                for (var dropLocation : dndQuestion.getDropLocations()) {
-                    quizQuestionStatistic.addDropLocation(dropLocation);
-                }
-
-                // if a dropLocation was removed then remove the associated AnswerCounters implicitly
-                Set<DropLocationCounter> dropLocationCounterToDelete = new HashSet<>();
-                for (DropLocationCounter dropLocationCounter : quizQuestionStatistic.getDropLocationCounters()) {
-                    if (dropLocationCounter.getId() != null) {
-                        if (!(dndQuestion.getDropLocations().contains(dropLocationCounter.getDropLocation()))) {
-                            dropLocationCounter.setDropLocation(null);
-                            dropLocationCounterToDelete.add(dropLocationCounter);
-                        }
-                    }
-                }
-                quizQuestionStatistic.getDropLocationCounters().removeAll(dropLocationCounterToDelete);
-
-                // save references as index to prevent Hibernate Persistence problem
-                saveCorrectMappingsInIndices(dndQuestion);
-            }
-            else if (quizQuestion instanceof ShortAnswerQuestion saQuestion) {
-                var quizQuestionStatistic = (ShortAnswerQuestionStatistic) saQuestion.getQuizQuestionStatistic();
-                if (quizQuestionStatistic == null) {
-                    quizQuestionStatistic = new ShortAnswerQuestionStatistic();
-                    saQuestion.setQuizQuestionStatistic(quizQuestionStatistic);
-                    quizQuestionStatistic.setQuizQuestion(quizQuestion);
-                }
-
-                for (var spot : saQuestion.getSpots()) {
-                    spot.setQuestion(saQuestion);
-                    quizQuestionStatistic.addSpot(spot);
-                }
-
-                // if a spot was removed then remove the associated spotCounters implicitly
-                Set<ShortAnswerSpotCounter> spotCounterToDelete = new HashSet<>();
-                for (ShortAnswerSpotCounter spotCounter : quizQuestionStatistic.getShortAnswerSpotCounters()) {
-                    if (spotCounter.getId() != null) {
-                        if (!(saQuestion.getSpots().contains(spotCounter.getSpot()))) {
-                            spotCounter.setSpot(null);
-                            spotCounterToDelete.add(spotCounter);
-                        }
-                    }
-                }
-                quizQuestionStatistic.getShortAnswerSpotCounters().removeAll(spotCounterToDelete);
-
-                // save references as index to prevent Hibernate Persistence problem
-                saveCorrectMappingsInIndicesShortAnswer(saQuestion);
-            }
-        }
-
-        if (quizExercise.getQuizBatches() != null) {
-            for (QuizBatch quizBatch : quizExercise.getQuizBatches()) {
-                quizBatch.setQuizExercise(quizExercise);
-                if (quizExercise.getQuizMode() == QuizMode.SYNCHRONIZED) {
-                    if (quizBatch.getStartTime() != null) {
-                        quizExercise.setDueDate(quizBatch.getStartTime().plusSeconds(quizExercise.getDuration() + Constants.QUIZ_GRACE_PERIOD_IN_SECONDS));
-                    }
-                }
-                else {
-                    quizBatch.setStartTime(quizBatchService.quizBatchStartDate(quizExercise, quizBatch.getStartTime()));
-                }
-            }
-        }
-
-        // Note: save will automatically remove deleted questions from the exercise and deleted answer options from the questions
-        // and delete the now orphaned entries from the database
-        log.debug("Save quiz to database: {}", quizExercise);
-        quizExercise = quizExerciseRepository.saveAndFlush(quizExercise);
-
-        // fix references in all drag and drop questions and short answer questions (step 2/2)
-        for (QuizQuestion quizQuestion : quizExercise.getQuizQuestions()) {
-            if (quizQuestion instanceof DragAndDropQuestion dragAndDropQuestion) {
-                // restore references from index after save
-                restoreCorrectMappingsFromIndices(dragAndDropQuestion);
-            }
-            else if (quizQuestion instanceof ShortAnswerQuestion shortAnswerQuestion) {
-                // restore references from index after save
-                restoreCorrectMappingsFromIndicesShortAnswer(shortAnswerQuestion);
-            }
-        }
-
-        if (quizExercise.isCourseExercise()) {
-            // only schedule quizzes for course exercises, not for exam exercises
-            quizScheduleService.scheduleQuizStart(quizExercise.getId());
-        }
-        return quizExercise;
+    public QuizExercise saveConfiguration(QuizExercise quizConfiguration) {
+        return super.saveConfiguration(quizConfiguration);
     }
 
     /**
@@ -225,7 +90,7 @@ public class QuizExerciseService {
             quizSubmission.getSubmittedAnswers().removeAll(submittedAnswersToDelete);
 
             // recalculate existing score
-            quizSubmission.calculateAndUpdateScores(quizExercise);
+            quizSubmission.calculateAndUpdateScores(quizExercise.getQuizQuestions());
             // update Successful-Flag in Result
             StudentParticipation studentParticipation = (StudentParticipation) result.getParticipation();
             studentParticipation.setExercise(quizExercise);
@@ -237,140 +102,6 @@ public class QuizExerciseService {
         quizSubmissionRepository.saveAll(submissions);
         resultRepository.saveAll(results);
         log.info("{} results have been updated successfully for quiz re-evaluate", results.size());
-    }
-
-    /**
-     * remove dragItem and dropLocation from correct mappings and set dragItemIndex and dropLocationIndex instead
-     *
-     * @param dragAndDropQuestion the question for which to perform these actions
-     */
-    private void saveCorrectMappingsInIndices(DragAndDropQuestion dragAndDropQuestion) {
-        List<DragAndDropMapping> mappingsToBeRemoved = new ArrayList<>();
-        for (DragAndDropMapping mapping : dragAndDropQuestion.getCorrectMappings()) {
-            // check for NullPointers
-            if (mapping.getDragItem() == null || mapping.getDropLocation() == null) {
-                mappingsToBeRemoved.add(mapping);
-                continue;
-            }
-
-            // drag item index
-            DragItem dragItem = mapping.getDragItem();
-            boolean dragItemFound = false;
-            for (DragItem questionDragItem : dragAndDropQuestion.getDragItems()) {
-                if (dragItem.equals(questionDragItem)) {
-                    dragItemFound = true;
-                    mapping.setDragItemIndex(dragAndDropQuestion.getDragItems().indexOf(questionDragItem));
-                    mapping.setDragItem(null);
-                    break;
-                }
-            }
-
-            // drop location index
-            DropLocation dropLocation = mapping.getDropLocation();
-            boolean dropLocationFound = false;
-            for (DropLocation questionDropLocation : dragAndDropQuestion.getDropLocations()) {
-                if (dropLocation.equals(questionDropLocation)) {
-                    dropLocationFound = true;
-                    mapping.setDropLocationIndex(dragAndDropQuestion.getDropLocations().indexOf(questionDropLocation));
-                    mapping.setDropLocation(null);
-                    break;
-                }
-            }
-
-            // if one of them couldn't be found, remove the mapping entirely
-            if (!dragItemFound || !dropLocationFound) {
-                mappingsToBeRemoved.add(mapping);
-            }
-        }
-
-        for (DragAndDropMapping mapping : mappingsToBeRemoved) {
-            dragAndDropQuestion.removeCorrectMapping(mapping);
-        }
-    }
-
-    /**
-     * remove solutions and spots from correct mappings and set solutionIndex and spotIndex instead
-     *
-     * @param shortAnswerQuestion the question for which to perform these actions
-     */
-    private void saveCorrectMappingsInIndicesShortAnswer(ShortAnswerQuestion shortAnswerQuestion) {
-        List<ShortAnswerMapping> mappingsToBeRemoved = new ArrayList<>();
-        for (ShortAnswerMapping mapping : shortAnswerQuestion.getCorrectMappings()) {
-            // check for NullPointers
-            if (mapping.getSolution() == null || mapping.getSpot() == null) {
-                mappingsToBeRemoved.add(mapping);
-                continue;
-            }
-
-            // solution index
-            ShortAnswerSolution solution = mapping.getSolution();
-            boolean solutionFound = false;
-            for (ShortAnswerSolution questionSolution : shortAnswerQuestion.getSolutions()) {
-                if (solution.equals(questionSolution)) {
-                    solutionFound = true;
-                    mapping.setShortAnswerSolutionIndex(shortAnswerQuestion.getSolutions().indexOf(questionSolution));
-                    mapping.setSolution(null);
-                    break;
-                }
-            }
-
-            // replace spot
-            ShortAnswerSpot spot = mapping.getSpot();
-            boolean spotFound = false;
-            for (ShortAnswerSpot questionSpot : shortAnswerQuestion.getSpots()) {
-                if (spot.equals(questionSpot)) {
-                    spotFound = true;
-                    mapping.setShortAnswerSpotIndex(shortAnswerQuestion.getSpots().indexOf(questionSpot));
-                    mapping.setSpot(null);
-                    break;
-                }
-            }
-
-            // if one of them couldn't be found, remove the mapping entirely
-            if (!solutionFound || !spotFound) {
-                mappingsToBeRemoved.add(mapping);
-            }
-        }
-
-        for (ShortAnswerMapping mapping : mappingsToBeRemoved) {
-            shortAnswerQuestion.removeCorrectMapping(mapping);
-        }
-    }
-
-    /**
-     * restore dragItem and dropLocation for correct mappings using dragItemIndex and dropLocationIndex
-     *
-     * @param dragAndDropQuestion the question for which to perform these actions
-     */
-    private void restoreCorrectMappingsFromIndices(DragAndDropQuestion dragAndDropQuestion) {
-        for (DragAndDropMapping mapping : dragAndDropQuestion.getCorrectMappings()) {
-            // drag item
-            mapping.setDragItem(dragAndDropQuestion.getDragItems().get(mapping.getDragItemIndex()));
-            // drop location
-            mapping.setDropLocation(dragAndDropQuestion.getDropLocations().get(mapping.getDropLocationIndex()));
-            // set question
-            mapping.setQuestion(dragAndDropQuestion);
-            // save mapping
-            dragAndDropMappingRepository.save(mapping);
-        }
-    }
-
-    /**
-     * restore solution and spots for correct mappings using solutionIndex and spotIndex
-     *
-     * @param shortAnswerQuestion the question for which to perform these actions
-     */
-    private void restoreCorrectMappingsFromIndicesShortAnswer(ShortAnswerQuestion shortAnswerQuestion) {
-        for (ShortAnswerMapping mapping : shortAnswerQuestion.getCorrectMappings()) {
-            // solution
-            mapping.setSolution(shortAnswerQuestion.getSolutions().get(mapping.getShortAnswerSolutionIndex()));
-            // spot
-            mapping.setSpot(shortAnswerQuestion.getSpots().get(mapping.getShortAnswerSpotIndex()));
-            // set question
-            mapping.setQuestion(shortAnswerQuestion);
-            // save mapping
-            shortAnswerMappingRepository.save(mapping);
-        }
     }
 
     /**
@@ -390,15 +121,15 @@ public class QuizExerciseService {
         // adjust existing results if an answer or a question was deleted and recalculate them
         updateResultsOnQuizChanges(quizExercise);
 
-        quizExercise = save(quizExercise);
+        QuizExercise savedQuizExercise = saveConfiguration(quizExercise);
 
         if (updateOfResultsAndStatisticsNecessary) {
             // make sure we have all objects available before updating the statistics to avoid lazy / proxy issues
-            quizExercise = quizExerciseRepository.findByIdWithQuestionsAndStatisticsElseThrow(quizExercise.getId());
-            quizStatisticService.recalculateStatistics(quizExercise);
+            savedQuizExercise = quizExerciseRepository.findByIdWithQuestionsAndStatisticsElseThrow(savedQuizExercise.getId());
+            quizStatisticService.recalculateStatistics(savedQuizExercise);
         }
         // fetch the quiz exercise again to make sure the latest changes are included
-        return quizExerciseRepository.findByIdWithQuestionsAndStatisticsElseThrow(quizExercise.getId());
+        return quizExerciseRepository.findByIdWithQuestionsAndStatisticsElseThrow(savedQuizExercise.getId());
     }
 
     /**
@@ -421,7 +152,7 @@ public class QuizExerciseService {
 
         resetInvalidQuestions(quizExercise);
 
-        quizExercise = save(quizExercise);
+        quizExercise = saveConfiguration(quizExercise);
 
         // in case the quiz has not yet started or the quiz is currently running, we have to clean up
         quizScheduleService.cancelScheduledQuizStart(quizExercise.getId());
@@ -478,6 +209,72 @@ public class QuizExerciseService {
     private void resetInvalidQuestions(QuizExercise quizExercise) {
         for (QuizQuestion question : quizExercise.getQuizQuestions()) {
             question.setInvalid(false);
+        }
+    }
+
+    /**
+     * Create a new quiz point statistic for the given quiz configuration if the quiz point statistic does not exist
+     *
+     * @param quizConfiguration the quiz configuration for which quiz point statistic to be created
+     */
+    @Override
+    public void preReferenceFix(QuizExercise quizConfiguration) {
+        quizConfiguration.setMaxPoints(quizConfiguration.getOverallQuizPoints());
+
+        // create a quizPointStatistic if it does not yet exist
+        if (quizConfiguration.getQuizPointStatistic() == null) {
+            var quizPointStatistic = new QuizPointStatistic();
+            quizConfiguration.setQuizPointStatistic(quizPointStatistic);
+            quizPointStatistic.setQuiz(quizConfiguration);
+        }
+
+        // make sure the pointers in the statistics are correct
+        quizConfiguration.recalculatePointCounters();
+    }
+
+    /**
+     * If quiz batch exists, set the due date for synchronized quiz and set start time for other quiz types before saving
+     *
+     * @param quizConfiguration the quiz exercise of which the quiz batch belongs to
+     */
+    @Override
+    protected void preSave(QuizExercise quizConfiguration) {
+        if (quizConfiguration.getQuizBatches() != null) {
+            for (QuizBatch quizBatch : quizConfiguration.getQuizBatches()) {
+                quizBatch.setQuizExercise(quizConfiguration);
+                if (quizConfiguration.getQuizMode() == QuizMode.SYNCHRONIZED) {
+                    if (quizBatch.getStartTime() != null) {
+                        quizConfiguration.setDueDate(quizBatch.getStartTime().plusSeconds(quizConfiguration.getDuration() + Constants.QUIZ_GRACE_PERIOD_IN_SECONDS));
+                    }
+                }
+                else {
+                    quizBatch.setStartTime(quizBatchService.quizBatchStartDate(quizConfiguration, quizBatch.getStartTime()));
+                }
+            }
+        }
+    }
+
+    /**
+     * Save the quiz configuration
+     *
+     * @param quizConfiguration the quiz exercise to be saved
+     * @return QuizExercise the quiz exercise that is saved
+     */
+    @Override
+    public QuizExercise saveAndFlush(QuizConfiguration quizConfiguration) {
+        return quizExerciseRepository.saveAndFlush((QuizExercise) quizConfiguration);
+    }
+
+    /**
+     * Schedule quiz start if quiz exercise if a course exercise
+     *
+     * @param quizConfiguration the quiz exercise to be scheduled
+     */
+    @Override
+    protected void preReturn(QuizExercise quizConfiguration) {
+        if (quizConfiguration.isCourseExercise()) {
+            // only schedule quizzes for course exercises, not for exam exercises
+            quizScheduleService.scheduleQuizStart(quizConfiguration.getId());
         }
     }
 }

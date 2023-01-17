@@ -39,10 +39,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.tum.in.www1.artemis.AbstractSpringIntegrationBambooBitbucketJiraTest;
 import de.tum.in.www1.artemis.domain.*;
 import de.tum.in.www1.artemis.domain.enumeration.*;
-import de.tum.in.www1.artemis.domain.exam.Exam;
-import de.tum.in.www1.artemis.domain.exam.ExamUser;
-import de.tum.in.www1.artemis.domain.exam.ExerciseGroup;
-import de.tum.in.www1.artemis.domain.exam.StudentExam;
+import de.tum.in.www1.artemis.domain.exam.*;
 import de.tum.in.www1.artemis.domain.modeling.ModelingExercise;
 import de.tum.in.www1.artemis.domain.modeling.ModelingSubmission;
 import de.tum.in.www1.artemis.domain.participation.Participation;
@@ -54,7 +51,7 @@ import de.tum.in.www1.artemis.programmingexercise.ProgrammingExerciseTestService
 import de.tum.in.www1.artemis.repository.*;
 import de.tum.in.www1.artemis.repository.plagiarism.PlagiarismCaseRepository;
 import de.tum.in.www1.artemis.security.SecurityUtils;
-import de.tum.in.www1.artemis.service.QuizSubmissionService;
+import de.tum.in.www1.artemis.service.QuizExerciseSubmissionService;
 import de.tum.in.www1.artemis.service.TextAssessmentKnowledgeService;
 import de.tum.in.www1.artemis.service.dto.StudentDTO;
 import de.tum.in.www1.artemis.service.exam.*;
@@ -84,7 +81,7 @@ class ExamIntegrationTest extends AbstractSpringIntegrationBambooBitbucketJiraTe
     private QuizSubmissionRepository quizSubmissionRepository;
 
     @Autowired
-    private QuizSubmissionService quizSubmissionService;
+    private QuizExerciseSubmissionService quizSubmissionService;
 
     @Autowired
     private CourseRepository courseRepo;
@@ -2221,7 +2218,7 @@ class ExamIntegrationTest extends AbstractSpringIntegrationBambooBitbucketJiraTe
             // Ensure that the exercise ids of the student exam are the same as the exercise ids in the students exercise results
             Set<Long> exerciseIdsOfStudentResult = studentResult.exerciseGroupIdToExerciseResult().values().stream().map(ExamScoresDTO.ExerciseResult::exerciseId)
                     .collect(Collectors.toSet());
-            Set<Long> exerciseIdsInStudentExam = studentExamOfUser.getExercises().stream().map(DomainObject::getId).collect(Collectors.toSet());
+            Set<Long> exerciseIdsInStudentExam = studentExamOfUser.getExercises().stream().map(Exercise::getId).collect(Collectors.toSet());
             assertThat(exerciseIdsOfStudentResult).isEqualTo(exerciseIdsInStudentExam);
             for (Map.Entry<Long, ExamScoresDTO.ExerciseResult> entry : studentResult.exerciseGroupIdToExerciseResult().entrySet()) {
                 var exerciseResult = entry.getValue();

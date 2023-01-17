@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { MockComponent, MockModule } from 'ng-mocks';
+import { MockComponent, MockModule, MockProvider } from 'ng-mocks';
 import { Exercise, ExerciseType } from 'app/entities/exercise.model';
 import { ExamTimerComponent } from 'app/exam/participate/timer/exam-timer.component';
 import { MockTranslateService, TranslateTestingModule } from '../../../helpers/mocks/service/mock-translate.service';
@@ -13,10 +13,12 @@ import { LocalStorageService, SessionStorageService } from 'ngx-webstorage';
 import { StudentExam } from 'app/entities/student-exam.model';
 import { TranslateService } from '@ngx-translate/core';
 import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+import { QuizExamSubmission } from 'app/entities/quiz/quiz-exam-submission.model';
 
 describe('Exam Exercise Overview Component', () => {
     let fixture: ComponentFixture<ExamExerciseOverviewPageComponent>;
     let comp: ExamExerciseOverviewPageComponent;
+    let examParticipationService: ExamParticipationService;
 
     beforeEach(() => {
         TestBed.configureTestingModule({
@@ -27,11 +29,13 @@ describe('Exam Exercise Overview Component', () => {
                 { provide: LocalStorageService, useClass: MockSyncStorage },
                 { provide: SessionStorageService, useClass: MockSyncStorage },
                 { provide: TranslateService, useClass: MockTranslateService },
+                MockProvider(ExamParticipationService),
             ],
         }).compileComponents();
 
         fixture = TestBed.createComponent(ExamExerciseOverviewPageComponent);
         comp = fixture.componentInstance;
+        examParticipationService = TestBed.inject(ExamParticipationService);
         comp.studentExam = new StudentExam();
         comp.studentExam.exercises = [
             {
@@ -59,5 +63,19 @@ describe('Exam Exercise Overview Component', () => {
         comp.openExercise(comp.studentExam.exercises![0]);
 
         expect(comp.onPageChanged.emit).toHaveBeenCalledOnce();
+    });
+
+    it('should emit quiz exam change', () => {
+        const onPageChangedSpy = jest.spyOn(comp.onPageChanged, 'emit');
+        comp.openQuizExam();
+        expect(onPageChangedSpy).toHaveBeenCalledOnceWith({ overViewChange: false, quizExamChange: true, exercise: undefined, forceSave: false });
+    });
+
+    it('should call examParticipationService.getExerciseButtonTooltip', () => {
+        comp.quizExamSubmission = new QuizExamSubmission();
+        const getExerciseButtonTooltipSpy = jest.spyOn(examParticipationService, 'getExerciseButtonTooltip');
+        comp.getQuizExamButtonTooltip();
+        const exercise = { type: ExerciseType.QUIZ, studentParticipations: [{ submissions: [comp.quizExamSubmission] } as StudentParticipation] } as Exercise;
+        expect(getExerciseButtonTooltipSpy).toHaveBeenCalledOnceWith(exercise);
     });
 });

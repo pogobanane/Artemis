@@ -47,6 +47,11 @@ import {
 import { ExamMonitoringService } from 'app/exam/monitoring/exam-monitoring.service';
 import { ExamActionService } from 'app/exam/monitoring/exam-action.service';
 import { FeatureToggle, FeatureToggleService } from 'app/shared/feature-toggle/feature-toggle.service';
+import { FileUploadExercise } from 'app/entities/file-upload-exercise.model';
+import { ModelingExercise } from 'app/entities/modeling-exercise.model';
+import { QuizExercise } from 'app/entities/quiz/quiz-exercise.model';
+import { TextExercise } from 'app/entities/text-exercise.model';
+import { QuizExamSubmission } from 'app/entities/quiz/quiz-exam-submission.model';
 
 type GenerateParticipationStatus = 'generating' | 'failed' | 'success';
 
@@ -66,6 +71,11 @@ export class ExamParticipationComponent implements OnInit, OnDestroy, ComponentC
     readonly MODELING = ExerciseType.MODELING;
     readonly PROGRAMMING = ExerciseType.PROGRAMMING;
     readonly FILEUPLOAD = ExerciseType.FILE_UPLOAD;
+    readonly QuizExercise = QuizExercise;
+    readonly FileUploadExercise = FileUploadExercise;
+    readonly TextExercise = TextExercise;
+    readonly ModelingExercise = ModelingExercise;
+    readonly ProgrammingExercise = ProgrammingExercise;
 
     courseId: number;
     examId: number;
@@ -101,7 +111,7 @@ export class ExamParticipationComponent implements OnInit, OnDestroy, ComponentC
     examMonitoringUpdateSubscription?: Subscription;
 
     isProgrammingExercise() {
-        return !this.activeExamPage.isOverviewPage && this.activeExamPage.exercise!.type === ExerciseType.PROGRAMMING;
+        return !this.activeExamPage.isOverviewPage && !this.activeExamPage.isQuizExamPage && this.activeExamPage.exercise!.type === ExerciseType.PROGRAMMING;
     }
 
     isProgrammingExerciseWithCodeEditor(): boolean {
@@ -268,17 +278,21 @@ export class ExamParticipationComponent implements OnInit, OnDestroy, ComponentC
     }
 
     get activePageIndex(): number {
-        if (!this.activeExamPage || this.activeExamPage.isOverviewPage) {
+        if (!this.activeExamPage || this.activeExamPage.isOverviewPage || this.activeExamPage.isQuizExamPage) {
             return -1;
         }
-        return this.studentExam.exercises!.findIndex((examExercise) => examExercise.id === this.activeExamPage.exercise!.id);
+        return this.getExerciseIndexByExerciseId(this.activeExamPage.exercise!);
     }
 
     get activePageComponent(): ExamPageComponent | undefined {
-        // we have to find the current component based on the activeExercise because the queryList might not be full yet (e.g. only 2 of 5 components initialized)
-        return this.currentPageComponents.find(
-            (submissionComponent) => !this.activeExamPage.isOverviewPage && (submissionComponent as ExamSubmissionComponent).getExercise().id === this.activeExamPage.exercise!.id,
-        );
+        if (this.activeExamPage.isQuizExamPage) {
+            return this.currentPageComponents.find((submissionComponent) => (submissionComponent as ExamSubmissionComponent).getExercise().id === undefined);
+        } else {
+            return this.currentPageComponents.find(
+                (submissionComponent) =>
+                    !this.activeExamPage.isOverviewPage && (submissionComponent as ExamSubmissionComponent).getExercise().id === this.activeExamPage.exercise!.id,
+            );
+        }
     }
 
     /**
@@ -288,6 +302,13 @@ export class ExamParticipationComponent implements OnInit, OnDestroy, ComponentC
         if (studentExam) {
             // init studentExam
             this.studentExam = studentExam;
+            let quizExamSubmission = this.studentExam.quizExamSubmission;
+            if (!quizExamSubmission) {
+                quizExamSubmission = new QuizExamSubmission();
+                this.studentExam.quizExamSubmission = quizExamSubmission;
+            }
+            quizExamSubmission.studentExam = cloneDeep(this.studentExam);
+            quizExamSubmission.isSynced = true;
 
             // Monitor exam start
             this.examMonitoringService.handleAndSaveActionEvent(
@@ -488,8 +509,8 @@ export class ExamParticipationComponent implements OnInit, OnDestroy, ComponentC
                 captureException(error);
             }
             this.examMonitoringService.handleAndSaveActionEvent(this.exam, this.studentExam, new HandedInEarlyAction(), this.connected, this.examMonitoringGloballyEnabled);
-        } else if (this.studentExam?.exercises && this.activeExamPage) {
-            const index = this.studentExam.exercises.findIndex((exercise) => !this.activeExamPage.isOverviewPage && exercise.id === this.activeExamPage.exercise!.id);
+        } else if (this.studentExam.exercises! && this.activeExamPage) {
+            const index = this.getExerciseIndexByExerciseId(this.activeExamPage.exercise!);
             this.exerciseIndex = index ? index : 0;
             this.examMonitoringService.handleAndSaveActionEvent(
                 this.exam,
@@ -498,7 +519,7 @@ export class ExamParticipationComponent implements OnInit, OnDestroy, ComponentC
                 this.connected,
                 this.examMonitoringGloballyEnabled,
             );
-            const exerciseId = this.studentExam.exercises[index]?.id;
+            const exerciseId = this.studentExam.exercises![index]?.id;
             this.examMonitoringService.handleAndSaveActionEvent(
                 this.exam,
                 this.studentExam,
@@ -601,7 +622,7 @@ export class ExamParticipationComponent implements OnInit, OnDestroy, ComponentC
      * update the current exercise from the navigation
      * @param exerciseChange
      */
-    onPageChange(exerciseChange: { overViewChange: boolean; exercise?: Exercise; forceSave: boolean }): void {
+    onPageChange(exerciseChange: { overViewChange: boolean; quizExamChange: boolean; exercise?: Exercise; forceSave: boolean }): void {
         const activeComponent = this.activePageComponent;
         if (activeComponent) {
             activeComponent.onDeactivate();
@@ -619,11 +640,23 @@ export class ExamParticipationComponent implements OnInit, OnDestroy, ComponentC
             this.connected,
             this.examMonitoringGloballyEnabled,
         );
-        if (!exerciseChange.overViewChange) {
-            this.initializeExercise(exerciseChange.exercise!);
-        } else {
+        if (exerciseChange.overViewChange) {
             this.initializeOverviewPage();
+        } else if (exerciseChange.quizExamChange) {
+            this.initializeQuizExamPage();
+        } else {
+            this.initializeExercise(exerciseChange.exercise!);
         }
+    }
+
+    /**
+     * Set activeExamPage to quiz exam
+     */
+    initializeQuizExamPage() {
+        this.activeExamPage.isOverviewPage = false;
+        this.activeExamPage.isQuizExamPage = true;
+        this.activeExamPage.exercise = undefined;
+        this.exerciseIndex = -1;
     }
 
     /**
@@ -633,9 +666,10 @@ export class ExamParticipationComponent implements OnInit, OnDestroy, ComponentC
      */
     private initializeExercise(exercise: Exercise) {
         this.activeExamPage.isOverviewPage = false;
+        this.activeExamPage.isQuizExamPage = false;
         this.activeExamPage.exercise = exercise;
         // set current exercise Index
-        this.exerciseIndex = this.studentExam.exercises!.findIndex((exercise1) => exercise1.id === exercise.id);
+        this.exerciseIndex = this.getExerciseIndexByExerciseId(exercise);
 
         // if we do not have a valid participation for the exercise -> initialize it
         if (!ExamParticipationComponent.isExerciseParticipationValid(exercise)) {
@@ -659,6 +693,7 @@ export class ExamParticipationComponent implements OnInit, OnDestroy, ComponentC
 
     private initializeOverviewPage() {
         this.activeExamPage.isOverviewPage = true;
+        this.activeExamPage.isQuizExamPage = false;
         this.activeExamPage.exercise = undefined;
         this.exerciseIndex = -1;
     }
@@ -769,6 +804,22 @@ export class ExamParticipationComponent implements OnInit, OnDestroy, ComponentC
             // Save collected actions
             this.examMonitoringService.saveActions(this.exam, this.studentExam, this.connected);
             const timestamp = this.serverDateService.now();
+
+            const quizExamSubmission = this.studentExam.quizExamSubmission!;
+            if (quizExamSubmission && !quizExamSubmission.isSynced) {
+                this.examParticipationService.updateQuizSubmission(0, quizExamSubmission).subscribe({
+                    next: (updatedSubmission) => {
+                        this.examParticipationService.setLastSaveFailed(false, this.courseId, this.examId);
+                        quizExamSubmission.isSynced = true;
+                        quizExamSubmission.submitted = true;
+                        quizExamSubmission.id = updatedSubmission.id;
+                        this.studentExam.quizExamSubmission = quizExamSubmission;
+                    },
+                    error: (error: HttpErrorResponse) => {
+                        this.onSaveSubmissionError(error, 0, forceSave, automatically, timestamp);
+                    },
+                });
+            }
 
             submissionsToSync.forEach((submissionToSync: { exercise: Exercise; submission: Submission }) => {
                 switch (submissionToSync.exercise.type) {
@@ -889,5 +940,13 @@ export class ExamParticipationComponent implements OnInit, OnDestroy, ComponentC
                     }
                 }
             });
+    }
+
+    private getExerciseIndexByExerciseId(exercise: Exercise): number {
+        return this.studentExam.exercises!.findIndex((exercise1) => exercise1.id === exercise.id);
+    }
+
+    asQuizExercise(exercise: Exercise): QuizExercise {
+        return exercise as QuizExercise;
     }
 }
