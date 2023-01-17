@@ -523,7 +523,6 @@ public class ParticipationResource {
                 programmingExercise.setTemplateParticipation(null);
                 programmingExercise.setTestRepositoryUrl(null);
                 programmingExercise.setShortName(null);
-                programmingExercise.setPublishBuildPlanUrl(null);
                 programmingExercise.setProgrammingLanguage(null);
                 programmingExercise.setPackageName(null);
                 programmingExercise.setAllowOnlineEditor(null);

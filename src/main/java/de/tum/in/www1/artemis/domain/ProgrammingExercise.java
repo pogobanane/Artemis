@@ -49,7 +49,7 @@ public class ProgrammingExercise extends Exercise {
     private List<AuxiliaryRepository> auxiliaryRepositories = new ArrayList<>();
 
     @Column(name = "publish_build_plan_url")
-    private Boolean publishBuildPlanUrl;
+    private boolean publishBuildPlanUrl = false;
 
     @Column(name = "allow_online_editor", table = "programming_exercise_details")
     private Boolean allowOnlineEditor;
@@ -238,11 +238,11 @@ public class ProgrammingExercise extends Exercise {
         }
     }
 
-    public Boolean isPublishBuildPlanUrl() {
+    public boolean isPublishBuildPlanUrl() {
         return publishBuildPlanUrl;
     }
 
-    public void setPublishBuildPlanUrl(Boolean publishBuildPlanUrl) {
+    public void setPublishBuildPlanUrl(boolean publishBuildPlanUrl) {
         this.publishBuildPlanUrl = publishBuildPlanUrl;
     }
 

@@ -549,7 +549,7 @@ class ParticipationIntegrationTest extends AbstractSpringIntegrationBambooBitbuc
                 assertThat(aProgrammingExercise.getTemplateParticipation()).isNull();
                 assertThat(aProgrammingExercise.getTestRepositoryUrl()).isNull();
                 assertThat(aProgrammingExercise.getShortName()).isNull();
-                assertThat(aProgrammingExercise.isPublishBuildPlanUrl()).isNull();
+                assertThat(aProgrammingExercise.isPublishBuildPlanUrl()).isFalse();
                 assertThat(aProgrammingExercise.getProgrammingLanguage()).isNull();
                 assertThat(aProgrammingExercise.getPackageName()).isNull();
                 assertThat(aProgrammingExercise.isAllowOnlineEditor()).isNull();
