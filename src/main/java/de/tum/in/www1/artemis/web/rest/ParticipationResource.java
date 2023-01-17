@@ -525,7 +525,6 @@ public class ParticipationResource {
                 programmingExercise.setShortName(null);
                 programmingExercise.setProgrammingLanguage(null);
                 programmingExercise.setPackageName(null);
-                programmingExercise.setAllowOnlineEditor(null);
             }
             else if (exercise instanceof QuizExercise quizExercise) {
                 quizExercise.setQuizQuestions(null);

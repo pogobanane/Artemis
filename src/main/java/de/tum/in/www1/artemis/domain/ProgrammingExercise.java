@@ -52,7 +52,7 @@ public class ProgrammingExercise extends Exercise {
     private boolean publishBuildPlanUrl = false;
 
     @Column(name = "allow_online_editor", table = "programming_exercise_details")
-    private Boolean allowOnlineEditor;
+    private boolean allowOnlineEditor = false;
 
     @Column(name = "allow_offline_ide", table = "programming_exercise_details")
     private Boolean allowOfflineIde;
@@ -246,11 +246,11 @@ public class ProgrammingExercise extends Exercise {
         this.publishBuildPlanUrl = publishBuildPlanUrl;
     }
 
-    public Boolean isAllowOnlineEditor() {
+    public boolean isAllowOnlineEditor() {
         return allowOnlineEditor;
     }
 
-    public void setAllowOnlineEditor(Boolean allowOnlineEditor) {
+    public void setAllowOnlineEditor(boolean allowOnlineEditor) {
         this.allowOnlineEditor = allowOnlineEditor;
     }
 
@@ -725,12 +725,12 @@ public class ProgrammingExercise extends Exercise {
     public void validateProgrammingSettings() {
 
         // Check if a participation mode was selected
-        if (!Boolean.TRUE.equals(isAllowOnlineEditor()) && !Boolean.TRUE.equals(isAllowOfflineIde())) {
+        if (!isAllowOnlineEditor() && !Boolean.TRUE.equals(isAllowOfflineIde())) {
             throw new BadRequestAlertException("You need to allow at least one participation mode, the online editor or the offline IDE", "Exercise", "noParticipationModeAllowed");
         }
 
         // Check if Xcode has no online code editor enabled
-        if (ProjectType.XCODE.equals(getProjectType()) && Boolean.TRUE.equals(isAllowOnlineEditor())) {
+        if (ProjectType.XCODE.equals(getProjectType()) && isAllowOnlineEditor()) {
             throw new BadRequestAlertException("The online editor is not allowed for Xcode programming exercises", "Exercise", "noParticipationModeAllowed");
         }
 
