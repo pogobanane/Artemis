@@ -31,9 +31,7 @@ export class CreateTutorialGroupSessionComponent implements OnDestroy {
     constructor(private activeModal: NgbActiveModal, private tutorialGroupSessionService: TutorialGroupSessionService, private alertService: AlertService) {}
 
     initialize() {
-        if (!this.course || !this.tutorialGroup) {
-            console.error('Error: Component not fully configured');
-        } else {
+        if (this.course && this.tutorialGroup) {
             this.isInitialized = true;
         }
     }

@@ -35,9 +35,7 @@ export class EditTutorialGroupFreePeriodComponent implements OnDestroy {
     constructor(private activeModal: NgbActiveModal, private tutorialGroupFreePeriodService: TutorialGroupFreePeriodService, private alertService: AlertService) {}
 
     initialize() {
-        if (!this.tutorialGroupFreePeriod || !this.course || !this.tutorialGroupsConfiguration) {
-            console.error('Error: Component not fully configured');
-        } else {
+        if (this.tutorialGroupFreePeriod && this.course && this.tutorialGroupsConfiguration) {
             this.formData = {
                 date: this.tutorialGroupFreePeriod.start?.tz(this.course.timeZone).toDate(),
                 reason: this.tutorialGroupFreePeriod.reason,

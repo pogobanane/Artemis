@@ -479,8 +479,6 @@ export class QuizParticipationComponent implements OnInit, OnDestroy {
                 } else if (question.type === QuizQuestionType.SHORT_ANSWER) {
                     // add the array of submitted texts to the dictionary (add an empty array, if there is no submittedAnswer for this question)
                     this.shortAnswerSubmittedTexts.set(question.id!, []);
-                } else {
-                    console.error('Unknown question type: ' + question);
                 }
             }, this);
         }
@@ -516,8 +514,6 @@ export class QuizParticipationComponent implements OnInit, OnDestroy {
                 } else if (question.type === QuizQuestionType.SHORT_ANSWER) {
                     // add the array of submitted texts to the dictionary (add an empty array, if there is no submittedAnswer for this question)
                     this.shortAnswerSubmittedTexts.set(question.id!, (submittedAnswer as ShortAnswerSubmittedAnswer)?.submittedTexts || []);
-                } else {
-                    console.error('Unknown question type: ' + question);
                 }
             }, this);
         }
@@ -540,7 +536,6 @@ export class QuizParticipationComponent implements OnInit, OnDestroy {
                 return selectedQuestion.id === questionId;
             });
             if (!question) {
-                console.error('question not found for ID: ' + questionId);
                 return;
             }
             // generate the submittedAnswer object
@@ -557,7 +552,6 @@ export class QuizParticipationComponent implements OnInit, OnDestroy {
                 return localQuestion.id === questionId;
             });
             if (!question) {
-                console.error('question not found for ID: ' + questionId);
                 return;
             }
             // generate the submittedAnswer object
@@ -573,7 +567,6 @@ export class QuizParticipationComponent implements OnInit, OnDestroy {
                 return localQuestion.id === questionId;
             });
             if (!question) {
-                console.error('question not found for ID: ' + questionId);
                 return;
             }
             // generate the submittedAnswer object

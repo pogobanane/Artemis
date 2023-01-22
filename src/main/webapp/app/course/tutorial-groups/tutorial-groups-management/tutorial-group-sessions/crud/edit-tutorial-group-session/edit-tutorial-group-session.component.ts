@@ -35,9 +35,7 @@ export class EditTutorialGroupSessionComponent implements OnDestroy {
     constructor(private activeModal: NgbActiveModal, private tutorialGroupSessionService: TutorialGroupSessionService, private alertService: AlertService) {}
 
     initialize() {
-        if (!this.tutorialGroupSession || !this.course || !this.tutorialGroup) {
-            console.error('Error: Component not fully configured');
-        } else {
+        if (this.tutorialGroupSession && this.course && this.tutorialGroup) {
             this.formData = {
                 date: this.tutorialGroupSession.start?.tz(this.course.timeZone).toDate(),
                 startTime: this.tutorialGroupSession.start?.tz(this.course.timeZone).format('HH:mm:ss'),

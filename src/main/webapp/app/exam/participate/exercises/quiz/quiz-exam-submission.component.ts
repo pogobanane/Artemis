@@ -83,17 +83,19 @@ export class QuizExamSubmissionComponent extends ExamSubmissionComponent impleme
 
         if (this.exercise.quizQuestions) {
             this.exercise.quizQuestions.forEach((question) => {
-                if (question.type === QuizQuestionType.MULTIPLE_CHOICE) {
-                    // add the array of selected options to the dictionary (add an empty array, if there is no submittedAnswer for this question)
-                    this.selectedAnswerOptions.set(question.id!, []);
-                } else if (question.type === QuizQuestionType.DRAG_AND_DROP) {
-                    // add the array of mappings to the dictionary (add an empty array, if there is no submittedAnswer for this question)
-                    this.dragAndDropMappings.set(question.id!, []);
-                } else if (question.type === QuizQuestionType.SHORT_ANSWER) {
-                    // add the array of submitted texts to the dictionary (add an empty array, if there is no submittedAnswer for this question)
-                    this.shortAnswerSubmittedTexts.set(question.id!, []);
-                } else {
-                    console.error('Unknown question type: ' + question);
+                switch (question.type) {
+                    case QuizQuestionType.MULTIPLE_CHOICE:
+                        // add the array of selected options to the dictionary (add an empty array, if there is no submittedAnswer for this question)
+                        this.selectedAnswerOptions.set(question.id!, []);
+                        break;
+                    case QuizQuestionType.DRAG_AND_DROP:
+                        // add the array of mappings to the dictionary (add an empty array, if there is no submittedAnswer for this question)
+                        this.dragAndDropMappings.set(question.id!, []);
+                        break;
+                    case QuizQuestionType.SHORT_ANSWER:
+                        // add the array of submitted texts to the dictionary (add an empty array, if there is no submittedAnswer for this question)
+                        this.shortAnswerSubmittedTexts.set(question.id!, []);
+                        break;
                 }
             }, this);
         }
@@ -169,8 +171,6 @@ export class QuizExamSubmissionComponent extends ExamSubmissionComponent impleme
                         // not found, set to empty array
                         this.shortAnswerSubmittedTexts.set(question.id!, []);
                     }
-                } else {
-                    console.error('Unknown question type: ' + question);
                 }
             }, this);
         }
@@ -210,7 +210,6 @@ export class QuizExamSubmissionComponent extends ExamSubmissionComponent impleme
                 return selectedQuestion.id === Number(questionID);
             });
             if (!question) {
-                console.error('question not found for ID: ' + questionID);
                 return;
             }
             // generate the submittedAnswer object
@@ -227,7 +226,6 @@ export class QuizExamSubmissionComponent extends ExamSubmissionComponent impleme
                 return localQuestion.id === Number(questionID);
             });
             if (!question) {
-                console.error('question not found for ID: ' + questionID);
                 return;
             }
             // generate the submittedAnswer object
@@ -243,7 +241,6 @@ export class QuizExamSubmissionComponent extends ExamSubmissionComponent impleme
                 return localQuestion.id === Number(questionID);
             });
             if (!question) {
-                console.error('question not found for ID: ' + questionID);
                 return;
             }
             // generate the submittedAnswer object

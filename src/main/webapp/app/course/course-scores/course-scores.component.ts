@@ -458,7 +458,7 @@ export class CourseScoresComponent implements OnInit, OnDestroy {
             // we found a result, there should only be one
             const result = participation.results[0];
             if (participation.results.length > 1) {
-                console.warn('found more than one result for student ' + student.user.login + ' and exercise ' + exercise.title);
+                // found more than one result for student: student.user.login and exercise exercise.title
             }
 
             // Note: It is important that we round on the individual exercise level first and then sum up.

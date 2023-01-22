@@ -7,9 +7,7 @@ export abstract class AbstractDialogComponent {
 
     initialize(requiredInputs?: string[]) {
         const allInputsSet = (requiredInputs ?? []).every((input) => this[input] !== undefined);
-        if (!allInputsSet) {
-            console.error('Error: Dialog not fully configured');
-        } else {
+        if (allInputsSet) {
             this.isInitialized = true;
         }
     }

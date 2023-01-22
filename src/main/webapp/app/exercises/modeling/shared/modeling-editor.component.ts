@@ -95,9 +95,6 @@ export class ModelingEditorComponent extends ModelingComponent implements AfterV
             return;
         }
 
-        console.log('Warning: Installing hack to prevent UI scroll jumps in Safari while using Apollon!');
-        console.log('Warning: If you experience problems regarding the scrolling behavior, please report them at https://github.com/ls1intum/Artemis');
-
         this.mouseDownListener = () => {
             const newScroll = document.getElementsByTagName('html')[0].scrollTop;
             if (newScroll !== this.htmlScroll) {

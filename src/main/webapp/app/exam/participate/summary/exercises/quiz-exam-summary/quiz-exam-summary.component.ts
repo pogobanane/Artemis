@@ -105,8 +105,6 @@ export class QuizExamSummaryComponent implements OnInit {
                         // not found, set to empty array
                         this.shortAnswerSubmittedTexts.set(question.id!, []);
                     }
-                } else {
-                    console.error('Unknown question type: ' + question);
                 }
             }, this);
         }

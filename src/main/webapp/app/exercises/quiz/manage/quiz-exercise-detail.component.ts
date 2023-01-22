@@ -921,7 +921,6 @@ export class QuizExerciseDetailComponent extends QuizExerciseValidationDirective
      * Callback function for when the save fails
      */
     private onSaveError = (): void => {
-        console.error('Saving Quiz Failed! Please try again later.');
         this.alertService.error('artemisApp.quizExercise.saveError');
         this.isSaving = false;
         this.changeDetector.detectChanges();

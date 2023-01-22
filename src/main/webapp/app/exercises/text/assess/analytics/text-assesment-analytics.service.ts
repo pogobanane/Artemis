@@ -61,9 +61,7 @@ export class TextAssessmentAnalytics {
             this.eventToSend.setEventType(eventType);
             this.eventToSend.setFeedbackType(feedbackType);
             this.eventToSend.setSegmentType(textBlockType);
-            this.assessmentsService.addTextAssessmentEvent(this.eventToSend).subscribe({
-                error: (e) => console.error('Error sending statistics: ' + e.message),
-            });
+            this.assessmentsService.addTextAssessmentEvent(this.eventToSend).subscribe();
         }
     }
 

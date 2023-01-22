@@ -46,9 +46,7 @@ export class TutorialGroupSessionsManagementComponent implements OnDestroy {
     ) {}
 
     initialize() {
-        if (!this.tutorialGroupId || !this.course) {
-            console.error('Error: Component not fully configured');
-        } else {
+        if (this.tutorialGroupId && this.course) {
             this.isInitialized = true;
             this.loadAll();
         }

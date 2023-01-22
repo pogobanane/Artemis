@@ -253,7 +253,6 @@ export class ImageCropperComponent implements OnChanges, OnInit {
     }
 
     private loadImageError(error: Error): void {
-        console.error(error);
         this.loadImageFailed.emit();
     }
 

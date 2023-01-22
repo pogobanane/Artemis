@@ -82,17 +82,16 @@ export abstract class TextAssessmentBaseComponent implements OnInit {
 
             // last iteration, nextIndex = lastIndex. PreviousIndex > lastIndex is a sign for illegal state.
             if (!ref && previousIndex > nextIndex) {
-                console.error('Illegal State: previous index cannot be greater than the last index!');
-
+                // Illegal State: previous index cannot be greater than the last index!
                 // new text block starts before previous one ended (overlap)
             } else if (previousIndex > nextIndex) {
                 const previousRef = textBlockRefs.pop();
                 if (!previousRef) {
-                    console.error('Overlapping Text Blocks with nothing?', previousRef, ref);
+                    // Overlapping Text Blocks with nothing?, previousRef, ref
                 } else if ([ref, previousRef].every((r) => r.block?.type === TextBlockType.AUTOMATIC)) {
-                    console.error('Overlapping AUTOMATIC Text Blocks!', previousRef, ref);
+                    // Overlapping AUTOMATIC Text Blocks!, previousRef, ref
                 } else if ([ref, previousRef].every((r) => r.block?.type === TextBlockType.MANUAL)) {
-                    console.error('Overlapping MANUAL Text Blocks!', previousRef, ref);
+                    // Overlapping MANUAL Text Blocks!, previousRef, ref
                 } else {
                     // Find which block is Manual and only keep that one. Automatic block is stored in `unusedTextBlockRefs` in case we need to restore.
                     switch (TextBlockType.MANUAL) {

@@ -59,7 +59,6 @@ export class TeamStudentsOnlineListComponent implements OnInit, OnDestroy {
                     this.onlineTeamStudents = students;
                     this.computeTypingTeamStudents();
                 },
-                error: (error) => console.error(error),
             });
         setTimeout(() => {
             this.jhiWebsocketService.send(this.buildWebsocketTopic('/trigger'), {});
@@ -70,7 +69,6 @@ export class TeamStudentsOnlineListComponent implements OnInit, OnDestroy {
         if (this.typing$) {
             this.typing$.pipe(throttleTime(this.sendTypingInterval)).subscribe({
                 next: () => this.jhiWebsocketService.send(this.buildWebsocketTopic('/typing'), {}),
-                error: (error) => console.error(error),
             });
         }
     }

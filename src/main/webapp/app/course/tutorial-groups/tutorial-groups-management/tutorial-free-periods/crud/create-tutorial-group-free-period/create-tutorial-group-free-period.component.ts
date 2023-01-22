@@ -31,12 +31,11 @@ export class CreateTutorialGroupFreePeriodComponent implements OnDestroy {
     constructor(private activeModal: NgbActiveModal, private tutorialGroupFreePeriodService: TutorialGroupFreePeriodService, private alertService: AlertService) {}
 
     initialize() {
-        if (!this.tutorialGroupConfigurationId || !this.course) {
-            console.error('Error: Component not fully configured');
-        } else {
+        if (this.tutorialGroupConfigurationId && !this.course) {
             this.isInitialized = true;
         }
     }
+
     createTutorialGroupFreePeriod(formData: TutorialGroupFreePeriodFormData) {
         const { date, reason } = formData;
 

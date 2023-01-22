@@ -394,9 +394,6 @@ export class ModelingSubmissionComponent implements OnInit, OnDestroy, Component
     }
 
     private onSaveError(error?: HttpErrorResponse) {
-        if (error) {
-            console.error(error.message);
-        }
         this.alertService.error('artemisApp.modelingEditor.error');
         this.isSaving = false;
     }

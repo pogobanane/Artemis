@@ -21,7 +21,7 @@ export class Lti13ExerciseLaunchComponent implements OnInit {
         const idToken = this.route.snapshot.queryParamMap.get('id_token');
 
         if (!state || !idToken) {
-            console.error('Required parameter for LTI launch missing');
+            // Required parameter for LTI launch missing
             this.isLaunching = false;
             return;
         }
@@ -31,7 +31,7 @@ export class Lti13ExerciseLaunchComponent implements OnInit {
         const storedState = window.sessionStorage.getItem('state');
 
         if (storedState !== state) {
-            console.error('LTI launch state mismatch');
+            // LTI launch state mismatch
             this.isLaunching = false;
             return;
         }
@@ -53,7 +53,7 @@ export class Lti13ExerciseLaunchComponent implements OnInit {
                     }
 
                     this.isLaunching = false;
-                    console.error('No LTI targetLinkUri received for a successful launch');
+                    // No LTI targetLinkUri received for a successful launch
                 },
                 error: () => {
                     window.sessionStorage.removeItem('state');

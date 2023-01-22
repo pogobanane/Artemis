@@ -268,8 +268,7 @@ export class DragAndDropQuestionEditComponent implements OnInit, OnChanges, Afte
                 // Trigger image reload.
                 this.changeDetector.detectChanges();
             },
-            (error) => {
-                console.error('Error during file upload in uploadBackground()', error.message);
+            () => {
                 this.isUploadingBackgroundFile = false;
                 this.backgroundFile = undefined;
                 this.backgroundFileName = '';
@@ -535,8 +534,7 @@ export class DragAndDropQuestionEditComponent implements OnInit, OnChanges, Afte
                 this.dragItemFile = undefined;
                 this.dragItemFileName = '';
             },
-            (error) => {
-                console.error('Error during file upload in uploadDragItem()', error.message);
+            () => {
                 this.isUploadingDragItemFile = false;
                 this.dragItemFile = undefined;
                 this.dragItemFileName = '';
@@ -558,8 +556,7 @@ export class DragAndDropQuestionEditComponent implements OnInit, OnChanges, Afte
                 this.isUploadingDragItemFile = false;
                 this.dragItemFile = undefined;
             },
-            (error) => {
-                console.error('Error during file upload in uploadPictureForDragItemChange()', error.message);
+            () => {
                 this.isUploadingDragItemFile = false;
                 this.dragItemFile = undefined;
             },
@@ -755,8 +752,7 @@ export class DragAndDropQuestionEditComponent implements OnInit, OnChanges, Afte
                     dragItem.pictureFilePath = this.dragItemPicture;
                 }
             },
-            (error) => {
-                console.error('Error during file upload in changeToPictureDragItem()', error.message);
+            () => {
                 this.isUploadingDragItemFile = false;
                 this.dragItemFile = undefined;
             },
