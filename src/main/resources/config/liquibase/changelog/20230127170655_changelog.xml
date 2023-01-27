@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog contextFilter="testdata"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.6.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="lpusl (generated)" id="1674835617883-1">
+        <loadData commentLineStartsWith="#" encoding="UTF-8"
+                  file="config/liquibase/testdata/course.csv" quotchar="&quot;" separator=","
+                  tableName="course">
+            <column header="id" name="id" type="NUMERIC"/>
+            <column header="title" name="title" type="STRING"/>
+            <column header="student_group_name" name="student_group_name" type="STRING"/>
+            <column header="teaching_assistant_group_name" name="teaching_assistant_group_name" type="STRING"/>
+            <column header="end_date" name="end_date" type="skip"/>
+            <column header="instructor_group_name" name="instructor_group_name" type="STRING"/>
+            <column header="online_course" name="online_course" type="BOOLEAN"/>
+            <column header="start_date" name="start_date" type="skip"/>
+            <column header="short_name" name="short_name" type="STRING"/>
+            <column header="max_complaints" name="max_complaints" type="NUMERIC"/>
+            <column header="max_team_complaints" name="max_team_complaints" type="NUMERIC"/>
+            <column header="description" name="description" type="STRING"/>
+            <column header="color" name="color" type="STRING"/>
+            <column header="course_icon" name="course_icon" type="skip"/>
+            <column header="registration_enabled" name="registration_enabled" type="BOOLEAN"/>
+            <column header="presentation_score" name="presentation_score" type="NUMERIC"/>
+            <column header="max_complaint_time_days" name="max_complaint_time_days" type="NUMERIC"/>
+            <column header="posts_enabled" name="posts_enabled" type="BOOLEAN"/>
+            <column header="registration_confirmation_message" name="registration_confirmation_message" type="skip"/>
+            <column header="semester" name="semester" type="skip"/>
+            <column header="test_course" name="test_course" type="BOOLEAN"/>
+            <column header="language" name="language" type="skip"/>
+            <column header="max_request_more_feedback_time_days" name="max_request_more_feedback_time_days"
+                    type="NUMERIC"/>
+            <column header="course_archive_path" name="course_archive_path" type="skip"/>
+            <column header="editor_group_name" name="editor_group_name" type="STRING"/>
+            <column header="max_points" name="max_points" type="skip"/>
+            <column header="accuracy_of_scores" name="accuracy_of_scores" type="NUMERIC"/>
+            <column header="max_complaint_text_limit" name="max_complaint_text_limit" type="NUMERIC"/>
+            <column header="max_complaint_response_text_limit" name="max_complaint_response_text_limit" type="NUMERIC"/>
+            <column header="default_programming_language" name="default_programming_language" type="skip"/>
+            <column header="online_course_configuration_id" name="online_course_configuration_id" type="skip"/>
+            <column header="time_zone" name="time_zone" type="skip"/>
+            <column header="tutorial_groups_configuration_id" name="tutorial_groups_configuration_id" type="skip"/>
+        </loadData>
+    </changeSet>
+    <changeSet author="lpusl (generated)" id="1674835617883-2">
+        <loadData commentLineStartsWith="#" encoding="UTF-8"
+                  file="config/liquibase/testdata/jhi_user.csv" quotchar="&quot;" separator=","
+                  tableName="jhi_user">
+            <column header="id" name="id" type="NUMERIC"/>
+            <column header="login" name="login" type="STRING"/>
+            <column header="password_hash" name="password_hash" type="STRING"/>
+            <column header="first_name" name="first_name" type="STRING"/>
+            <column header="last_name" name="last_name" type="STRING"/>
+            <column header="email" name="email" type="STRING"/>
+            <column header="activated" name="activated" type="BOOLEAN"/>
+            <column header="lang_key" name="lang_key" type="STRING"/>
+            <column header="activation_key" name="activation_key" type="skip"/>
+            <column header="reset_key" name="reset_key" type="STRING"/>
+            <column header="created_by" name="created_by" type="STRING"/>
+            <column header="created_date" name="created_date" type="STRING"/>
+            <column header="reset_date" name="reset_date" type="STRING"/>
+            <column header="last_modified_by" name="last_modified_by" type="STRING"/>
+            <column header="last_modified_date" name="last_modified_date" type="STRING"/>
+            <column header="image_url" name="image_url" type="skip"/>
+            <column header="last_notification_read" name="last_notification_read" type="skip"/>
+            <column header="registration_number" name="registration_number" type="skip"/>
+            <column header="hide_notifications_until" name="hide_notifications_until" type="skip"/>
+            <column header="is_internal" name="is_internal" type="BOOLEAN"/>
+            <column header="vcs_access_token" name="vcs_access_token" type="skip"/>
+        </loadData>
+    </changeSet>
+    <changeSet author="lpusl (generated)" id="1674835617883-3">
+        <loadData commentLineStartsWith="#" encoding="UTF-8"
+                  file="config/liquibase/testdata/jhi_user_authority.csv" quotchar="&quot;"
+                  separator="," tableName="jhi_user_authority">
+            <column header="user_id" name="user_id" type="NUMERIC"/>
+            <column header="authority_name" name="authority_name" type="STRING"/>
+        </loadData>
+    </changeSet>
+    <changeSet author="lpusl (generated)" id="1674835617883-4">
+        <loadData commentLineStartsWith="#" encoding="UTF-8"
+                  file="config/liquibase/testdata/user_groups.csv" quotchar="&quot;" separator=","
+                  tableName="user_groups">
+            <column header="user_id" name="user_id" type="NUMERIC"/>
+            <column header="groups" name="groups" type="STRING"/>
+        </loadData>
+    </changeSet>
+</databaseChangeLog>

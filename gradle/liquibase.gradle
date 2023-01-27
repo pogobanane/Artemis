@@ -82,12 +82,15 @@ task liquibaseGenerateChangeLog(dependsOn: initPaths) {
    2) reformat changelog.xml
    3) set the databaseChangeLog to contextFilter="testdata"
    4) add the changelog to master.xml
+
+   It might be necessary to filter the tables which are generated in testdata and then maybe add unnecessary ones
+   in the excludeObjects parameter below.zs
 */
 task liquibaseGenerateChangeLogTestdata(dependsOn: initPaths) {
     doLast {
         liquibaseCommand("generateChangeLog",
             "--diffTypes=data",
-            "--includeObjects=table:jhi_user,table:jhi_user_authority",
+            "--excludeObjects=table:artemis_version,table:jhi_authority,table",
             "--dataOutputDirectory=src/main/resources/config/liquibase/testdata")
     }
 }
