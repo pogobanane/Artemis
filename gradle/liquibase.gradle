@@ -67,9 +67,9 @@ task liquibaseClearChecksums(dependsOn: initPaths) {
     }
 }
 
-task liquibaseGenerateChangelog(dependsOn: initPaths) {
+task liquibaseGenerateChangeLog(dependsOn: initPaths) {
     doLast {
-        liquibaseCommand("generateChangelog")
+        liquibaseCommand("generateChangeLog")
     }
 }
 
@@ -77,14 +77,16 @@ task liquibaseGenerateChangelog(dependsOn: initPaths) {
    Testdata Changelog Generation Helper
    dumps the included tables in csv files and creates changelogs
    manual work:
-   1) strip everything except the loaddata parts from the changelogs
-   2) set the databaseChangeLog to context="testdata"
-   3) add the changelog to master.xml
+   Database needs to be empty
+   1) Strip the generated changelog file paths inside loaddata from src/main/resources.
+   2) reformat changelog.xml
+   3) set the databaseChangeLog to contextFilter="testdata"
+   4) add the changelog to master.xml
 */
-task liquibaseGenerateChangelogTestdata(dependsOn: initPaths) {
+task liquibaseGenerateChangeLogTestdata(dependsOn: initPaths) {
     doLast {
-        liquibaseCommand("generateChangelog",
-            "--diffTypes=tables,columns,data",
+        liquibaseCommand("generateChangeLog",
+            "--diffTypes=data",
             "--includeObjects=table:jhi_user,table:jhi_user_authority",
             "--dataOutputDirectory=src/main/resources/config/liquibase/testdata")
     }
