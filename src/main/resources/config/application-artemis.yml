@@ -93,3 +93,7 @@ artemis:
         token-validity-in-seconds: 10800
     apollon:
         conversion-service-url: http://localhost:8080
+    testdata:
+        #TODO: set dev defaults in application-dev.yml? or just leave it up to everyone in their application-local.yml?
+        enabled: false
+        generate-testdata-on-startup: false
