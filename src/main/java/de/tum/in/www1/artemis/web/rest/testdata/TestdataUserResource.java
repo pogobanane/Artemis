@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,10 +23,11 @@ import de.tum.in.www1.artemis.web.rest.vm.ManagedUserVM;
 import net.datafaker.Faker;
 
 @RestController
+@ConditionalOnProperty(value = "artemis.testdata.enabled")
 @RequestMapping("/api/testdata")
-public class TestdataGenerationUserResource {
+public class TestdataUserResource {
 
-    private final Logger log = LoggerFactory.getLogger(TestdataGenerationUserResource.class);
+    private final Logger log = LoggerFactory.getLogger(TestdataUserResource.class);
 
     private final UserService userService;
 
@@ -35,7 +37,7 @@ public class TestdataGenerationUserResource {
 
     private final Faker faker = new Faker();
 
-    public TestdataGenerationUserResource(UserService userService, UserRepository userRepository, UserCreationService userCreationService) {
+    public TestdataUserResource(UserService userService, UserRepository userRepository, UserCreationService userCreationService) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.userCreationService = userCreationService;
@@ -48,7 +50,6 @@ public class TestdataGenerationUserResource {
         List<String> fakeFirstnames = faker.<String>collection(() -> faker.name().firstName()).len(numberOfRandomUsers).generate();
         List<String> fakeLastnames = faker.<String>collection(() -> faker.name().lastName()).len(numberOfRandomUsers).generate();
         List<User> randomUsers = new ArrayList<>();
-        ;
 
         for (int i = 0; i < numberOfRandomUsers; i++) {
             String firstname = fakeFirstnames.get(i);
