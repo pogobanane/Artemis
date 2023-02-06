@@ -1458,7 +1458,7 @@ class ExamIntegrationTest extends AbstractSpringIntegrationBambooBitbucketJiraTe
         exam.setVisibleDate(ZonedDateTime.now().minusHours(1).minusMinutes(5));
         StudentExam response = request.get("/api/courses/" + course1.getId() + "/exams/" + exam.getId() + "/start", HttpStatus.OK, StudentExam.class);
         assertThat(response.getExam()).isEqualTo(exam);
-        verify(examAccessService, times(1)).getExamInCourseElseThrow(course1.getId(), exam.getId());
+        verify(examAccessService, times(1)).getOrCreateStudentExam(course1.getId(), exam.getId());
     }
 
     @Test

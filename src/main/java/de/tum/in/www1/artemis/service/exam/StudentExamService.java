@@ -633,7 +633,7 @@ public class StudentExamService {
     public StudentExam generateTestExam(Exam exam, User student) {
         // To create a new StudentExam, the Exam with loaded ExerciseGroups and Exercises is needed
         long start = System.nanoTime();
-        StudentExam studentExam = generateIndividualStudentExam(exam, student);
+        StudentExam studentExam = studentExamRepository.createRandomStudentExams(exam, Set.of(student)).get(0);
         // we need to break a cycle for the serialization
         studentExam.getExam().setExerciseGroups(null);
         studentExam.getExam().setStudentExams(null);
@@ -642,20 +642,6 @@ public class StudentExamService {
 
         return studentExam;
 
-    }
-
-    /**
-     * Generates an individual StudentExam
-     *
-     * @param exam    with eagerly loaded users, exerciseGroups and exercises loaded
-     * @param student the student for which the StudentExam should be created
-     * @return the generated StudentExam
-     */
-    private StudentExam generateIndividualStudentExam(Exam exam, User student) {
-        // StudentExams are saved in the called method
-        HashSet<User> userHashSet = new HashSet<>();
-        userHashSet.add(student);
-        return studentExamRepository.createRandomStudentExams(exam, userHashSet).get(0);
     }
 
     public void notifyStudentAboutWorkingTimeChangeDuringConduction(StudentExam studentExam) {

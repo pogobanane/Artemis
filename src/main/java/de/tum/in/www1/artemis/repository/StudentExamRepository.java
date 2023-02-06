@@ -2,7 +2,6 @@ package de.tum.in.www1.artemis.repository;
 
 import static org.springframework.data.jpa.repository.EntityGraph.EntityGraphType.LOAD;
 
-import java.security.SecureRandom;
 import java.time.ZonedDateTime;
 import java.util.*;
 
@@ -310,7 +309,8 @@ public interface StudentExamRepository extends JpaRepository<StudentExam, Long> 
      */
     default List<StudentExam> createRandomStudentExams(Exam exam, Set<User> users) {
         List<StudentExam> studentExams = new ArrayList<>();
-        SecureRandom random = new SecureRandom();
+        // intentionally use the faster Random instead of SecureRandom here, we do not need perfect randomness
+        Random random = new Random();
         long numberOfOptionalExercises = exam.getNumberOfExercisesInExam() - exam.getExerciseGroups().stream().filter(ExerciseGroup::getIsMandatory).count();
 
         // Determine the default working time by computing the duration between start and end date of the exam
@@ -371,7 +371,7 @@ public interface StudentExamRepository extends JpaRepository<StudentExam, Long> 
         return indices;
     }
 
-    private Exercise selectRandomExercise(SecureRandom random, ExerciseGroup exerciseGroup) {
+    private Exercise selectRandomExercise(Random random, ExerciseGroup exerciseGroup) {
         List<Exercise> exercises = new ArrayList<>(exerciseGroup.getExercises());
         int randomIndex = random.nextInt(exercises.size());
         return exercises.get(randomIndex);
@@ -396,7 +396,7 @@ public interface StudentExamRepository extends JpaRepository<StudentExam, Long> 
     /**
      * Generates the missing student exams randomly based on the exam configuration and the exercise groups.
      * The difference between all registered users and the users who already have an individual exam is the set of users for which student exams will be created.
-     *
+     * <p>
      * Important: the passed exams needs to include the registered users, exercise groups and exercises (eagerly loaded)
      *
      * @param exam with eagerly loaded registered users, exerciseGroups and exercises loaded

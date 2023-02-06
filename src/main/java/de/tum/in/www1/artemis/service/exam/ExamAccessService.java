@@ -60,38 +60,10 @@ public class ExamAccessService {
      * @param examId   The id of the exam
      * @return a ResponseEntity with the exam
      */
-    public StudentExam getExamInCourseElseThrow(Long courseId, Long examId) {
-        User currentUser = userRepository.getUserWithGroupsAndAuthorities();
 
-        // Check that the current user is at least student in the course.
-        Course course = courseRepository.findByIdElseThrow(courseId);
-        authorizationCheckService.checkHasAtLeastRoleInCourseElseThrow(Role.STUDENT, course, currentUser);
-
-        // Check that the student exam exists
-        Optional<StudentExam> optionalStudentExam = studentExamRepository.findByExamIdAndUserId(examId, currentUser.getId());
-
-        StudentExam studentExam;
-        // If an studentExam can be fund, we can proceed
-        if (optionalStudentExam.isPresent()) {
-            studentExam = optionalStudentExam.get();
-        }
-        else {
-            // Only Test Exams can be self-created by the user.
-            Exam examWithExerciseGroupsAndExercises = examRepository.findWithExerciseGroupsAndExercisesByIdOrElseThrow(examId);
-
-            if (!examWithExerciseGroupsAndExercises.isTestExam()) {
-                throw new BadRequestAlertException("The requested Exam is no test exam and thus no student exam can be created", ENTITY_NAME,
-                        "StudentExamGenerationOnlyForTestExams");
-            }
-            studentExam = studentExamService.generateTestExam(examWithExerciseGroupsAndExercises, currentUser);
-            // For the start of the exam, the exercises are not needed. They are later loaded via StudentExamResource
-            studentExam.setExercises(null);
-        }
-
-        Exam exam = studentExam.getExam();
-
-        checkExamBelongsToCourseElseThrow(courseId, exam);
-
+    // TODO: this method might become quite slow
+    public StudentExam getOrCreateStudentExam(Long courseId, Long examId) {
+        Exam exam = checkExamBelongsToCourseElseThrow(courseId, examId);
         if (!examId.equals(exam.getId())) {
             throw new BadRequestAlertException("The provided examId does not match with the examId of the studentExam", ENTITY_NAME, "examIdMismatch");
         }
@@ -100,6 +72,10 @@ public class ExamAccessService {
         if (exam.getVisibleDate() != null && exam.getVisibleDate().isAfter(ZonedDateTime.now())) {
             throw new AccessForbiddenException(ENTITY_NAME, examId);
         }
+        // Check that the current user is at least student in the course.
+        User currentUser = userRepository.getUserWithGroupsAndAuthorities();
+        Course course = courseRepository.findByIdElseThrow(courseId);
+        authorizationCheckService.checkHasAtLeastRoleInCourseElseThrow(Role.STUDENT, course, currentUser);
 
         if (exam.isTestExam()) {
             // Check that the current user is registered for the test exam. Otherwise, the student can self-register
@@ -112,7 +88,21 @@ public class ExamAccessService {
             }
         }
 
-        return studentExam;
+        // Use an existing student exam in case it exists
+        return studentExamRepository.findByExamIdAndUserId(examId, currentUser.getId()).orElseGet(() -> {
+            // ... if not, create a new one
+            // Only Test Exams can be self-created by the user.
+            Exam examWithExerciseGroupsAndExercises = examRepository.findWithExerciseGroupsAndExercisesByIdOrElseThrow(examId);
+
+            if (!examWithExerciseGroupsAndExercises.isTestExam()) {
+                throw new BadRequestAlertException("The requested Exam is no test exam and thus no student exam can be created", ENTITY_NAME,
+                        "StudentExamGenerationOnlyForTestExams");
+            }
+            var newStudentExam = studentExamService.generateTestExam(examWithExerciseGroupsAndExercises, currentUser);
+            // For the start of the exam, the exercises are not needed. They are later loaded via StudentExamResource
+            newStudentExam.setExercises(null);
+            return newStudentExam;
+        });
     }
 
     /**
@@ -292,7 +282,7 @@ public class ExamAccessService {
         }
     }
 
-    private void checkExamBelongsToCourseElseThrow(Long courseId, Long examId) {
+    private Exam checkExamBelongsToCourseElseThrow(Long courseId, Long examId) {
         Optional<Exam> exam = examRepository.findById(examId);
         if (exam.isEmpty()) {
             throw new EntityNotFoundException(ENTITY_NAME, examId);
@@ -300,6 +290,7 @@ public class ExamAccessService {
         else {
             checkExamBelongsToCourseElseThrow(courseId, exam.get());
         }
+        return exam.get();
     }
 
     private void checkExamBelongsToCourseElseThrow(Long courseId, Exam exam) {
