@@ -14,6 +14,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import de.tum.in.www1.artemis.security.SecurityUtils;
 import de.tum.in.www1.artemis.service.testdata.TestdataUserService;
 
 @Component
@@ -54,6 +55,8 @@ public class StartupTestdataLoader implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         log.info("Started the TestdataLoader");
         if (generateTestdataOnStartup && !artemisDatabaseInitialized()) {
+            // authenticate so that db queries are possible
+            SecurityUtils.setAuthorizationObject();
             testdataUserService.createTestdataUser("test_student_1");
         }
     }
