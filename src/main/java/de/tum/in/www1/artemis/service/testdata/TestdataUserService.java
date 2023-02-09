@@ -63,7 +63,7 @@ public class TestdataUserService {
     }
 
     public User createTestdataUser(String username) {
-        log.info("Create Testdata user {}", username);
+        log.debug("Create Testdata user {}", username);
         ManagedUserVM userDto = new ManagedUserVM();
         userDto.setLogin(username);
         userDto.setPassword(username);

@@ -15,6 +15,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import de.tum.in.www1.artemis.security.SecurityUtils;
+import de.tum.in.www1.artemis.service.testdata.TestdataCourseService;
 import de.tum.in.www1.artemis.service.testdata.TestdataUserService;
 
 @Component
@@ -25,14 +26,17 @@ public class StartupTestdataLoader implements ApplicationRunner {
 
     private final TestdataUserService testdataUserService;
 
+    private final TestdataCourseService testdataCourseService;
+
     private final DataSource dataSource;
 
     @Value("${artemis.testdata.generate-testdata-on-startup:#{false}}")
     private Boolean generateTestdataOnStartup;
 
     @Autowired
-    public StartupTestdataLoader(TestdataUserService testdataUserService, ObjectProvider<DataSource> dataSourceObjectProvider) {
+    public StartupTestdataLoader(TestdataUserService testdataUserService, TestdataCourseService testdataCourseService, ObjectProvider<DataSource> dataSourceObjectProvider) {
         this.testdataUserService = testdataUserService;
+        this.testdataCourseService = testdataCourseService;
         this.dataSource = dataSourceObjectProvider.getIfUnique();
     }
 
@@ -58,6 +62,7 @@ public class StartupTestdataLoader implements ApplicationRunner {
             // authenticate so that db queries are possible
             SecurityUtils.setAuthorizationObject();
             testdataUserService.createTestdataUser("test_student_1");
+            testdataCourseService.createTestdataCourse("Testcourse", "tec", true);
         }
     }
 }
