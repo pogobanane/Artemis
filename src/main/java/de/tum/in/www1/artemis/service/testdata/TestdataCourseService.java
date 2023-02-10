@@ -12,8 +12,10 @@ import de.tum.in.www1.artemis.repository.CourseRepository;
 import de.tum.in.www1.artemis.service.CourseService;
 import de.tum.in.www1.artemis.service.OnlineCourseConfigurationService;
 
+// TODO: add method descriptions
+
 /**
- * Service class for managing test users.
+ * Service class for managing test courses.
  */
 @Service
 @ConditionalOnProperty(value = "artemis.testdata.enabled")
@@ -33,6 +35,8 @@ public class TestdataCourseService {
         this.courseService = courseService;
     }
 
+    // TODO: add this to CourseService?
+    // TODO: all checks really necessary? this is originally from the API call
     public Course createTestdataCourse(String title, String shortName, boolean testCourse) {
         log.debug("Create Testdata course {}", title);
         Course course = new Course();

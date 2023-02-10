@@ -43,4 +43,15 @@ public enum Role {
             default -> ANONYMOUS;
         };
     }
+
+    public String toPrettyString() {
+        return switch (this) {
+            case STUDENT -> "student";
+            case TEACHING_ASSISTANT -> "tutor";
+            case INSTRUCTOR -> "instructor";
+            case EDITOR -> "editor";
+            case ANONYMOUS -> "";
+            default -> "";
+        };
+    }
 }

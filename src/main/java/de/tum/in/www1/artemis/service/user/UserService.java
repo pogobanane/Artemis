@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -137,6 +138,7 @@ public class UserService {
      * Make sure that the internal artemis admin (in case it is defined in the yml configuration) is available in the database
      */
     @EventListener(ApplicationReadyEvent.class)
+    @Order(10)
     public void applicationReady() {
 
         try {
