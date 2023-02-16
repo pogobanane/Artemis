@@ -22,6 +22,7 @@ import de.tum.in.www1.artemis.repository.UserRepository;
 import de.tum.in.www1.artemis.security.annotations.EnforceAdmin;
 import de.tum.in.www1.artemis.service.*;
 import de.tum.in.www1.artemis.web.rest.errors.BadRequestAlertException;
+import de.tum.in.www1.artemis.web.rest.errors.CourseShortnameAlreadyExistsException;
 import de.tum.in.www1.artemis.web.rest.util.HeaderUtil;
 
 /**
@@ -63,46 +64,18 @@ public class AdminCourseResource {
      *
      * @param course the course to create
      * @param file the optional course icon file
-     * @return the ResponseEntity with status 201 (Created) and with body the new course, or with status 400 (Bad Request) if the course has already an ID
+     * @return the ResponseEntity with status 201 (Created) and with body the new course
      * @throws URISyntaxException if the Location URI syntax is incorrect
+     * @throws BadRequestAlertException {@code 400 (Bad Request)} if the course already has an ID
+     * @throws BadRequestAlertException {@code 400 (Bad Request)} if the course date is invalid
+     * @throws CourseShortnameAlreadyExistsException {@code 400 (Bad Request)} if the course shortname already exists
      */
     @PostMapping(value = "courses", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @EnforceAdmin
     public ResponseEntity<Course> createCourse(@RequestPart Course course, @RequestPart(required = false) MultipartFile file) throws URISyntaxException {
         log.debug("REST request to save Course : {}", course);
-        if (course.getId() != null) {
-            throw new BadRequestAlertException("A new course cannot already have an ID", Course.ENTITY_NAME, "idExists");
-        }
 
-        course.validateShortName();
-
-        List<Course> coursesWithSameShortName = courseRepository.findAllByShortName(course.getShortName());
-        if (!coursesWithSameShortName.isEmpty()) {
-            return ResponseEntity.badRequest().headers(
-                    HeaderUtil.createAlert(applicationName, "A course with the same short name already exists. Please choose a different short name.", "shortnameAlreadyExists"))
-                    .body(null);
-        }
-
-        course.validateRegistrationConfirmationMessage();
-        course.validateComplaintsAndRequestMoreFeedbackConfig();
-        course.validateOnlineCourseAndRegistrationEnabled();
-        course.validateAccuracyOfScores();
-        if (!course.isValidStartAndEndDate()) {
-            throw new BadRequestAlertException("For Courses, the start date has to be before the end date", Course.ENTITY_NAME, "invalidCourseStartDate", true);
-        }
-
-        if (course.isOnlineCourse()) {
-            onlineCourseConfigurationService.createOnlineCourseConfiguration(course);
-        }
-
-        courseService.createOrValidateGroups(course);
-
-        if (file != null) {
-            String pathString = fileService.handleSaveFile(file, false, false);
-            course.setCourseIcon(pathString);
-        }
-
-        Course result = courseRepository.save(course);
+        Course result = courseService.createCourse(course, file);
 
         return ResponseEntity.created(new URI("/api/courses/" + result.getId())).body(result);
     }

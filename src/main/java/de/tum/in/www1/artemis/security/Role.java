@@ -50,8 +50,8 @@ public enum Role {
             case TEACHING_ASSISTANT -> "tutor";
             case INSTRUCTOR -> "instructor";
             case EDITOR -> "editor";
-            case ANONYMOUS -> "";
-            default -> "";
+            case ADMIN -> "admin";
+            case ANONYMOUS -> "anonymous";
         };
     }
 }

@@ -103,6 +103,13 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
         return create(problem, request, HeaderUtil.createFailureAlert(applicationName, true, problem.getEntityName(), problem.getErrorKey(), problem.getMessage()));
     }
 
+    // TODO: not sure if this is using the correct methods
+    @ExceptionHandler
+    public ResponseEntity<Problem> handleCourseShortnameAlreadyExistsException(CourseShortnameAlreadyExistsException ex, NativeWebRequest request) {
+        CourseShortnameAlreadyExistsException problem = new CourseShortnameAlreadyExistsException();
+        return create(problem, request, HeaderUtil.createAlert(applicationName, problem.getMessage(), problem.getErrorKey()));
+    }
+
     @ExceptionHandler
     public ResponseEntity<Problem> handlePasswordViolatesRequirementsException(PasswordViolatesRequirementsException ex, NativeWebRequest request) {
         return create(new PasswordViolatesRequirementsException(), request);

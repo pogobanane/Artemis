@@ -26,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import de.tum.in.www1.artemis.config.Constants;
 import de.tum.in.www1.artemis.domain.*;
@@ -56,6 +57,7 @@ import de.tum.in.www1.artemis.web.rest.dto.StatsForDashboardDTO;
 import de.tum.in.www1.artemis.web.rest.dto.TutorLeaderboardDTO;
 import de.tum.in.www1.artemis.web.rest.errors.AccessForbiddenException;
 import de.tum.in.www1.artemis.web.rest.errors.BadRequestAlertException;
+import de.tum.in.www1.artemis.web.rest.errors.CourseShortnameAlreadyExistsException;
 
 /**
  * Service Implementation for managing Course.
@@ -136,6 +138,10 @@ public class CourseService {
 
     private final TutorialGroupsConfigurationRepository tutorialGroupsConfigurationRepository;
 
+    private final OnlineCourseConfigurationService onlineCourseConfigurationService;
+
+    private final FileService fileService;
+
     public CourseService(Environment env, ArtemisAuthenticationProvider artemisAuthenticationProvider, CourseRepository courseRepository, ExerciseService exerciseService,
             ExerciseDeletionService exerciseDeletionService, AuthorizationCheckService authCheckService, UserRepository userRepository, LectureService lectureService,
             GroupNotificationRepository groupNotificationRepository, ExerciseGroupRepository exerciseGroupRepository, AuditEventRepository auditEventRepository,
@@ -145,7 +151,8 @@ public class CourseService {
             RatingRepository ratingRepository, ComplaintService complaintService, ComplaintRepository complaintRepository, ResultRepository resultRepository,
             ComplaintResponseRepository complaintResponseRepository, SubmissionRepository submissionRepository, ProgrammingExerciseRepository programmingExerciseRepository,
             ExerciseRepository exerciseRepository, ParticipantScoreRepository participantScoreRepository, TutorialGroupRepository tutorialGroupRepository,
-            TutorialGroupService tutorialGroupService, TutorialGroupsConfigurationRepository tutorialGroupsConfigurationRepository) {
+            TutorialGroupService tutorialGroupService, TutorialGroupsConfigurationRepository tutorialGroupsConfigurationRepository,
+            OnlineCourseConfigurationService onlineCourseConfigurationService, FileService fileService) {
         this.env = env;
         this.artemisAuthenticationProvider = artemisAuthenticationProvider;
         this.courseRepository = courseRepository;
@@ -180,6 +187,8 @@ public class CourseService {
         this.tutorialGroupRepository = tutorialGroupRepository;
         this.tutorialGroupService = tutorialGroupService;
         this.tutorialGroupsConfigurationRepository = tutorialGroupsConfigurationRepository;
+        this.onlineCourseConfigurationService = onlineCourseConfigurationService;
+        this.fileService = fileService;
     }
 
     /**
@@ -300,6 +309,52 @@ public class CourseService {
         }
 
         return false;
+    }
+
+    /**
+     * Creates a course
+     *
+     * @param course the course to be created
+     * @param file an uploaded file which is used as courseIcon but can be null if not set
+     * @return the created course
+     */
+    public Course createCourse(Course course, MultipartFile file) {
+        log.debug("Request to create Course: {}", course.getTitle());
+
+        if (course.getId() != null) {
+            throw new BadRequestAlertException("A new course cannot already have an ID", Course.ENTITY_NAME, "idExists");
+        }
+
+        course.validateShortName();
+
+        List<Course> coursesWithSameShortName = courseRepository.findAllByShortName(course.getShortName());
+        if (!coursesWithSameShortName.isEmpty()) {
+            // TODO: is this the way? also why does it trigger 2 exceptions? Or is this Overkill and just throw a Bad RequestAlertException?
+            throw new CourseShortnameAlreadyExistsException();
+        }
+
+        course.validateRegistrationConfirmationMessage();
+        course.validateComplaintsAndRequestMoreFeedbackConfig();
+        course.validateOnlineCourseAndRegistrationEnabled();
+        course.validateAccuracyOfScores();
+        if (!course.isValidStartAndEndDate()) {
+            throw new BadRequestAlertException("For Courses, the start date has to be before the end date", Course.ENTITY_NAME, "invalidCourseStartDate", true);
+        }
+
+        if (course.isOnlineCourse()) {
+            onlineCourseConfigurationService.createOnlineCourseConfiguration(course);
+        }
+
+        createOrValidateGroups(course);
+
+        if (file != null) {
+            String pathString = fileService.handleSaveFile(file, false, false);
+            course.setCourseIcon(pathString);
+        }
+
+        course = courseRepository.save(course);
+
+        return course;
     }
 
     /**
