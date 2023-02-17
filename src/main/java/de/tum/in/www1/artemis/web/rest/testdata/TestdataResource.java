@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import de.tum.in.www1.artemis.security.annotations.EnforceAdmin;
 import de.tum.in.www1.artemis.service.testdata.TestdataService;
-import de.tum.in.www1.artemis.web.rest.dto.TestdataCourseDTO;
+import de.tum.in.www1.artemis.web.rest.dto.TestdataCourseWithExercisesDTO;
 
 @RestController
 @ConditionalOnProperty(value = "artemis.testdata.enabled")
@@ -31,7 +31,7 @@ public class TestdataResource {
      */
     @PostMapping(value = "course-with-exercises")
     @EnforceAdmin
-    public ResponseEntity<Void> createCourseWithExercises(@RequestBody TestdataCourseDTO course) {
+    public ResponseEntity<Void> createCourseWithExercises(@RequestBody TestdataCourseWithExercisesDTO course) {
         log.debug("REST request to save testdata Course : {}", course.title());
 
         testdataService.createTestdataCourseWithExercises(course.title(), course.shortName());
