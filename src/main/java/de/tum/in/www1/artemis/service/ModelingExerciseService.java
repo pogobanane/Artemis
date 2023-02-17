@@ -14,8 +14,10 @@ import de.tum.in.www1.artemis.repository.ModelClusterRepository;
 import de.tum.in.www1.artemis.repository.ModelElementRepository;
 import de.tum.in.www1.artemis.repository.ModelingExerciseRepository;
 import de.tum.in.www1.artemis.service.messaging.InstanceMessageSendService;
+import de.tum.in.www1.artemis.service.notifications.GroupNotificationScheduleService;
 import de.tum.in.www1.artemis.web.rest.dto.PageableSearchDTO;
 import de.tum.in.www1.artemis.web.rest.dto.SearchResultPageDTO;
+import de.tum.in.www1.artemis.web.rest.errors.BadRequestAlertException;
 import de.tum.in.www1.artemis.web.rest.util.PageUtil;
 
 @Service
@@ -33,13 +35,53 @@ public class ModelingExerciseService {
 
     private final ModelElementRepository modelElementRepository;
 
+    private final ModelAssessmentKnowledgeService modelAssessmentKnowledgeService;
+
+    private final ModelingExerciseService modelingExerciseService;
+
+    private final GroupNotificationScheduleService groupNotificationScheduleService;
+
     public ModelingExerciseService(ModelingExerciseRepository modelingExerciseRepository, AuthorizationCheckService authCheckService,
-            InstanceMessageSendService instanceMessageSendService, ModelClusterRepository modelClusterRepository, ModelElementRepository modelElementRepository) {
+            InstanceMessageSendService instanceMessageSendService, ModelClusterRepository modelClusterRepository, ModelElementRepository modelElementRepository,
+            ModelAssessmentKnowledgeService modelAssessmentKnowledgeService, ModelingExerciseService modelingExerciseService,
+            GroupNotificationScheduleService groupNotificationScheduleService) {
         this.modelingExerciseRepository = modelingExerciseRepository;
         this.authCheckService = authCheckService;
         this.instanceMessageSendService = instanceMessageSendService;
         this.modelClusterRepository = modelClusterRepository;
         this.modelElementRepository = modelElementRepository;
+        this.modelAssessmentKnowledgeService = modelAssessmentKnowledgeService;
+        this.modelingExerciseService = modelingExerciseService;
+        this.groupNotificationScheduleService = groupNotificationScheduleService;
+    }
+
+    /**
+     * Creates a ModelingExercise
+     *
+     * @param modelingExercise the ModelingExercise to be created
+     * @return the created ModelingExercise
+     */
+    public ModelingExercise createModelingExercise(ModelingExercise modelingExercise) {
+        log.debug("Request to create ModelingExercise: {}", modelingExercise);
+
+        if (modelingExercise.getId() != null) {
+            throw new BadRequestAlertException("A new modeling exercise cannot already have an ID", ModelingExercise.ENTITY_NAME, "idExists");
+        }
+        if (modelingExercise.getTitle() == null) {
+            throw new BadRequestAlertException("A new modeling exercise needs a title", ModelingExercise.ENTITY_NAME, "missingtitle");
+        }
+        // validates general settings: points, dates
+        modelingExercise.validateGeneralSettings();
+        // Valid exercises have set either a course or an exerciseGroup
+        modelingExercise.checkCourseAndExerciseGroupExclusivity(ModelingExercise.ENTITY_NAME);
+
+        // if exercise is created from scratch we create new knowledge instance
+        modelingExercise.setKnowledge(modelAssessmentKnowledgeService.createNewKnowledge());
+        ModelingExercise result = modelingExerciseRepository.save(modelingExercise);
+        modelingExerciseService.scheduleOperations(result.getId());
+        groupNotificationScheduleService.checkNotificationsForNewExercise(modelingExercise);
+
+        return result;
     }
 
     /**

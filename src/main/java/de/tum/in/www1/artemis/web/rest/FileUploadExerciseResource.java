@@ -1,7 +1,5 @@
 package de.tum.in.www1.artemis.web.rest;
 
-import static de.tum.in.www1.artemis.config.Constants.FILE_ENDING_PATTERN;
-
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -23,7 +21,6 @@ import de.tum.in.www1.artemis.service.feature.Feature;
 import de.tum.in.www1.artemis.service.feature.FeatureToggle;
 import de.tum.in.www1.artemis.service.notifications.GroupNotificationScheduleService;
 import de.tum.in.www1.artemis.web.rest.dto.SubmissionExportOptionsDTO;
-import de.tum.in.www1.artemis.web.rest.errors.BadRequestAlertException;
 import de.tum.in.www1.artemis.web.rest.errors.EntityNotFoundException;
 import de.tum.in.www1.artemis.web.rest.util.HeaderUtil;
 import de.tum.in.www1.artemis.web.rest.util.ResponseUtil;
@@ -62,10 +59,13 @@ public class FileUploadExerciseResource {
 
     private final FileUploadSubmissionExportService fileUploadSubmissionExportService;
 
+    private final FileUploadExerciseService fileUploadExerciseService;
+
     public FileUploadExerciseResource(FileUploadExerciseRepository fileUploadExerciseRepository, UserRepository userRepository, AuthorizationCheckService authCheckService,
             CourseService courseService, ExerciseService exerciseService, ExerciseDeletionService exerciseDeletionService,
             FileUploadSubmissionExportService fileUploadSubmissionExportService, GradingCriterionRepository gradingCriterionRepository, CourseRepository courseRepository,
-            ParticipationRepository participationRepository, GroupNotificationScheduleService groupNotificationScheduleService) {
+            ParticipationRepository participationRepository, GroupNotificationScheduleService groupNotificationScheduleService,
+            FileUploadExerciseService fileUploadExerciseService) {
         this.fileUploadExerciseRepository = fileUploadExerciseRepository;
         this.userRepository = userRepository;
         this.courseService = courseService;
@@ -77,6 +77,7 @@ public class FileUploadExerciseResource {
         this.fileUploadSubmissionExportService = fileUploadSubmissionExportService;
         this.courseRepository = courseRepository;
         this.participationRepository = participationRepository;
+        this.fileUploadExerciseService = fileUploadExerciseService;
     }
 
     /**
@@ -90,53 +91,15 @@ public class FileUploadExerciseResource {
     @PreAuthorize("hasRole('EDITOR')")
     public ResponseEntity<FileUploadExercise> createFileUploadExercise(@RequestBody FileUploadExercise fileUploadExercise) throws URISyntaxException {
         log.debug("REST request to save FileUploadExercise : {}", fileUploadExercise);
-        if (fileUploadExercise.getId() != null) {
-            return ResponseEntity.badRequest().headers(HeaderUtil.createAlert(applicationName, "A new fileUploadExercise cannot already have an ID", "idExists")).body(null);
-        }
-        // validates general settings: points, dates
-        fileUploadExercise.validateGeneralSettings();
-        // Validate the new file upload exercise
-        validateNewOrUpdatedFileUploadExercise(fileUploadExercise);
+
         // Retrieve the course over the exerciseGroup or the given courseId
         Course course = courseService.retrieveCourseOverExerciseGroupOrCourseId(fileUploadExercise);
         // Check that the user is authorized to create the exercise
         authCheckService.checkHasAtLeastRoleInCourseElseThrow(Role.EDITOR, course, null);
 
-        FileUploadExercise result = fileUploadExerciseRepository.save(fileUploadExercise);
-        groupNotificationScheduleService.checkNotificationsForNewExercise(fileUploadExercise);
+        FileUploadExercise result = fileUploadExerciseService.createFileUploadExercise(fileUploadExercise);
 
         return ResponseEntity.created(new URI("/api/file-upload-exercises/" + result.getId())).body(result);
-    }
-
-    private boolean isFilePatternValid(FileUploadExercise exercise) {
-        // a file ending should consist of a comma separated list of 1-5 characters / digits
-        // when an empty string "" is passed in the exercise the file-pattern is null when it arrives in the rest endpoint
-        if (exercise.getFilePattern() == null) {
-            return false;
-        }
-        var filePattern = exercise.getFilePattern().toLowerCase().replaceAll("\\s+", "");
-        var allowedFileEndings = filePattern.split(",");
-        var isValid = true;
-        for (var allowedFileEnding : allowedFileEndings) {
-            isValid = isValid && FILE_ENDING_PATTERN.matcher(allowedFileEnding).matches();
-        }
-
-        if (isValid) {
-            // use the lowercase version without whitespaces
-            exercise.setFilePattern(filePattern);
-            return true;
-        }
-        return false;
-    }
-
-    private void validateNewOrUpdatedFileUploadExercise(FileUploadExercise fileUploadExercise) throws BadRequestAlertException {
-        // Valid exercises have set either a course or an exerciseGroup
-        fileUploadExercise.checkCourseAndExerciseGroupExclusivity(ENTITY_NAME);
-
-        if (!isFilePatternValid(fileUploadExercise)) {
-            throw new BadRequestAlertException("The file pattern is invalid. Please use a comma separated list with actual file endings without dots (e.g. 'png, pdf').",
-                    ENTITY_NAME, "filepattern.invalid");
-        }
     }
 
     /**

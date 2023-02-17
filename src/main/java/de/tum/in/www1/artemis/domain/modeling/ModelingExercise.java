@@ -23,6 +23,8 @@ import de.tum.in.www1.artemis.domain.enumeration.ExerciseType;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ModelingExercise extends Exercise {
 
+    public static final String ENTITY_NAME = "modelingExercise";
+
     @Enumerated(EnumType.STRING)
     @Column(name = "diagram_type")
     private DiagramType diagramType;
