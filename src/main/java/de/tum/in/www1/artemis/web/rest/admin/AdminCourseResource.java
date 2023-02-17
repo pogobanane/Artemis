@@ -21,8 +21,6 @@ import de.tum.in.www1.artemis.repository.CourseRepository;
 import de.tum.in.www1.artemis.repository.UserRepository;
 import de.tum.in.www1.artemis.security.annotations.EnforceAdmin;
 import de.tum.in.www1.artemis.service.*;
-import de.tum.in.www1.artemis.web.rest.errors.BadRequestAlertException;
-import de.tum.in.www1.artemis.web.rest.errors.CourseShortnameAlreadyExistsException;
 import de.tum.in.www1.artemis.web.rest.util.HeaderUtil;
 
 /**
@@ -66,9 +64,6 @@ public class AdminCourseResource {
      * @param file the optional course icon file
      * @return the ResponseEntity with status 201 (Created) and with body the new course
      * @throws URISyntaxException if the Location URI syntax is incorrect
-     * @throws BadRequestAlertException {@code 400 (Bad Request)} if the course already has an ID
-     * @throws BadRequestAlertException {@code 400 (Bad Request)} if the course date is invalid
-     * @throws CourseShortnameAlreadyExistsException {@code 400 (Bad Request)} if the course shortname already exists
      */
     @PostMapping(value = "courses", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @EnforceAdmin

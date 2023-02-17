@@ -57,7 +57,6 @@ import de.tum.in.www1.artemis.web.rest.dto.StatsForDashboardDTO;
 import de.tum.in.www1.artemis.web.rest.dto.TutorLeaderboardDTO;
 import de.tum.in.www1.artemis.web.rest.errors.AccessForbiddenException;
 import de.tum.in.www1.artemis.web.rest.errors.BadRequestAlertException;
-import de.tum.in.www1.artemis.web.rest.errors.CourseShortnameAlreadyExistsException;
 
 /**
  * Service Implementation for managing Course.
@@ -317,6 +316,9 @@ public class CourseService {
      * @param course the course to be created
      * @param file an uploaded file which is used as courseIcon but can be null if not set
      * @return the created course
+     * @throws BadRequestAlertException {@code 400 (Bad Request)} if the course already has an ID
+     * @throws BadRequestAlertException {@code 400 (Bad Request)} if the course date is invalid
+     * @throws BadRequestAlertException {@code 400 (Bad Request)} if the course shortname already exists
      */
     public Course createCourse(Course course, MultipartFile file) {
         log.debug("Request to create Course: {}", course.getTitle());
@@ -329,8 +331,9 @@ public class CourseService {
 
         List<Course> coursesWithSameShortName = courseRepository.findAllByShortName(course.getShortName());
         if (!coursesWithSameShortName.isEmpty()) {
-            // TODO: is this the way? also why does it trigger 2 exceptions? Or is this Overkill and just throw a Bad RequestAlertException?
-            throw new CourseShortnameAlreadyExistsException();
+            // TODO: is this the way? different headers now but it seems working in the UI. own error message is overkill apparently.
+            throw new BadRequestAlertException("A course with the same short name already exists. Please choose a different short name.", Course.ENTITY_NAME,
+                    "courseShortnameAlreadyExists");
         }
 
         course.validateRegistrationConfirmationMessage();

@@ -13,7 +13,6 @@ import de.tum.in.www1.artemis.domain.Course;
 import de.tum.in.www1.artemis.security.annotations.EnforceAdmin;
 import de.tum.in.www1.artemis.service.testdata.TestdataCourseService;
 import de.tum.in.www1.artemis.web.rest.dto.TestdataCourseDTO;
-import de.tum.in.www1.artemis.web.rest.errors.CourseShortnameAlreadyExistsException;
 
 @RestController
 @ConditionalOnProperty(value = "artemis.testdata.enabled")
@@ -34,7 +33,6 @@ public class TestdataCourseResource {
      * @param course a minimized CourseDTO just for the use case to generate Testdata
      * @return the ResponseEntity with status 201 (Created) and with body the new course
      * @throws URISyntaxException if the Location URI syntax is incorrect
-     * @throws CourseShortnameAlreadyExistsException {@code 400 (Bad Request)} if the course shortname already exists
      */
     @PostMapping(value = "courses")
     @EnforceAdmin
