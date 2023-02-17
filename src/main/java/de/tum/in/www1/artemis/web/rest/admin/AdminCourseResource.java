@@ -2,7 +2,6 @@ package de.tum.in.www1.artemis.web.rest.admin;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,18 +42,11 @@ public class AdminCourseResource {
 
     private final AuditEventRepository auditEventRepository;
 
-    private final FileService fileService;
-
-    private final OnlineCourseConfigurationService onlineCourseConfigurationService;
-
-    public AdminCourseResource(UserRepository userRepository, CourseService courseService, CourseRepository courseRepository, AuditEventRepository auditEventRepository,
-            FileService fileService, OnlineCourseConfigurationService onlineCourseConfigurationService) {
+    public AdminCourseResource(UserRepository userRepository, CourseService courseService, CourseRepository courseRepository, AuditEventRepository auditEventRepository) {
         this.courseService = courseService;
         this.courseRepository = courseRepository;
         this.auditEventRepository = auditEventRepository;
         this.userRepository = userRepository;
-        this.fileService = fileService;
-        this.onlineCourseConfigurationService = onlineCourseConfigurationService;
     }
 
     /**

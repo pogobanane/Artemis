@@ -8,8 +8,11 @@ import org.springframework.stereotype.Service;
 import de.tum.in.www1.artemis.domain.TextExercise;
 import de.tum.in.www1.artemis.domain.User;
 import de.tum.in.www1.artemis.repository.TextExerciseRepository;
+import de.tum.in.www1.artemis.service.messaging.InstanceMessageSendService;
+import de.tum.in.www1.artemis.service.notifications.GroupNotificationScheduleService;
 import de.tum.in.www1.artemis.web.rest.dto.PageableSearchDTO;
 import de.tum.in.www1.artemis.web.rest.dto.SearchResultPageDTO;
+import de.tum.in.www1.artemis.web.rest.errors.BadRequestAlertException;
 import de.tum.in.www1.artemis.web.rest.util.PageUtil;
 
 @Service
@@ -21,9 +24,49 @@ public class TextExerciseService {
 
     private final AuthorizationCheckService authCheckService;
 
-    public TextExerciseService(TextExerciseRepository textExerciseRepository, AuthorizationCheckService authCheckService) {
+    private final TextAssessmentKnowledgeService textAssessmentKnowledgeService;
+
+    private final InstanceMessageSendService instanceMessageSendService;
+
+    private final GroupNotificationScheduleService groupNotificationScheduleService;
+
+    public TextExerciseService(TextExerciseRepository textExerciseRepository, AuthorizationCheckService authCheckService,
+            TextAssessmentKnowledgeService textAssessmentKnowledgeService, InstanceMessageSendService instanceMessageSendService,
+            GroupNotificationScheduleService groupNotificationScheduleService) {
         this.textExerciseRepository = textExerciseRepository;
         this.authCheckService = authCheckService;
+        this.textAssessmentKnowledgeService = textAssessmentKnowledgeService;
+        this.instanceMessageSendService = instanceMessageSendService;
+        this.groupNotificationScheduleService = groupNotificationScheduleService;
+    }
+
+    /**
+     * Creates a TextExercise
+     *
+     * @param textExercise the TextExercise to be created
+     * @return the created TextExercise
+     */
+    public TextExercise createTextExercise(TextExercise textExercise) {
+        log.debug("Request to create TextExercise: {}", textExercise);
+
+        if (textExercise.getId() != null) {
+            throw new BadRequestAlertException("A new textExercise cannot already have an ID", TextExercise.ENTITY_NAME, "idExists");
+        }
+
+        if (textExercise.getTitle() == null) {
+            throw new BadRequestAlertException("A new textExercise needs a title", TextExercise.ENTITY_NAME, "missingtitle");
+        }
+        // validates general settings: points, dates
+        textExercise.validateGeneralSettings();
+        // Valid exercises have set either a course or an exerciseGroup
+        textExercise.checkCourseAndExerciseGroupExclusivity(TextExercise.ENTITY_NAME);
+
+        // if exercise is created from scratch we create new knowledge instance
+        textExercise.setKnowledge(textAssessmentKnowledgeService.createNewKnowledge());
+        TextExercise result = textExerciseRepository.save(textExercise);
+        instanceMessageSendService.sendTextExerciseSchedule(result.getId());
+        groupNotificationScheduleService.checkNotificationsForNewExercise(textExercise);
+        return result;
     }
 
     /**
