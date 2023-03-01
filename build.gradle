@@ -427,7 +427,7 @@ openApi {
     customBootRun {
         args = ["--spring.profiles.active=dev,artemis,scheduling,local"]
     }
-    waitTimeInSeconds = 600
+    waitTimeInSeconds = 900
     apiDocsUrl = "http://localhost:8080/api-docs"
 }
 
