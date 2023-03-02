@@ -101,6 +101,7 @@ public class PostResource {
         return new ResponseEntity<>(tags, null, HttpStatus.OK);
     }
 
+    // TODO: check why courseId is not used or where it's used. for now just added the pathVariable as workaround to get OpenAPI generation working
     /**
      * GET /courses/{courseId}/posts : Get all posts for a course by its id
      *
@@ -113,7 +114,7 @@ public class PostResource {
     @GetMapping("courses/{courseId}/posts")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<Post>> getPostsInCourse(@ApiParam Pageable pageable, @RequestParam(defaultValue = "false") boolean pagingEnabled,
-            PostContextFilter postContextFilter) {
+            PostContextFilter postContextFilter, @PathVariable Long courseId) {
 
         Page<Post> coursePosts = postService.getPostsInCourse(pagingEnabled, pageable, postContextFilter);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), coursePosts);

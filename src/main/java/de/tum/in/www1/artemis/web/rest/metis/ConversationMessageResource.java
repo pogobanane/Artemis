@@ -50,6 +50,7 @@ public class ConversationMessageResource {
         return ResponseEntity.created(new URI("/api/courses/" + courseId + "/messages/" + createdMessage.getId())).body(createdMessage);
     }
 
+    // TODO: check why courseId is not used or where it's used. for now just added the pathVariable as workaround to get OpenAPI generation working
     /**
      * GET /courses/{courseId}/posts : Get all message posts for a conversation by its id
      *
@@ -60,7 +61,7 @@ public class ConversationMessageResource {
      */
     @GetMapping("courses/{courseId}/messages")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<Post>> getMessages(@ApiParam Pageable pageable, PostContextFilter postContextFilter) {
+    public ResponseEntity<List<Post>> getMessages(@ApiParam Pageable pageable, PostContextFilter postContextFilter, @PathVariable Long courseId) {
 
         Page<Post> coursePosts = conversationMessagingService.getMessages(pageable, postContextFilter);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), coursePosts);
