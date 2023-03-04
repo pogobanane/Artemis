@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 import de.tum.in.www1.artemis.security.localvc.*;
-import de.tum.in.www1.artemis.service.connectors.localvc.LocalVCHookService;
+import de.tum.in.www1.artemis.service.connectors.localci.LocalCIPushService;
 import de.tum.in.www1.artemis.service.connectors.localvc.LocalVCServletService;
 
 /**
@@ -26,12 +26,12 @@ public class JGitServletConfiguration {
 
     private final LocalVCFilterService localVCFilterService;
 
-    private final LocalVCHookService localVCHookService;
+    private final LocalCIPushService localCIPushService;
 
-    public JGitServletConfiguration(LocalVCServletService localVCServletService, LocalVCFilterService localVCFilterService, LocalVCHookService localVCHookService) {
+    public JGitServletConfiguration(LocalVCServletService localVCServletService, LocalVCFilterService localVCFilterService, LocalCIPushService localCIPushService) {
         this.localVCServletService = localVCServletService;
         this.localVCFilterService = localVCFilterService;
-        this.localVCHookService = localVCHookService;
+        this.localCIPushService = localCIPushService;
     }
 
     /**
@@ -59,7 +59,7 @@ public class JGitServletConfiguration {
                 // Add a hook that prevents illegal actions on push (delete branch, rename branch, force push).
                 receivePack.setPreReceiveHook(new LocalVCPrePushHook());
                 // Add a hook that triggers the creation of a new submission after the push went through successfully.
-                receivePack.setPostReceiveHook(new LocalVCPostPushHook(localVCHookService));
+                receivePack.setPostReceiveHook(new LocalVCPostPushHook(localCIPushService));
                 return receivePack;
             });
 

@@ -1,4 +1,4 @@
-package de.tum.in.www1.artemis.service.connectors.localvc;
+package de.tum.in.www1.artemis.service.connectors.localci;
 
 import java.io.IOException;
 import java.net.URL;
@@ -31,20 +31,17 @@ import de.tum.in.www1.artemis.repository.SolutionProgrammingExerciseParticipatio
 import de.tum.in.www1.artemis.repository.TemplateProgrammingExerciseParticipationRepository;
 import de.tum.in.www1.artemis.security.SecurityUtils;
 import de.tum.in.www1.artemis.service.connectors.ContinuousIntegrationTriggerService;
-import de.tum.in.www1.artemis.service.connectors.localci.LocalCIExecutorService;
 import de.tum.in.www1.artemis.service.connectors.localci.dto.LocalCIBuildResultNotificationDTO;
+import de.tum.in.www1.artemis.service.connectors.localvc.LocalVCRepositoryUrl;
 import de.tum.in.www1.artemis.service.programming.*;
 import de.tum.in.www1.artemis.service.util.TimeLogUtil;
 import de.tum.in.www1.artemis.web.rest.errors.EntityNotFoundException;
 
-/**
- * Contains methods used by the LocalVCPostPushHook.
- */
 @Service
-@Profile("localvc")
-public class LocalVCHookService {
+@Profile("localci")
+public class LocalCIPushService {
 
-    private final Logger log = LoggerFactory.getLogger(LocalVCHookService.class);
+    private final Logger log = LoggerFactory.getLogger(LocalCIPushService.class);
 
     @Value("${artemis.version-control.url}")
     private URL localVCBaseUrl;
@@ -69,7 +66,7 @@ public class LocalVCHookService {
 
     private final ProgrammingTriggerService programmingTriggerService;
 
-    public LocalVCHookService(ProgrammingExerciseService programmingExerciseService,
+    public LocalCIPushService(ProgrammingExerciseService programmingExerciseService,
             TemplateProgrammingExerciseParticipationRepository templateProgrammingExerciseParticipationRepository,
             SolutionProgrammingExerciseParticipationRepository solutionProgrammingExerciseParticipationRepository,
             ProgrammingExerciseParticipationService programmingExerciseParticipationService, ProgrammingSubmissionService programmingSubmissionService,
