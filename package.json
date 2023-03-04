@@ -123,6 +123,7 @@
         "@angular/cli": "15.2.1",
         "@angular/compiler-cli": "15.2.1",
         "@angular/language-service": "15.2.1",
+        "@trivago/prettier-plugin-sort-imports": "^4.1.1",
         "@types/crypto-js": "4.1.1",
         "@types/d3-shape": "3.1.1",
         "@types/dompurify": "2.4.0",
