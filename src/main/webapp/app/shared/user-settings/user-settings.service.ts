@@ -1,9 +1,10 @@
-import { Injectable } from '@angular/core';
-import { AccountService } from 'app/core/auth/account.service';
-import { Observable, Subject } from 'rxjs';
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { NotificationSetting, notificationSettingsStructure } from 'app/shared/user-settings/notification-settings/notification-settings-structure';
+import { Injectable } from '@angular/core';
+import { Observable, Subject } from 'rxjs';
+
+import { AccountService } from 'app/core/auth/account.service';
 import { UserSettingsCategory } from 'app/shared/constants/user-settings.constants';
+import { NotificationSetting, notificationSettingsStructure } from 'app/shared/user-settings/notification-settings/notification-settings-structure';
 import { Setting, SettingGroup, UserSettingsStructure } from 'app/shared/user-settings/user-settings.model';
 
 @Injectable({ providedIn: 'root' })

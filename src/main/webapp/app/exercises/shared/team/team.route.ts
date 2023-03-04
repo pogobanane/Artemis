@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
-import { UserRouteAccessService } from 'app/core/auth/user-route-access-service';
+
 import { TeamsComponent } from './teams.component';
+import { UserRouteAccessService } from 'app/core/auth/user-route-access-service';
 import { TeamComponent } from 'app/exercises/shared/team/team.component';
 import { Authority } from 'app/shared/constants/authority.constants';
 

@@ -1,4 +1,6 @@
 import { generateExampleChannelDTO, generateExampleGroupChatDTO, generateOneToOneChatDTO } from '../helpers/conversationExampleModels';
+import { Course } from 'app/entities/course.model';
+import { ChannelDTO } from 'app/entities/metis/conversation/channel.model';
 import {
     canAddUsersToConversation,
     canChangeChannelArchivalState,
@@ -13,8 +15,6 @@ import {
     canRemoveUsersFromConversation,
     canRevokeChannelModeratorRole,
 } from 'app/shared/metis/conversations/conversation-permissions.utils';
-import { Course } from 'app/entities/course.model';
-import { ChannelDTO } from 'app/entities/metis/conversation/channel.model';
 
 describe('ConversationPermissionUtils', () => {
     describe('channels', () => {

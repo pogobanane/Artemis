@@ -1,15 +1,16 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SimpleChange } from '@angular/core';
-import { ArtemisTestModule } from '../../test.module';
-import { TutorParticipationGraphComponent } from 'app/shared/dashboards/tutor-participation-graph/tutor-participation-graph.component';
-import { Exercise } from 'app/entities/exercise.model';
-import { ProgressBarComponent } from 'app/shared/dashboards/tutor-participation-graph/progress-bar/progress-bar.component';
-import { TutorParticipation, TutorParticipationStatus } from 'app/entities/participation/tutor-participation.model';
-import { DueDateStat } from 'app/course/dashboards/due-date-stat.model';
-import { MockRouter } from '../../helpers/mocks/mock-router';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { MockComponent } from 'ng-mocks';
+
+import { MockRouter } from '../../helpers/mocks/mock-router';
 import { TranslatePipeMock } from '../../helpers/mocks/service/mock-translate.service';
+import { ArtemisTestModule } from '../../test.module';
+import { DueDateStat } from 'app/course/dashboards/due-date-stat.model';
+import { Exercise } from 'app/entities/exercise.model';
+import { TutorParticipation, TutorParticipationStatus } from 'app/entities/participation/tutor-participation.model';
+import { ProgressBarComponent } from 'app/shared/dashboards/tutor-participation-graph/progress-bar/progress-bar.component';
+import { TutorParticipationGraphComponent } from 'app/shared/dashboards/tutor-participation-graph/tutor-participation-graph.component';
 
 describe('TutorParticipationGraphComponent', () => {
     let comp: TutorParticipationGraphComponent;

@@ -1,8 +1,9 @@
-import { TutorialGroup } from 'app/entities/tutorial-group/tutorial-group.model';
-import { Course, Language } from 'app/entities/course.model';
+import dayjs from 'dayjs/esm';
+
 import { User } from 'app/core/user/user.model';
 import { TutorialGroupFormData } from 'app/course/tutorial-groups/tutorial-groups-management/tutorial-groups/crud/tutorial-group-form/tutorial-group-form.component';
-import dayjs from 'dayjs/esm';
+import { Course, Language } from 'app/entities/course.model';
+import { TutorialGroup } from 'app/entities/tutorial-group/tutorial-group.model';
 
 export const generateExampleTutorialGroup = ({
     id = 1,

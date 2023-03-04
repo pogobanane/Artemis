@@ -1,10 +1,11 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { Exam } from 'app/entities/exam.model';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { ExamMonitoringService } from 'app/exam/monitoring/exam-monitoring.service';
-import { ExamActionService } from 'app/exam/monitoring/exam-action.service';
+
+import { Exam } from 'app/entities/exam.model';
 import { Exercise, getIcon, getIconTooltip } from 'app/entities/exercise.model';
+import { ExamActionService } from 'app/exam/monitoring/exam-action.service';
+import { ExamMonitoringService } from 'app/exam/monitoring/exam-monitoring.service';
 
 @Component({
     selector: 'jhi-monitoring-exercises',

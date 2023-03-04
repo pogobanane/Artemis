@@ -1,40 +1,41 @@
 import { AfterViewInit, Component, ContentChild, ElementRef, EventEmitter, Input, Output, ViewChild, ViewEncapsulation } from '@angular/core';
 import { SafeHtml } from '@angular/platform-browser';
-// Note: this import has to be before the 'brace' imports
-import { AceEditorComponent } from 'app/shared/markdown-editor/ace-editor/ace-editor.component';
-import 'brace/theme/chrome';
-import 'brace/mode/markdown';
-import 'brace/mode/latex';
-import 'brace/ext/language_tools';
+import { faAngleRight, faGripLines, faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
 import { Interactable } from '@interactjs/core/Interactable';
+import 'brace/ext/language_tools';
+import 'brace/mode/latex';
+import 'brace/mode/markdown';
+import 'brace/theme/chrome';
 import interact from 'interactjs';
-import { ArtemisMarkdownService } from 'app/shared/markdown.service';
-import { FileUploaderService } from 'app/shared/http/file-uploader.service';
+import { v4 as uuid } from 'uuid';
+
+import { DomainTagCommand } from './domainCommands/domainTag.command';
 import { AlertService, AlertType } from 'app/core/util/alert.service';
 import { ColorSelectorComponent } from 'app/shared/color-selector/color-selector.component';
-import { DomainTagCommand } from './domainCommands/domainTag.command';
-import { escapeStringForUseInRegex } from 'app/shared/util/global.utils';
-import { UnderlineCommand } from 'app/shared/markdown-editor/commands/underline.command';
-import { ColorPickerCommand } from 'app/shared/markdown-editor/commands/colorPicker.command';
-import { BoldCommand } from 'app/shared/markdown-editor/commands/bold.command';
+import { FileUploaderService } from 'app/shared/http/file-uploader.service';
+// Note: this import has to be before the 'brace' imports
+import { AceEditorComponent } from 'app/shared/markdown-editor/ace-editor/ace-editor.component';
 import { AttachmentCommand } from 'app/shared/markdown-editor/commands/attachmentCommand';
-import { ReferenceCommand } from 'app/shared/markdown-editor/commands/reference.command';
-import { DomainMultiOptionCommand } from 'app/shared/markdown-editor/domainCommands/domainMultiOptionCommand';
+import { BoldCommand } from 'app/shared/markdown-editor/commands/bold.command';
+import { CodeCommand } from 'app/shared/markdown-editor/commands/code.command';
+import { CodeBlockCommand } from 'app/shared/markdown-editor/commands/codeblock.command';
+import { ColorPickerCommand } from 'app/shared/markdown-editor/commands/colorPicker.command';
+import { Command } from 'app/shared/markdown-editor/commands/command';
 import { FullscreenCommand } from 'app/shared/markdown-editor/commands/fullscreen.command';
 import { HeadingOneCommand } from 'app/shared/markdown-editor/commands/headingOne.command';
-import { Command } from 'app/shared/markdown-editor/commands/command';
-import { ItalicCommand } from 'app/shared/markdown-editor/commands/italic.command';
-import { OrderedListCommand } from 'app/shared/markdown-editor/commands/orderedListCommand';
-import { HeadingTwoCommand } from 'app/shared/markdown-editor/commands/headingTwo.command';
-import { LinkCommand } from 'app/shared/markdown-editor/commands/link.command';
-import { CodeCommand } from 'app/shared/markdown-editor/commands/code.command';
-import { DomainCommand } from 'app/shared/markdown-editor/domainCommands/domainCommand';
-import { UnorderedListCommand } from 'app/shared/markdown-editor/commands/unorderedListCommand';
 import { HeadingThreeCommand } from 'app/shared/markdown-editor/commands/headingThree.command';
-import { CodeBlockCommand } from 'app/shared/markdown-editor/commands/codeblock.command';
-import { faAngleRight, faGripLines, faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
+import { HeadingTwoCommand } from 'app/shared/markdown-editor/commands/headingTwo.command';
+import { ItalicCommand } from 'app/shared/markdown-editor/commands/italic.command';
+import { LinkCommand } from 'app/shared/markdown-editor/commands/link.command';
 import { MultiOptionCommand } from 'app/shared/markdown-editor/commands/multiOptionCommand';
-import { v4 as uuid } from 'uuid';
+import { OrderedListCommand } from 'app/shared/markdown-editor/commands/orderedListCommand';
+import { ReferenceCommand } from 'app/shared/markdown-editor/commands/reference.command';
+import { UnderlineCommand } from 'app/shared/markdown-editor/commands/underline.command';
+import { UnorderedListCommand } from 'app/shared/markdown-editor/commands/unorderedListCommand';
+import { DomainCommand } from 'app/shared/markdown-editor/domainCommands/domainCommand';
+import { DomainMultiOptionCommand } from 'app/shared/markdown-editor/domainCommands/domainMultiOptionCommand';
+import { ArtemisMarkdownService } from 'app/shared/markdown.service';
+import { escapeStringForUseInRegex } from 'app/shared/util/global.utils';
 
 export enum MarkdownEditorHeight {
     INLINE = 100,

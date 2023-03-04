@@ -1,12 +1,13 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { StatisticsService } from 'app/shared/statistics-graph/statistics.service';
-import dayjs from 'dayjs/esm';
-import { GraphColors, Graphs, SpanType, StatisticsView } from 'app/entities/statistics.model';
 import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
-import { yAxisTickFormatting } from 'app/shared/statistics-graph/statistics-graph.utils';
-import { Color, ScaleType } from '@swimlane/ngx-charts';
 import { TranslateService } from '@ngx-translate/core';
+import { Color, ScaleType } from '@swimlane/ngx-charts';
+import dayjs from 'dayjs/esm';
+
+import { GraphColors, Graphs, SpanType, StatisticsView } from 'app/entities/statistics.model';
 import { NgxChartsSingleSeriesDataEntry } from 'app/shared/chart/ngx-charts-datatypes';
+import { yAxisTickFormatting } from 'app/shared/statistics-graph/statistics-graph.utils';
+import { StatisticsService } from 'app/shared/statistics-graph/statistics.service';
 
 @Component({
     selector: 'jhi-statistics-graph',

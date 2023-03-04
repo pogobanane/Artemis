@@ -1,9 +1,10 @@
-import { login } from './requests/requests.js';
 import { group, sleep } from 'k6';
+
+import { deleteCourse, newCourse } from './requests/course.js';
 import { getQuizQuestions, simulateQuizWork } from './requests/quiz.js';
-import { newCourse, deleteCourse } from './requests/course.js';
-import { createUsersIfNeeded } from './requests/user.js';
 import { createQuizExercise, deleteQuizExercise, waitForQuizStartAndStart } from './requests/quiz.js';
+import { login } from './requests/requests.js';
+import { createUsersIfNeeded } from './requests/user.js';
 
 // Version: 1.1
 // Creator: Firefox

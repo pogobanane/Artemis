@@ -1,9 +1,10 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { faExclamationCircle, faWifi } from '@fortawesome/free-solid-svg-icons';
-import { Subscription, filter } from 'rxjs';
-import { JhiWebsocketService } from 'app/core/websocket/websocket.service';
-import { NgbPopover } from '@ng-bootstrap/ng-bootstrap';
 import { NavigationEnd, Router } from '@angular/router';
+import { faExclamationCircle, faWifi } from '@fortawesome/free-solid-svg-icons';
+import { NgbPopover } from '@ng-bootstrap/ng-bootstrap';
+import { Subscription, filter } from 'rxjs';
+
+import { JhiWebsocketService } from 'app/core/websocket/websocket.service';
 
 @Component({
     selector: 'jhi-connection-warning',

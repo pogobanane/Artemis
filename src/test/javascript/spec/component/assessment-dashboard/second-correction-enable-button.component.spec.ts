@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { TranslatePipeMock } from '../../helpers/mocks/service/mock-translate.service';
 import { ArtemisTestModule } from '../../test.module';
 import { SecondCorrectionEnableButtonComponent } from 'app/exercises/shared/dashboards/tutor/second-correction-button/second-correction-enable-button.component';
-import { TranslatePipeMock } from '../../helpers/mocks/service/mock-translate.service';
 
 describe('SecondCorrectionEnableButtonComponent', () => {
     let comp: SecondCorrectionEnableButtonComponent;

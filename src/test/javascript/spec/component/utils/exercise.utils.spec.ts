@@ -1,6 +1,10 @@
 import dayjs from 'dayjs/esm';
-import { ProgrammingExercise } from 'app/entities/programming-exercise.model';
+
+import { Exercise, ExerciseType } from 'app/entities/exercise.model';
+import { InitializationState } from 'app/entities/participation/participation.model';
 import { StudentParticipation } from 'app/entities/participation/student-participation.model';
+import { ProgrammingExercise } from 'app/entities/programming-exercise.model';
+import { QuizExercise } from 'app/entities/quiz/quiz-exercise.model';
 import {
     getExerciseDueDate,
     hasExerciseDueDatePassed,
@@ -8,9 +12,6 @@ import {
     isStartExerciseAvailable,
     isStartPracticeAvailable,
 } from 'app/exercises/shared/exercise/exercise.utils';
-import { QuizExercise } from 'app/entities/quiz/quiz-exercise.model';
-import { Exercise, ExerciseType } from 'app/entities/exercise.model';
-import { InitializationState } from 'app/entities/participation/participation.model';
 
 describe('ExerciseUtils', () => {
     const exerciseWithDueDate = (dueDate?: dayjs.Dayjs) => {

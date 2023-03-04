@@ -1,9 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Course } from 'app/entities/course.model';
-import { ScoreDisplayComponent } from 'app/shared/score-display/score-display.component';
-import { ArtemisTestModule } from '../test.module';
-import { ArtemisTranslatePipe } from 'app/shared/pipes/artemis-translate.pipe';
 import { MockPipe } from 'ng-mocks';
+
+import { ArtemisTestModule } from '../test.module';
+import { Course } from 'app/entities/course.model';
+import { ArtemisTranslatePipe } from 'app/shared/pipes/artemis-translate.pipe';
+import { ScoreDisplayComponent } from 'app/shared/score-display/score-display.component';
 
 describe('ScoreDisplayComponent', () => {
     let fixture: ComponentFixture<ScoreDisplayComponent>;

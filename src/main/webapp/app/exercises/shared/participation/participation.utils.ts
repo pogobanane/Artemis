@@ -1,11 +1,12 @@
-import { ProgrammingExerciseStudentParticipation } from 'app/entities/participation/programming-exercise-student-participation.model';
-import { createBuildPlanUrl } from 'app/exercises/programming/shared/utils/programming-exercise.utils';
-import { ProfileInfo } from 'app/shared/layouts/profiles/profile-info.model';
-import { Participation, getExercise } from 'app/entities/participation/participation.model';
-import { Exercise, ExerciseType } from 'app/entities/exercise.model';
-import { getExerciseDueDate } from 'app/exercises/shared/exercise/exercise.utils';
 import { SimpleChanges } from '@angular/core';
 import dayjs from 'dayjs/esm';
+
+import { Exercise, ExerciseType } from 'app/entities/exercise.model';
+import { Participation, getExercise } from 'app/entities/participation/participation.model';
+import { ProgrammingExerciseStudentParticipation } from 'app/entities/participation/programming-exercise-student-participation.model';
+import { createBuildPlanUrl } from 'app/exercises/programming/shared/utils/programming-exercise.utils';
+import { getExerciseDueDate } from 'app/exercises/shared/exercise/exercise.utils';
+import { ProfileInfo } from 'app/shared/layouts/profiles/profile-info.model';
 
 export const setBuildPlanUrlForProgrammingParticipations = (profileInfo: ProfileInfo, participations: ProgrammingExerciseStudentParticipation[], projectKey?: string) => {
     if (!projectKey) {

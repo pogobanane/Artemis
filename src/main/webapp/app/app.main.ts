@@ -1,10 +1,11 @@
+import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+
+import { ArtemisAppModule } from './app.module';
+import { ProdConfig } from './core/config/prod.config';
 import './polyfills';
 import 'app/shared/util/array.extension';
 import 'app/shared/util/map.extension';
 import 'app/shared/util/string.extension';
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
-import { ProdConfig } from './core/config/prod.config';
-import { ArtemisAppModule } from './app.module';
 
 ProdConfig();
 

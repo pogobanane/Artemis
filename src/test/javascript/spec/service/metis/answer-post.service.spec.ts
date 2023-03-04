@@ -1,8 +1,9 @@
-import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { take } from 'rxjs/operators';
-import { AnswerPostService } from 'app/shared/metis/answer-post.service';
+
 import { metisAnswerPostToCreateUser1, metisResolvingAnswerPostUser1 } from '../../helpers/sample/metis-sample-data';
+import { AnswerPostService } from 'app/shared/metis/answer-post.service';
 
 describe('AnswerPost Service', () => {
     let service: AnswerPostService;

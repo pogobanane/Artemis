@@ -1,11 +1,12 @@
 import { Routes } from '@angular/router';
-import { UserRouteAccessService } from 'app/core/auth/user-route-access-service';
+
 import { QuizExerciseDetailComponent } from './quiz-exercise-detail.component';
 import { QuizExerciseExportComponent } from './quiz-exercise-export.component';
-import { PendingChangesGuard } from 'app/shared/guard/pending-changes.guard';
+import { UserRouteAccessService } from 'app/core/auth/user-route-access-service';
 import { QuizReEvaluateComponent } from 'app/exercises/quiz/manage/re-evaluate/quiz-re-evaluate.component';
 import { QuizParticipationComponent } from 'app/exercises/quiz/participate/quiz-participation.component';
 import { Authority } from 'app/shared/constants/authority.constants';
+import { PendingChangesGuard } from 'app/shared/guard/pending-changes.guard';
 
 export const quizManagementRoute: Routes = [
     {

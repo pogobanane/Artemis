@@ -1,12 +1,13 @@
 import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
-import { ConversationDto } from 'app/entities/metis/conversation/conversation.model';
-import { Post } from 'app/entities/metis/post.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, take, takeUntil } from 'rxjs';
-import { MetisConversationService } from 'app/shared/metis/metis-conversation.service';
-import { getAsChannelDto } from 'app/entities/metis/conversation/channel.model';
-import { MetisService } from 'app/shared/metis/metis.service';
+
 import { Course } from 'app/entities/course.model';
+import { getAsChannelDto } from 'app/entities/metis/conversation/channel.model';
+import { ConversationDto } from 'app/entities/metis/conversation/conversation.model';
+import { Post } from 'app/entities/metis/post.model';
+import { MetisConversationService } from 'app/shared/metis/metis-conversation.service';
+import { MetisService } from 'app/shared/metis/metis.service';
 import { PageType } from 'app/shared/metis/metis.util';
 
 @Component({

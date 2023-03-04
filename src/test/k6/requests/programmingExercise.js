@@ -1,9 +1,10 @@
-import { extractDestination, nextAlphanumeric, nextWSSubscriptionId } from '../util/utils.js';
-import { COMMIT, FILES, NEW_FILE, PARTICIPATION_WITH_RESULT, PROGRAMMING_EXERCISE, PROGRAMMING_EXERCISES_SETUP, SCA_CATEGORIES } from './endpoints.js';
 import { fail } from 'k6';
+
+import { programmingExerciseProblemStatementC } from '../resource/constants_c.js';
 import { programmingExerciseProblemStatementJava } from '../resource/constants_java.js';
 import { programmingExerciseProblemStatementPython } from '../resource/constants_python.js';
-import { programmingExerciseProblemStatementC } from '../resource/constants_c.js';
+import { extractDestination, nextAlphanumeric, nextWSSubscriptionId } from '../util/utils.js';
+import { COMMIT, FILES, NEW_FILE, PARTICIPATION_WITH_RESULT, PROGRAMMING_EXERCISE, PROGRAMMING_EXERCISES_SETUP, SCA_CATEGORIES } from './endpoints.js';
 
 export function ParticipationSimulation(timeout, exerciseId, participationId, content) {
     this.timeout = timeout;

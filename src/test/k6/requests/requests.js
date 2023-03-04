@@ -1,6 +1,6 @@
+import { fail } from 'k6';
 import http from 'k6/http';
 import ws from 'k6/ws';
-import { fail } from 'k6';
 
 const protocol = 'https'; // https or http
 const websocketProtocol = 'wss'; // wss if https is used; ws if http is used

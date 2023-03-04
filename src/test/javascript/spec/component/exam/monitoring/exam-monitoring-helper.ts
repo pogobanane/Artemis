@@ -1,3 +1,5 @@
+import dayjs from 'dayjs/esm';
+
 import {
     ConnectionUpdatedAction,
     ContinuedAfterHandedInEarlyAction,
@@ -11,7 +13,6 @@ import {
 } from 'app/entities/exam-user-activity.model';
 import { Exercise } from 'app/entities/exercise.model';
 import { TextExercise } from 'app/entities/text-exercise.model';
-import dayjs from 'dayjs/esm';
 import { NgxChartsSingleSeriesDataEntry } from 'app/shared/chart/ngx-charts-datatypes';
 import { ArtemisDatePipe } from 'app/shared/pipes/artemis-date.pipe';
 

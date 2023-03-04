@@ -1,8 +1,9 @@
-import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Injectable } from '@angular/core';
 import dayjs from 'dayjs/esm';
+import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+
 import { ExerciseType } from 'app/entities/exercise.model';
 
 /**

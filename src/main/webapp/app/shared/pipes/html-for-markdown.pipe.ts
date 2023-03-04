@@ -1,6 +1,7 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { ShowdownExtension } from 'showdown';
 import { SafeHtml } from '@angular/platform-browser';
+import { ShowdownExtension } from 'showdown';
+
 import { ArtemisMarkdownService } from 'app/shared/markdown.service';
 
 @Pipe({

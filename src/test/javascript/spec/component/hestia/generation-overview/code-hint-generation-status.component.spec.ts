@@ -1,5 +1,6 @@
-import { ArtemisTestModule } from '../../../test.module';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { ArtemisTestModule } from '../../../test.module';
 import { CodeHintGenerationStep } from 'app/entities/hestia/code-hint-model';
 import { CodeHintGenerationStatusComponent } from 'app/exercises/programming/hestia/generation-overview/code-hint-generation-status/code-hint-generation-status.component';
 

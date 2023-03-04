@@ -1,18 +1,19 @@
+import { HttpResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
-import { of } from 'rxjs';
-import { ArtemisTestModule } from '../../test.module';
-import { ArtemisTranslatePipe } from 'app/shared/pipes/artemis-translate.pipe';
 import { MockComponent, MockPipe, MockProvider } from 'ng-mocks';
+import { of } from 'rxjs';
+
 import { MockActivatedRoute } from '../../helpers/mocks/activated-route/mock-activated-route';
-import { HttpResponse } from '@angular/common/http';
-import { ArtemisDatePipe } from 'app/shared/pipes/artemis-date.pipe';
+import { ArtemisTestModule } from '../../test.module';
+import { Exercise } from 'app/entities/exercise.model';
+import { TextExercise } from 'app/entities/text-exercise.model';
 import { ExampleSolutionComponent } from 'app/exercises/shared/example-solution/example-solution.component';
+import { HeaderExercisePageWithDetailsComponent } from 'app/exercises/shared/exercise-headers/header-exercise-page-with-details.component';
 import { ExampleSolutionInfo, ExerciseService } from 'app/exercises/shared/exercise/exercise.service';
 import { ArtemisMarkdownService } from 'app/shared/markdown.service';
-import { TextExercise } from 'app/entities/text-exercise.model';
-import { Exercise } from 'app/entities/exercise.model';
-import { HeaderExercisePageWithDetailsComponent } from 'app/exercises/shared/exercise-headers/header-exercise-page-with-details.component';
+import { ArtemisDatePipe } from 'app/shared/pipes/artemis-date.pipe';
+import { ArtemisTranslatePipe } from 'app/shared/pipes/artemis-translate.pipe';
 import { HtmlForMarkdownPipe } from 'app/shared/pipes/html-for-markdown.pipe';
 
 describe('Example Solution Component', () => {

@@ -1,9 +1,10 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DebugElement } from '@angular/core';
-import { PostingButtonComponent } from 'app/shared/metis/posting-button/posting-button.component';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { MockComponent } from 'ng-mocks';
+
 import { getElement } from '../../../../helpers/utils/general.utils';
+import { PostingButtonComponent } from 'app/shared/metis/posting-button/posting-button.component';
 
 describe('PostingButtonComponent', () => {
     let component: PostingButtonComponent;

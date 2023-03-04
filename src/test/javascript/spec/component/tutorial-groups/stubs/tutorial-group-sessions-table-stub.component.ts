@@ -1,4 +1,5 @@
 import { Component, ContentChild, Input, TemplateRef } from '@angular/core';
+
 import { TutorialGroupSession } from 'app/entities/tutorial-group/tutorial-group-session.model';
 import { TutorialGroup } from 'app/entities/tutorial-group/tutorial-group.model';
 

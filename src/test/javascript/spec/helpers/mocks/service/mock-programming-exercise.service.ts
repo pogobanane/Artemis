@@ -1,4 +1,5 @@
 import { of } from 'rxjs';
+
 import { ProgrammingExerciseInstructorRepositoryType } from 'app/exercises/programming/manage/services/programming-exercise.service';
 
 export class MockProgrammingExerciseService {

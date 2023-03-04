@@ -1,10 +1,11 @@
 import { group, sleep } from 'k6';
+
 import { addUserToInstructorsInCourse, deleteCourse, newCourse } from './requests/course.js';
+import { MODELING_EXERCISE, MODELING_SUBMISSION_WITHOUT_ASSESSMENT } from './requests/endpoints.js';
+import { deleteExercise, getAndLockSubmission, getExercise, startExercise, startTutorParticipation } from './requests/exercises.js';
 import { assessModelingSubmission, newModelingExercise, submitRandomModelingAnswerExam, updateModelingExerciseDueDate } from './requests/modeling.js';
-import { startExercise, getExercise, startTutorParticipation, deleteExercise, getAndLockSubmission } from './requests/exercises.js';
 import { login } from './requests/requests.js';
 import { createUsersIfNeeded } from './requests/user.js';
-import { MODELING_EXERCISE, MODELING_SUBMISSION_WITHOUT_ASSESSMENT } from './requests/endpoints.js';
 
 // Version: 1.1
 // Creator: Firefox

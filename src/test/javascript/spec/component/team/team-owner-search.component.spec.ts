@@ -1,15 +1,16 @@
+import { HttpResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { CourseManagementService } from 'app/course/manage/course-management.service';
-import { TeamOwnerSearchComponent } from 'app/exercises/shared/team/team-owner-search/team-owner-search.component';
+import { NgModel } from '@angular/forms';
+import { NgbTypeahead } from '@ng-bootstrap/ng-bootstrap';
+import { MockDirective, MockPipe } from 'ng-mocks';
+import { of, throwError } from 'rxjs';
+
 import { MockCourseManagementService } from '../../helpers/mocks/service/mock-course-management.service';
 import { ArtemisTestModule } from '../../test.module';
 import { User } from 'app/core/user/user.model';
-import { NgbTypeahead } from '@ng-bootstrap/ng-bootstrap';
-import { MockDirective, MockPipe } from 'ng-mocks';
+import { CourseManagementService } from 'app/course/manage/course-management.service';
+import { TeamOwnerSearchComponent } from 'app/exercises/shared/team/team-owner-search/team-owner-search.component';
 import { ArtemisTranslatePipe } from 'app/shared/pipes/artemis-translate.pipe';
-import { NgModel } from '@angular/forms';
-import { HttpResponse } from '@angular/common/http';
-import { of, throwError } from 'rxjs';
 
 describe('Team Owner Search Component', () => {
     let comp: TeamOwnerSearchComponent;

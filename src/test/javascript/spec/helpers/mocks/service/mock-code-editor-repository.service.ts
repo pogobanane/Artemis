@@ -1,4 +1,5 @@
 import { EMPTY, of } from 'rxjs';
+
 import { ICodeEditorRepositoryService } from 'app/exercises/programming/shared/code-editor/service/code-editor-repository.service';
 
 export class MockCodeEditorRepositoryService implements ICodeEditorRepositoryService {

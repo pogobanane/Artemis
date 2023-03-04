@@ -1,17 +1,18 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-import { ButtonComponent } from 'app/shared/components/button.component';
-import { SortService } from 'app/shared/service/sort.service';
-import { PageableSearch, SearchResult, SortingOrder } from 'app/shared/table/pageable-table';
+import { NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { MockComponent, MockDirective } from 'ng-mocks';
 import { of } from 'rxjs';
+
 import { ArtemisTestModule } from '../../test.module';
-import { SortByDirective } from 'app/shared/sort/sort-by.directive';
-import { SortDirective } from 'app/shared/sort/sort.directive';
 import { PrerequisiteImportComponent, TableColumn } from 'app/course/learning-goals/learning-goal-management/prerequisite-import.component';
 import { LearningGoalPagingService } from 'app/course/learning-goals/learning-goal-paging.service';
 import { LearningGoal } from 'app/entities/learningGoal.model';
-import { NgbPagination } from '@ng-bootstrap/ng-bootstrap';
+import { ButtonComponent } from 'app/shared/components/button.component';
+import { SortService } from 'app/shared/service/sort.service';
+import { SortByDirective } from 'app/shared/sort/sort-by.directive';
+import { SortDirective } from 'app/shared/sort/sort.directive';
+import { PageableSearch, SearchResult, SortingOrder } from 'app/shared/table/pageable-table';
 
 describe('PrerequisiteImportComponent', () => {
     let fixture: ComponentFixture<PrerequisiteImportComponent>;

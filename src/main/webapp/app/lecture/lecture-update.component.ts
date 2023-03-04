@@ -1,21 +1,22 @@
+import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
+import { faBan, faHandshakeAngle, faPuzzlePiece, faSave } from '@fortawesome/free-solid-svg-icons';
+import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
 import { Observable } from 'rxjs';
-import { AlertService } from 'app/core/util/alert.service';
-import { LectureService } from './lecture.service';
+
 import { CourseManagementService } from '../course/manage/course-management.service';
-import { Lecture } from 'app/entities/lecture.model';
-import { EditorMode } from 'app/shared/markdown-editor/markdown-editor.component';
+import { LectureService } from './lecture.service';
+import { AlertService } from 'app/core/util/alert.service';
 import { Course } from 'app/entities/course.model';
+import { Lecture } from 'app/entities/lecture.model';
+import { LectureUpdateWizardComponent } from 'app/lecture/wizard-mode/lecture-update-wizard.component';
+import { DocumentationType } from 'app/shared/components/documentation-button/documentation-button.component';
+import { FILE_EXTENSIONS } from 'app/shared/constants/file-extensions.constants';
 import { KatexCommand } from 'app/shared/markdown-editor/commands/katex.command';
+import { EditorMode } from 'app/shared/markdown-editor/markdown-editor.component';
 import { onError } from 'app/shared/util/global.utils';
 import { ArtemisNavigationUtilService } from 'app/utils/navigation.utils';
-import { DocumentationType } from 'app/shared/components/documentation-button/documentation-button.component';
-import { faBan, faHandshakeAngle, faPuzzlePiece, faSave } from '@fortawesome/free-solid-svg-icons';
-import { LectureUpdateWizardComponent } from 'app/lecture/wizard-mode/lecture-update-wizard.component';
-import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
-import { FILE_EXTENSIONS } from 'app/shared/constants/file-extensions.constants';
 
 @Component({
     selector: 'jhi-lecture-update',

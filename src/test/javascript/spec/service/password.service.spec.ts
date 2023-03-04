@@ -1,7 +1,8 @@
+import { HttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
+
 import { MockHttpService } from '../helpers/mocks/service/mock-http.service';
 import { PasswordService } from 'app/account/password/password.service';
-import { HttpClient } from '@angular/common/http';
 
 describe('PasswordService', () => {
     let passwordService: PasswordService;

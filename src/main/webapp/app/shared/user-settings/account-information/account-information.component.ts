@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { User } from 'app/core/user/user.model';
-import { AccountService } from 'app/core/auth/account.service';
 import { Subscription, tap } from 'rxjs';
+
+import { AccountService } from 'app/core/auth/account.service';
+import { User } from 'app/core/user/user.model';
 
 @Component({
     selector: 'jhi-account-information',

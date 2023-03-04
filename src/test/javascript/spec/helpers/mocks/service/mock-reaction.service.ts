@@ -1,5 +1,6 @@
-import { Observable, of } from 'rxjs';
 import { HttpResponse } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+
 import { Reaction } from 'app/entities/metis/reaction.model';
 
 export class MockReactionService {

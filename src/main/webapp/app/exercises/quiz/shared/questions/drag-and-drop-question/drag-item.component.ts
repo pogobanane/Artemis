@@ -1,5 +1,6 @@
 import { Component, Input, OnInit, ViewEncapsulation } from '@angular/core';
 import isMobile from 'ismobilejs-es5';
+
 import { DragItem } from 'app/entities/quiz/drag-item.model';
 
 @Component({

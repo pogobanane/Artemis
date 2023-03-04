@@ -1,20 +1,21 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { StudentExam } from 'app/entities/student-exam.model';
-import { StudentExamService } from 'app/exam/manage/student-exams/student-exam.service';
-import { Course } from 'app/entities/course.model';
-import { User } from 'app/core/user/user.model';
-import { ArtemisDurationFromSecondsPipe } from 'app/shared/pipes/artemis-duration-from-seconds.pipe';
-import { AlertService } from 'app/core/util/alert.service';
-import { round } from 'app/shared/util/utils';
-import dayjs from 'dayjs/esm';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { getLatestSubmissionResult, setLatestSubmissionResult } from 'app/entities/submission.model';
-import { GradeType } from 'app/entities/grading-scale.model';
 import { faSave } from '@fortawesome/free-solid-svg-icons';
-import { getRelativeWorkingTimeExtension, normalWorkingTime } from 'app/exam/participate/exam.utils';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import dayjs from 'dayjs/esm';
+
+import { User } from 'app/core/user/user.model';
+import { AlertService } from 'app/core/util/alert.service';
+import { Course } from 'app/entities/course.model';
 import { Exercise } from 'app/entities/exercise.model';
+import { GradeType } from 'app/entities/grading-scale.model';
+import { StudentExam } from 'app/entities/student-exam.model';
+import { getLatestSubmissionResult, setLatestSubmissionResult } from 'app/entities/submission.model';
 import { StudentExamWithGradeDTO } from 'app/exam/exam-scores/exam-score-dtos.model';
+import { StudentExamService } from 'app/exam/manage/student-exams/student-exam.service';
+import { getRelativeWorkingTimeExtension, normalWorkingTime } from 'app/exam/participate/exam.utils';
+import { ArtemisDurationFromSecondsPipe } from 'app/shared/pipes/artemis-duration-from-seconds.pipe';
+import { round } from 'app/shared/util/utils';
 
 @Component({
     selector: 'jhi-student-exam-detail',

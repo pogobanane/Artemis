@@ -1,10 +1,11 @@
 import { NgModule } from '@angular/core';
-import { ArtemisSharedModule } from 'app/shared/shared.module';
 import { RouterModule } from '@angular/router';
-import { Lti13ExerciseLaunchComponent } from 'app/lti/lti13-exercise-launch.component';
-import { Lti13DynamicRegistrationComponent } from 'app/lti/lti13-dynamic-registration.component';
-import { ArtemisCoreModule } from 'app/core/core.module';
+
 import { ltiLaunchState } from './lti.route';
+import { ArtemisCoreModule } from 'app/core/core.module';
+import { Lti13DynamicRegistrationComponent } from 'app/lti/lti13-dynamic-registration.component';
+import { Lti13ExerciseLaunchComponent } from 'app/lti/lti13-exercise-launch.component';
+import { ArtemisSharedModule } from 'app/shared/shared.module';
 
 const LTI_LAUNCH_ROUTES = [...ltiLaunchState];
 

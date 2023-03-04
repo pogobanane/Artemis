@@ -1,10 +1,11 @@
 import { HttpErrorResponse, HttpRequest } from '@angular/common/http';
-import { AuthExpiredInterceptor } from 'app/core/interceptor/auth-expired.interceptor';
-import { LoginService } from 'app/core/login/login.service';
-import { AccountService } from 'app/core/auth/account.service';
-import { StateStorageService } from 'app/core/auth/state-storage.service';
 import { Router } from '@angular/router';
 import { throwError } from 'rxjs';
+
+import { AccountService } from 'app/core/auth/account.service';
+import { StateStorageService } from 'app/core/auth/state-storage.service';
+import { AuthExpiredInterceptor } from 'app/core/interceptor/auth-expired.interceptor';
+import { LoginService } from 'app/core/login/login.service';
 
 describe(`AuthExpiredInterceptor`, () => {
     let authInterceptor: AuthExpiredInterceptor;

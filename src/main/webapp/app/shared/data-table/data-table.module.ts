@@ -1,7 +1,8 @@
 import { NgModule } from '@angular/core';
-import { ArtemisSharedModule } from 'app/shared/shared.module';
 import { NgxDatatableModule } from '@flaviosantoro92/ngx-datatable';
+
 import { DataTableComponent } from './data-table.component';
+import { ArtemisSharedModule } from 'app/shared/shared.module';
 
 @NgModule({
     imports: [ArtemisSharedModule, NgxDatatableModule],

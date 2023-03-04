@@ -1,11 +1,12 @@
-import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Post } from 'app/entities/metis/post.model';
+
 import { AnswerPost } from 'app/entities/metis/answer-post.model';
-import { PostingService } from 'app/shared/metis/posting.service';
+import { Post } from 'app/entities/metis/post.model';
 import { DisplayPriority, PostContextFilter } from 'app/shared/metis/metis.util';
+import { PostingService } from 'app/shared/metis/posting.service';
 import { convertDateFromServer } from 'app/utils/date.utils';
 
 type EntityResponseType = HttpResponse<Post>;

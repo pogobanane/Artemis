@@ -1,26 +1,27 @@
+import { HttpResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FileUploadExerciseService } from 'app/exercises/file-upload/manage/file-upload-exercise.service';
-import { NonProgrammingExerciseDetailCommonActionsComponent } from 'app/exercises/shared/exercise-detail-common-actions/non-programming-exercise-detail-common-actions.component';
-import { ArtemisTestModule } from '../test.module';
-import { MockFileUploadExerciseService } from '../helpers/mocks/service/mock-file-upload-exercise.service';
-import { SubmissionExportButtonComponent } from 'app/exercises/shared/submission-export/submission-export-button.component';
+import { Router } from '@angular/router';
 import { MockComponent, MockDirective, MockProvider } from 'ng-mocks';
-import { DeleteButtonDirective } from 'app/shared/delete-dialog/delete-button.directive';
-import { TextExercise } from 'app/entities/text-exercise.model';
+import { of } from 'rxjs';
+
+import { MockRouterLinkDirective } from '../helpers/mocks/directive/mock-router-link.directive';
+import { MockRouter } from '../helpers/mocks/mock-router';
+import { MockFileUploadExerciseService } from '../helpers/mocks/service/mock-file-upload-exercise.service';
+import { ArtemisTestModule } from '../test.module';
 import { Course } from 'app/entities/course.model';
-import { FileUploadExercise } from 'app/entities/file-upload-exercise.model';
-import { ModelingExercise, UMLDiagramType } from 'app/entities/modeling-exercise.model';
 import { Exam } from 'app/entities/exam.model';
 import { ExerciseGroup } from 'app/entities/exercise-group.model';
-import { TextExerciseService } from 'app/exercises/text/manage/text-exercise/text-exercise.service';
-import { of } from 'rxjs';
-import { HttpResponse } from '@angular/common/http';
-import { ModelingExerciseService } from 'app/exercises/modeling/manage/modeling-exercise.service';
-import { ExternalSubmissionButtonComponent } from 'app/exercises/shared/external-submission/external-submission-button.component';
 import { ExerciseType } from 'app/entities/exercise.model';
-import { MockRouter } from '../helpers/mocks/mock-router';
-import { Router } from '@angular/router';
-import { MockRouterLinkDirective } from '../helpers/mocks/directive/mock-router-link.directive';
+import { FileUploadExercise } from 'app/entities/file-upload-exercise.model';
+import { ModelingExercise, UMLDiagramType } from 'app/entities/modeling-exercise.model';
+import { TextExercise } from 'app/entities/text-exercise.model';
+import { FileUploadExerciseService } from 'app/exercises/file-upload/manage/file-upload-exercise.service';
+import { ModelingExerciseService } from 'app/exercises/modeling/manage/modeling-exercise.service';
+import { NonProgrammingExerciseDetailCommonActionsComponent } from 'app/exercises/shared/exercise-detail-common-actions/non-programming-exercise-detail-common-actions.component';
+import { ExternalSubmissionButtonComponent } from 'app/exercises/shared/external-submission/external-submission-button.component';
+import { SubmissionExportButtonComponent } from 'app/exercises/shared/submission-export/submission-export-button.component';
+import { TextExerciseService } from 'app/exercises/text/manage/text-exercise/text-exercise.service';
+import { DeleteButtonDirective } from 'app/shared/delete-dialog/delete-button.directive';
 
 describe('Exercise detail common actions Component', () => {
     let comp: NonProgrammingExerciseDetailCommonActionsComponent;

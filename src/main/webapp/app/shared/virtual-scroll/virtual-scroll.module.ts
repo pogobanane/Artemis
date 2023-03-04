@@ -3,9 +3,8 @@
  * https://github.com/ericferreira1992/ag-virtual-scroll
  *
  */
-
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 
 import { VirtualScrollComponent } from './virtual-scroll.component';
 

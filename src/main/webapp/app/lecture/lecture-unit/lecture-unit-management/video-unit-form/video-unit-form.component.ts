@@ -1,8 +1,9 @@
-import dayjs from 'dayjs/esm';
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import urlParser from 'js-video-url-parser';
 import { faArrowLeft, faTimes } from '@fortawesome/free-solid-svg-icons';
+import dayjs from 'dayjs/esm';
+import urlParser from 'js-video-url-parser';
+
 import { LearningGoal } from 'app/entities/learningGoal.model';
 
 export interface VideoUnitFormData {

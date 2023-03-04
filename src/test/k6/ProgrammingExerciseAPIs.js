@@ -1,20 +1,21 @@
 import { group, sleep } from 'k6';
-import { login } from './requests/requests.js';
+
+import { addUserToInstructorsInCourse, deleteCourse, newCourse } from './requests/course.js';
+import { startExercise } from './requests/exercises.js';
 import {
-    createProgrammingExercise,
-    configureScaCategories,
-    getScaCategories,
-    simulateSubmission,
     ParticipationSimulation,
     TestResult,
+    configureScaCategories,
+    createProgrammingExercise,
     deleteProgrammingExercise,
+    getScaCategories,
+    simulateSubmission,
 } from './requests/programmingExercise.js';
-import { startExercise } from './requests/exercises.js';
-import { addUserToInstructorsInCourse, deleteCourse, newCourse } from './requests/course.js';
+import { login } from './requests/requests.js';
 import { createUsersIfNeeded } from './requests/user.js';
+import { allSuccessfulContentC, buildErrorContentC, someSuccessfulErrorContentC } from './resource/constants_c.js';
 import { allSuccessfulContentJava, buildErrorContentJava, someSuccessfulErrorContentJava } from './resource/constants_java.js';
 import { allSuccessfulContentPython, buildErrorContentPython, someSuccessfulErrorContentPython } from './resource/constants_python.js';
-import { allSuccessfulContentC, buildErrorContentC, someSuccessfulErrorContentC } from './resource/constants_c.js';
 
 export const options = {
     maxRedirects: 0,

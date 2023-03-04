@@ -1,9 +1,10 @@
 import { ElementRef, Injectable } from '@angular/core';
+
 import { CropperSettings } from '../interfaces/cropper.settings';
 import { resizeCanvas } from '../utils/resize.utils';
-import { LoadedImage } from 'app/shared/image-cropper/interfaces/loaded-image.interface';
 import { CropperPosition } from 'app/shared/image-cropper/interfaces/cropper-position.interface';
 import { ImageCroppedEvent } from 'app/shared/image-cropper/interfaces/image-cropped-event.interface';
+import { LoadedImage } from 'app/shared/image-cropper/interfaces/loaded-image.interface';
 
 @Injectable({ providedIn: 'root' })
 export class CropService {

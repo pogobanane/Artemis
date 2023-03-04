@@ -1,7 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { TeamAssignmentConfig } from 'app/entities/team-assignment-config.model';
 import { cloneDeep } from 'lodash-es';
+
 import { Exercise, ExerciseMode } from 'app/entities/exercise.model';
+import { TeamAssignmentConfig } from 'app/entities/team-assignment-config.model';
 import { ModePickerOption } from 'app/exercises/shared/mode-picker/mode-picker.component';
 
 @Component({

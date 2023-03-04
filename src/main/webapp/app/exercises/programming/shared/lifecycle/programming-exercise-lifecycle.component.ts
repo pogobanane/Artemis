@@ -1,11 +1,12 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
-import dayjs from 'dayjs/esm';
-import { TranslateService } from '@ngx-translate/core';
-import { AssessmentType } from 'app/entities/assessment-type.model';
-import { ProgrammingExercise } from 'app/entities/programming-exercise.model';
 import { faCogs, faUserCheck, faUserSlash } from '@fortawesome/free-solid-svg-icons';
-import { ExerciseService } from 'app/exercises/shared/exercise/exercise.service';
+import { TranslateService } from '@ngx-translate/core';
+import dayjs from 'dayjs/esm';
+
+import { AssessmentType } from 'app/entities/assessment-type.model';
 import { IncludedInOverallScore } from 'app/entities/exercise.model';
+import { ProgrammingExercise } from 'app/entities/programming-exercise.model';
+import { ExerciseService } from 'app/exercises/shared/exercise/exercise.service';
 
 @Component({
     selector: 'jhi-programming-exercise-lifecycle',

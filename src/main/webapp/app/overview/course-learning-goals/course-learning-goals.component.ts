@@ -1,15 +1,16 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { LearningGoalService } from 'app/course/learning-goals/learningGoal.service';
-import { ActivatedRoute } from '@angular/router';
-import { AlertService } from 'app/core/util/alert.service';
-import { onError } from 'app/shared/util/global.utils';
 import { HttpErrorResponse } from '@angular/common/http';
-import { LearningGoal } from 'app/entities/learningGoal.model';
-import { Subscription, forkJoin } from 'rxjs';
-import { CourseScoreCalculationService } from 'app/overview/course-score-calculation.service';
-import { Course } from 'app/entities/course.model';
-import { CourseManagementService } from 'app/course/manage/course-management.service';
+import { Component, Input, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { faAngleDown, faAngleUp } from '@fortawesome/free-solid-svg-icons';
+import { Subscription, forkJoin } from 'rxjs';
+
+import { AlertService } from 'app/core/util/alert.service';
+import { LearningGoalService } from 'app/course/learning-goals/learningGoal.service';
+import { CourseManagementService } from 'app/course/manage/course-management.service';
+import { Course } from 'app/entities/course.model';
+import { LearningGoal } from 'app/entities/learningGoal.model';
+import { CourseScoreCalculationService } from 'app/overview/course-score-calculation.service';
+import { onError } from 'app/shared/util/global.utils';
 
 @Component({
     selector: 'jhi-course-learning-goals',

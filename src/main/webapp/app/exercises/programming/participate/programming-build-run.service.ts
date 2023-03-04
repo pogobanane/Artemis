@@ -1,6 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { filter, tap } from 'rxjs/operators';
+
 import { JhiWebsocketService } from 'app/core/websocket/websocket.service';
 
 /**

@@ -1,15 +1,16 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { LearningGoalService } from 'app/course/learning-goals/learningGoal.service';
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import { TranslateService } from '@ngx-translate/core';
+import { intersection } from 'lodash-es';
 import { of } from 'rxjs';
 import { catchError, delay, map, switchMap } from 'rxjs/operators';
-import { Lecture } from 'app/entities/lecture.model';
-import { LectureUnit } from 'app/entities/lecture-unit/lectureUnit.model';
-import { TranslateService } from '@ngx-translate/core';
-import { LectureUnitService } from 'app/lecture/lecture-unit/lecture-unit-management/lectureUnit.service';
-import { intersection } from 'lodash-es';
+
+import { LearningGoalService } from 'app/course/learning-goals/learningGoal.service';
 import { LearningGoalTaxonomy } from 'app/entities/learningGoal.model';
-import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import { LectureUnit } from 'app/entities/lecture-unit/lectureUnit.model';
+import { Lecture } from 'app/entities/lecture.model';
+import { LectureUnitService } from 'app/lecture/lecture-unit/lecture-unit-management/lectureUnit.service';
 
 /**
  * Async Validator to make sure that a learning goal title is unique within a course

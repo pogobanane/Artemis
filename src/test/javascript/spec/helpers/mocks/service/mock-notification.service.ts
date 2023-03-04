@@ -1,7 +1,8 @@
-import { BehaviorSubject, Observable, of } from 'rxjs';
 import { HttpResponse } from '@angular/common/http';
-import { Notification } from 'app/entities/notification.model';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+
 import { GroupNotification } from 'app/entities/group-notification.model';
+import { Notification } from 'app/entities/notification.model';
 
 export class MockNotificationService {
     queryNotificationsFilteredBySettings = (req?: any): Observable<HttpResponse<Notification[]>> => of();

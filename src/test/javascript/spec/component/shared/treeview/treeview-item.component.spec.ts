@@ -1,11 +1,12 @@
 import { Component, DebugElement } from '@angular/core';
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { BrowserModule, By } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
+import { BrowserModule, By } from '@angular/platform-browser';
 import { slice } from 'lodash-es';
+
+import { createGenericTestComponent } from './common';
 import { TreeviewItemComponent } from 'app/exercises/programming/shared/code-editor/treeview/components/treeview-item/treeview-item.component';
 import { TreeviewItem } from 'app/exercises/programming/shared/code-editor/treeview/models/treeview-item';
-import { createGenericTestComponent } from './common';
 
 const fakeItemTemplate = `
 <ng-template #itemTemplate let-item="item"

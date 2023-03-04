@@ -1,10 +1,11 @@
 import { group, sleep } from 'k6';
+
 import { addUserToInstructorsInCourse, deleteCourse, newCourse } from './requests/course.js';
-import { startExercise, getExercise, deleteExercise, startTutorParticipation, getAndLockSubmission } from './requests/exercises.js';
-import { assessTextSubmission, newTextExercise, submitRandomTextAnswerExam } from './requests/text.js';
+import { TEXT_EXERCISE, TEXT_SUBMISSION_WITHOUT_ASSESSMENT } from './requests/endpoints.js';
+import { deleteExercise, getAndLockSubmission, getExercise, startExercise, startTutorParticipation } from './requests/exercises.js';
 import { login } from './requests/requests.js';
+import { assessTextSubmission, newTextExercise, submitRandomTextAnswerExam } from './requests/text.js';
 import { createUsersIfNeeded } from './requests/user.js';
-import { TEXT_SUBMISSION_WITHOUT_ASSESSMENT, TEXT_EXERCISE } from './requests/endpoints.js';
 
 export let options = {
     maxRedirects: 0,

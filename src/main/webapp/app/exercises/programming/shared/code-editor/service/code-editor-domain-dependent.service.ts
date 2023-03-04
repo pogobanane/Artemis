@@ -1,7 +1,8 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { DomainChange } from 'app/exercises/programming/shared/code-editor/model/code-editor.model';
 import { Subscription } from 'rxjs';
 import { filter, tap } from 'rxjs/operators';
+
+import { DomainChange } from 'app/exercises/programming/shared/code-editor/model/code-editor.model';
 import { DomainService } from 'app/exercises/programming/shared/code-editor/service/code-editor-domain.service';
 
 /**

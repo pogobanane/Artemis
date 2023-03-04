@@ -1,5 +1,5 @@
-import { USERS } from './endpoints.js';
 import { addUserToInstructorsInCourse, addUserToStudentsInCourse, addUserToTutorsInCourse } from './course.js';
+import { USERS } from './endpoints.js';
 import { login } from './requests.js';
 
 export function getUser(artemis, i, baseUsername) {

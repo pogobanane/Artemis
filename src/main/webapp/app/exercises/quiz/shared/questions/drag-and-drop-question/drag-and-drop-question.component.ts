@@ -1,16 +1,17 @@
+import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, ViewChild, ViewEncapsulation } from '@angular/core';
-import { ArtemisMarkdownService } from 'app/shared/markdown.service';
-import { DragAndDropQuestionUtil } from 'app/exercises/quiz/shared/drag-and-drop-question-util.service';
+import { faExclamationCircle, faExclamationTriangle, faQuestionCircle, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { polyfill } from 'mobile-drag-drop';
 import { scrollBehaviourDragImageTranslateOverride } from 'mobile-drag-drop/scroll-behaviour';
-import { SecuredImageComponent } from 'app/shared/image/secured-image.component';
-import { DragAndDropQuestion } from 'app/entities/quiz/drag-and-drop-question.model';
+
 import { DragAndDropMapping } from 'app/entities/quiz/drag-and-drop-mapping.model';
-import { RenderedQuizQuestionMarkDownElement } from 'app/entities/quiz/quiz-question.model';
-import { DropLocation } from 'app/entities/quiz/drop-location.model';
-import { faExclamationCircle, faExclamationTriangle, faQuestionCircle, faSpinner } from '@fortawesome/free-solid-svg-icons';
-import { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { DragAndDropQuestion } from 'app/entities/quiz/drag-and-drop-question.model';
 import { DragItem } from 'app/entities/quiz/drag-item.model';
+import { DropLocation } from 'app/entities/quiz/drop-location.model';
+import { RenderedQuizQuestionMarkDownElement } from 'app/entities/quiz/quiz-question.model';
+import { DragAndDropQuestionUtil } from 'app/exercises/quiz/shared/drag-and-drop-question-util.service';
+import { SecuredImageComponent } from 'app/shared/image/secured-image.component';
+import { ArtemisMarkdownService } from 'app/shared/markdown.service';
 
 // options are optional ;)
 polyfill({

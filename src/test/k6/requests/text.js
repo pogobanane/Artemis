@@ -1,4 +1,5 @@
 import { fail } from 'k6';
+
 import { nextAlphanumeric } from '../util/utils.js';
 import { ASSESS_TEXT_SUBMISSION, SUBMIT_TEXT_EXAM, TEXT_EXERCISES } from './endpoints.js';
 

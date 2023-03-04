@@ -1,9 +1,10 @@
-import { ArtemisTestModule } from '../../test.module';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MockComponent } from 'ng-mocks';
 import { By } from '@angular/platform-browser';
-import { OrionCourseManagementExercisesComponent } from 'app/orion/management/orion-course-management-exercises.component';
+import { MockComponent } from 'ng-mocks';
+
+import { ArtemisTestModule } from '../../test.module';
 import { CourseManagementExercisesComponent } from 'app/course/manage/course-management-exercises.component';
+import { OrionCourseManagementExercisesComponent } from 'app/orion/management/orion-course-management-exercises.component';
 
 describe('OrionCourseManagementExercisesComponent', () => {
     let fixture: ComponentFixture<OrionCourseManagementExercisesComponent>;

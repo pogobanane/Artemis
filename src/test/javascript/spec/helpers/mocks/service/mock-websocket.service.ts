@@ -1,4 +1,5 @@
 import { Observable, of } from 'rxjs';
+
 import { ConnectionState, IWebsocketService } from 'app/core/websocket/websocket.service';
 
 export class MockWebsocketService implements IWebsocketService {

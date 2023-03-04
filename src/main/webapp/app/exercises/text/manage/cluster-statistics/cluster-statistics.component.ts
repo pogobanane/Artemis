@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { TextExerciseService } from '../text-exercise/text-exercise.service';
 import { ActivatedRoute } from '@angular/router';
+
+import { TextExerciseService } from '../text-exercise/text-exercise.service';
 import { TextExerciseClusterStatistics } from 'app/entities/text-exercise-cluster-statistics.model';
 
 @Component({

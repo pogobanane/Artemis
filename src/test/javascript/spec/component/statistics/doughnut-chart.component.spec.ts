@@ -1,14 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ArtemisTranslatePipe } from 'app/shared/pipes/artemis-translate.pipe';
-import { MockModule, MockPipe } from 'ng-mocks';
-import { DoughnutChartType } from 'app/course/manage/detail/course-detail.component';
-import { DoughnutChartComponent } from 'app/exercises/shared/statistics/doughnut-chart.component';
-import { ArtemisTestModule } from '../../test.module';
-import { ExerciseType } from 'app/entities/exercise.model';
-import { MockRouter } from '../../helpers/mocks/mock-router';
 import { Router } from '@angular/router';
-import { MockRouterLinkDirective } from '../../helpers/mocks/directive/mock-router-link.directive';
 import { PieChartModule } from '@swimlane/ngx-charts';
+import { MockModule, MockPipe } from 'ng-mocks';
+
+import { MockRouterLinkDirective } from '../../helpers/mocks/directive/mock-router-link.directive';
+import { MockRouter } from '../../helpers/mocks/mock-router';
+import { ArtemisTestModule } from '../../test.module';
+import { DoughnutChartType } from 'app/course/manage/detail/course-detail.component';
+import { ExerciseType } from 'app/entities/exercise.model';
+import { DoughnutChartComponent } from 'app/exercises/shared/statistics/doughnut-chart.component';
+import { ArtemisTranslatePipe } from 'app/shared/pipes/artemis-translate.pipe';
 
 describe('DoughnutChartComponent', () => {
     let fixture: ComponentFixture<DoughnutChartComponent>;

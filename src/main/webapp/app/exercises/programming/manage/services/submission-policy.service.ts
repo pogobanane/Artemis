@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+
 import { SubmissionPolicy } from 'app/entities/submission-policy.model';
 
 export interface ISubmissionPolicyService {

@@ -2,16 +2,17 @@ import { Component, Input, OnChanges } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { Color, ScaleType } from '@swimlane/ngx-charts';
+import dayjs from 'dayjs/esm';
+
 import { ARTEMIS_DEFAULT_COLOR } from 'app/app.constants';
 import { Course } from 'app/entities/course.model';
 import { Exercise, getIcon, getIconTooltip } from 'app/entities/exercise.model';
+import { GraphColors } from 'app/entities/statistics.model';
 import { ExerciseService } from 'app/exercises/shared/exercise/exercise.service';
+import { getExerciseDueDate } from 'app/exercises/shared/exercise/exercise.utils';
 import { CourseScoreCalculationService } from 'app/overview/course-score-calculation.service';
 import { CachingStrategy } from 'app/shared/image/secured-image.component';
 import { roundValueSpecifiedByCourseSettings } from 'app/shared/util/utils';
-import dayjs from 'dayjs/esm';
-import { getExerciseDueDate } from 'app/exercises/shared/exercise/exercise.utils';
-import { GraphColors } from 'app/entities/statistics.model';
 
 @Component({
     selector: 'jhi-overview-course-card',

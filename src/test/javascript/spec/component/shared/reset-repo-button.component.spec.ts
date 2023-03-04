@@ -1,21 +1,22 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NgbPopoverModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateService } from '@ngx-translate/core';
 import { MockComponent, MockDirective, MockPipe } from 'ng-mocks';
-import { ExerciseActionButtonComponent } from 'app/shared/components/exercise-action-button.component';
-import { NgbPopoverModule } from '@ng-bootstrap/ng-bootstrap';
-import { ArtemisTestModule } from '../../test.module';
+import { Subject } from 'rxjs';
+
 import { MockFeatureToggleService } from '../../helpers/mocks/service/mock-feature-toggle.service';
-import { FeatureToggleService } from 'app/shared/feature-toggle/feature-toggle.service';
-import { ArtemisTranslatePipe } from 'app/shared/pipes/artemis-translate.pipe';
+import { MockParticipationService } from '../../helpers/mocks/service/mock-participation.service';
 import { MockTranslateService } from '../../helpers/mocks/service/mock-translate.service';
-import { FeatureToggleDirective } from 'app/shared/feature-toggle/feature-toggle.directive';
+import { ArtemisTestModule } from '../../test.module';
 import { StudentParticipation } from 'app/entities/participation/student-participation.model';
 import { ProgrammingExercise } from 'app/entities/programming-exercise.model';
-import { Subject } from 'rxjs';
-import { ResetRepoButtonComponent } from 'app/shared/components/reset-repo-button/reset-repo-button.component';
-import { ParticipationService } from 'app/exercises/shared/participation/participation.service';
 import { ProgrammingExerciseParticipationService } from 'app/exercises/programming/manage/services/programming-exercise-participation.service';
-import { MockParticipationService } from '../../helpers/mocks/service/mock-participation.service';
+import { ParticipationService } from 'app/exercises/shared/participation/participation.service';
+import { ExerciseActionButtonComponent } from 'app/shared/components/exercise-action-button.component';
+import { ResetRepoButtonComponent } from 'app/shared/components/reset-repo-button/reset-repo-button.component';
+import { FeatureToggleDirective } from 'app/shared/feature-toggle/feature-toggle.directive';
+import { FeatureToggleService } from 'app/shared/feature-toggle/feature-toggle.service';
+import { ArtemisTranslatePipe } from 'app/shared/pipes/artemis-translate.pipe';
 
 describe('JhiResetRepoButtonComponent', () => {
     let comp: ResetRepoButtonComponent;

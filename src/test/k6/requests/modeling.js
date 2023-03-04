@@ -1,6 +1,7 @@
 import { fail } from 'k6';
+
 import { nextAlphanumeric } from '../util/utils.js';
-import { ASSESS_MODELING_SUBMISSION, SUBMIT_MODELING_EXAM, MODELING_EXERCISES } from './endpoints.js';
+import { ASSESS_MODELING_SUBMISSION, MODELING_EXERCISES, SUBMIT_MODELING_EXAM } from './endpoints.js';
 
 export function submitRandomModelingAnswerExam(artemis, exercise, submissionId, participation) {
     const answer = {

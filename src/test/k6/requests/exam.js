@@ -1,18 +1,19 @@
+import { fail } from 'k6';
+
+import { nextAlphanumeric } from '../util/utils.js';
 import {
     EVALUATE_QUIZ_EXAM,
+    EXAMS,
     EXAM_CONDUCTION,
     EXAM_START,
     EXAM_STUDENTS,
-    EXAMS,
     EXERCISE_GROUPS,
     GENERATE_STUDENT_EXAMS,
     START_EXERCISES,
-    STUDENT_EXAM_WORKINGTIME,
     STUDENT_EXAMS,
+    STUDENT_EXAM_WORKINGTIME,
     SUBMIT_EXAM,
 } from './endpoints.js';
-import { nextAlphanumeric } from '../util/utils.js';
-import { fail } from 'k6';
 
 export function newExam(artemis, course) {
     const currentDate = new Date();

@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
+
 import { ApollonDiagramCreateFormComponent } from './apollon-diagram-create-form.component';
 import { ApollonDiagramDetailComponent } from './apollon-diagram-detail.component';
 import { ApollonDiagramListComponent } from './apollon-diagram-list.component';

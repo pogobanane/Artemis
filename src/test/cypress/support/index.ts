@@ -12,17 +12,17 @@
 // You can read more here:
 // https://on.cypress.io/configuration
 // ***********************************************************
-
 // Import commands.js using ES2015 syntax:
-import './commands';
 // https://github.com/4teamwork/cypress-drag-drop#options adds .drag and .move commands
 import '@4tw/cypress-drag-drop';
-// Imports utility functions
-import './utils';
 // Imports file upload capabilities https://github.com/abramenal/cypress-file-uploady
 import 'cypress-file-upload';
 // Imports cy.waitUntil https://github.com/NoriSte/cypress-wait-until
 import 'cypress-wait-until';
+
+import './commands';
+// Imports utility functions
+import './utils';
 
 // Alternatively you can use CommonJS syntax:
 // require('./commands')

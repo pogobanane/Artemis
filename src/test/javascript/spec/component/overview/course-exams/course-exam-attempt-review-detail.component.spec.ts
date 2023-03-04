@@ -1,16 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Exam } from 'app/entities/exam.model';
-import { TestexamWorkingTimeComponent } from 'app/exam/shared/testExam-workingTime/testexam-working-time.component';
-import { ArtemisTestModule } from '../../../test.module';
+import { Router } from '@angular/router';
 import dayjs from 'dayjs/esm';
-import { ArtemisTranslatePipe } from 'app/shared/pipes/artemis-translate.pipe';
 import { MockComponent, MockPipe } from 'ng-mocks';
+
+import { MockRouter } from '../../../helpers/mocks/mock-router';
+import { ArtemisTestModule } from '../../../test.module';
+import { Exam } from 'app/entities/exam.model';
+import { StudentExam } from 'app/entities/student-exam.model';
+import { TestexamWorkingTimeComponent } from 'app/exam/shared/testExam-workingTime/testexam-working-time.component';
+import { CourseExamAttemptReviewDetailComponent } from 'app/overview/course-exams/course-exam-attempt-review-detail/course-exam-attempt-review-detail.component';
 import { ArtemisDatePipe } from 'app/shared/pipes/artemis-date.pipe';
 import { ArtemisDurationFromSecondsPipe } from 'app/shared/pipes/artemis-duration-from-seconds.pipe';
-import { MockRouter } from '../../../helpers/mocks/mock-router';
-import { Router } from '@angular/router';
-import { CourseExamAttemptReviewDetailComponent } from 'app/overview/course-exams/course-exam-attempt-review-detail/course-exam-attempt-review-detail.component';
-import { StudentExam } from 'app/entities/student-exam.model';
+import { ArtemisTranslatePipe } from 'app/shared/pipes/artemis-translate.pipe';
 
 describe('CourseExamAttemptReviewDetailComponent', () => {
     let component: CourseExamAttemptReviewDetailComponent;

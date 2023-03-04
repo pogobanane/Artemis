@@ -1,8 +1,9 @@
-import { COURSE, COURSES, COURSE_STUDENTS, COURSE_INSTRUCTORS, COURSE_TUTORS, ADMIN_COURSES, ADMIN_COURSE } from './endpoints.js';
-import { nextAlphanumeric } from '../util/utils.js';
+import { FormData } from 'https://jslib.k6.io/formdata/0.0.2/index.js';
 import { fail } from 'k6';
 import http from 'k6/http';
-import { FormData } from 'https://jslib.k6.io/formdata/0.0.2/index.js';
+
+import { nextAlphanumeric } from '../util/utils.js';
+import { ADMIN_COURSE, ADMIN_COURSES, COURSE, COURSES, COURSE_INSTRUCTORS, COURSE_STUDENTS, COURSE_TUTORS } from './endpoints.js';
 
 export function getCourse(artemis, courseId) {
     const res = JSON.parse(artemis.get(COURSE(courseId), null));

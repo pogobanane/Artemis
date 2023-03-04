@@ -1,7 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { LoadingNotificationService } from 'app/shared/notification/loading-notification/loading-notification.service';
 import { debounceTime } from 'rxjs/operators';
+
+import { LoadingNotificationService } from 'app/shared/notification/loading-notification/loading-notification.service';
 
 @Component({
     selector: 'jhi-loading-notification',

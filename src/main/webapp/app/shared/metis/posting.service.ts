@@ -1,6 +1,7 @@
 import { HttpResponse } from '@angular/common/http';
-import { Posting } from 'app/entities/metis/posting.model';
 import { Observable } from 'rxjs';
+
+import { Posting } from 'app/entities/metis/posting.model';
 import { convertDateFromClient, convertDateFromServer } from 'app/utils/date.utils';
 
 export abstract class PostingService<T extends Posting> {

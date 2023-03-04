@@ -1,8 +1,9 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { JhiWebsocketService } from 'app/core/websocket/websocket.service';
 import { distinctUntilChanged, map, tap } from 'rxjs/operators';
-import { HttpClient } from '@angular/common/http';
+
+import { JhiWebsocketService } from 'app/core/websocket/websocket.service';
 
 /**
  * FeatureToggles

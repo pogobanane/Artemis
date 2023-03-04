@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import dayjs from 'dayjs/esm';
+
 import { Exercise } from 'app/entities/exercise.model';
 
 @Component({

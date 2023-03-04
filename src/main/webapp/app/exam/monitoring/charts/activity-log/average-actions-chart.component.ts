@@ -1,10 +1,11 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { getColor } from 'app/exam/monitoring/charts/monitoring-chart';
-import { ArtemisDatePipe } from 'app/shared/pipes/artemis-date.pipe';
-import { ChartComponent } from 'app/exam/monitoring/charts/chart.component';
-import { NgxChartsSingleSeriesDataEntry } from 'app/shared/chart/ngx-charts-datatypes';
-import { ExamActionService } from '../../exam-action.service';
 import { ActivatedRoute } from '@angular/router';
+
+import { ExamActionService } from '../../exam-action.service';
+import { ChartComponent } from 'app/exam/monitoring/charts/chart.component';
+import { getColor } from 'app/exam/monitoring/charts/monitoring-chart';
+import { NgxChartsSingleSeriesDataEntry } from 'app/shared/chart/ngx-charts-datatypes';
+import { ArtemisDatePipe } from 'app/shared/pipes/artemis-date.pipe';
 
 @Component({
     selector: 'jhi-average-actions-chart',

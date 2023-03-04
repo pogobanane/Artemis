@@ -1,11 +1,12 @@
 import { AfterContentChecked, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, ViewChild, ViewContainerRef } from '@angular/core';
-import { PostingFooterDirective } from 'app/shared/metis/posting-footer/posting-footer.directive';
+import { NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import dayjs from 'dayjs/esm';
+
+import { AnswerPost } from 'app/entities/metis/answer-post.model';
 import { Post } from 'app/entities/metis/post.model';
 import { MetisService } from 'app/shared/metis/metis.service';
-import { NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { AnswerPostCreateEditModalComponent } from 'app/shared/metis/posting-create-edit-modal/answer-post-create-edit-modal/answer-post-create-edit-modal.component';
-import { AnswerPost } from 'app/entities/metis/answer-post.model';
-import dayjs from 'dayjs/esm';
+import { PostingFooterDirective } from 'app/shared/metis/posting-footer/posting-footer.directive';
 
 @Component({
     selector: 'jhi-post-footer',

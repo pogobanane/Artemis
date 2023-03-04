@@ -1,13 +1,14 @@
-import { TestBed } from '@angular/core/testing';
+import { HttpResponse } from '@angular/common/http';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { take } from 'rxjs/operators';
+import { TestBed } from '@angular/core/testing';
 import dayjs from 'dayjs/esm';
-import { Result } from 'app/entities/result.model';
-import { Feedback } from 'app/entities/feedback.model';
-import { FileUploadAssessmentService } from 'app/exercises/file-upload/assess/file-upload-assessment.service';
+import { take } from 'rxjs/operators';
+
 import { ArtemisTestModule } from '../test.module';
 import { ComplaintResponse } from 'app/entities/complaint-response.model';
-import { HttpResponse } from '@angular/common/http';
+import { Feedback } from 'app/entities/feedback.model';
+import { Result } from 'app/entities/result.model';
+import { FileUploadAssessmentService } from 'app/exercises/file-upload/assess/file-upload-assessment.service';
 
 describe('Modeling Assessment Service', () => {
     let httpMock: HttpTestingController;

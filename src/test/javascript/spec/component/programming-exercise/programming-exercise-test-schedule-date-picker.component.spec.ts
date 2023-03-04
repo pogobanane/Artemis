@@ -1,13 +1,14 @@
-import dayjs from 'dayjs/esm';
-import { NgModel } from '@angular/forms';
-import { ProgrammingExerciseTestScheduleDatePickerComponent } from 'app/exercises/programming/shared/lifecycle/programming-exercise-test-schedule-date-picker.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ArtemisTestModule } from '../../test.module';
+import { NgModel } from '@angular/forms';
 import { OwlDateTimeModule } from '@danielmoncada/angular-datetime-picker';
+import dayjs from 'dayjs/esm';
 import { MockDirective, MockModule, MockPipe } from 'ng-mocks';
+
+import { ArtemisTestModule } from '../../test.module';
+import { ProgrammingExerciseTestScheduleDatePickerComponent } from 'app/exercises/programming/shared/lifecycle/programming-exercise-test-schedule-date-picker.component';
+import { TranslateDirective } from 'app/shared/language/translate.directive';
 import { ArtemisDatePipe } from 'app/shared/pipes/artemis-date.pipe';
 import { ArtemisTranslatePipe } from 'app/shared/pipes/artemis-translate.pipe';
-import { TranslateDirective } from 'app/shared/language/translate.directive';
 
 describe('ProgrammingExerciseTestScheduleDatePickerComponent', () => {
     let comp: ProgrammingExerciseTestScheduleDatePickerComponent;

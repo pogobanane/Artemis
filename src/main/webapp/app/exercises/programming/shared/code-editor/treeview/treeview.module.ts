@@ -1,8 +1,9 @@
-﻿import { ModuleWithProviders, NgModule } from '@angular/core';
+﻿import { CommonModule } from '@angular/common';
+import { ModuleWithProviders, NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
-import { TreeviewComponent } from './components/treeview/treeview.component';
+
 import { TreeviewItemComponent } from './components/treeview-item/treeview-item.component';
+import { TreeviewComponent } from './components/treeview/treeview.component';
 
 @NgModule({
     imports: [FormsModule, CommonModule],

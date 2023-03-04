@@ -1,4 +1,5 @@
 import dayjs from 'dayjs/esm';
+
 import { BaseEntity } from 'app/shared/model/base-entity';
 
 /**

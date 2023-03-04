@@ -1,8 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { faWrench } from '@fortawesome/free-solid-svg-icons';
 import { Subscription } from 'rxjs';
 
-import { faWrench } from '@fortawesome/free-solid-svg-icons';
 import { ExerciseHint, HintType } from 'app/entities/hestia/exercise-hint.model';
 
 @Component({

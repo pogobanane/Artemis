@@ -1,12 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { CourseExerciseCardComponent } from 'app/course/manage/course-exercise-card.component';
-import { ArtemisTranslatePipe } from 'app/shared/pipes/artemis-translate.pipe';
+import { NgModel } from '@angular/forms';
 import { MockComponent, MockDirective, MockPipe } from 'ng-mocks';
+
 import { ArtemisTestModule } from '../../test.module';
-import { TranslateDirective } from 'app/shared/language/translate.directive';
+import { CourseExerciseCardComponent } from 'app/course/manage/course-exercise-card.component';
 import { CourseManagementExercisesSearchComponent } from 'app/course/manage/course-management-exercises-search.component';
 import { ExerciseFilter } from 'app/entities/exercise-filter.model';
-import { NgModel } from '@angular/forms';
+import { TranslateDirective } from 'app/shared/language/translate.directive';
+import { ArtemisTranslatePipe } from 'app/shared/pipes/artemis-translate.pipe';
 
 describe('Course Management Exercises Search Component', () => {
     let comp: CourseManagementExercisesSearchComponent;

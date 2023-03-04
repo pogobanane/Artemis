@@ -1,8 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ResultHistoryComponent } from 'app/overview/result-history/result-history.component';
 import { MockPipe } from 'ng-mocks';
-import { ArtemisDatePipe } from 'app/shared/pipes/artemis-date.pipe';
+
 import { ArtemisTestModule } from '../../../test.module';
+import { ResultHistoryComponent } from 'app/overview/result-history/result-history.component';
+import { ArtemisDatePipe } from 'app/shared/pipes/artemis-date.pipe';
 
 describe('ResultHistoryComponent', () => {
     let component: ResultHistoryComponent;

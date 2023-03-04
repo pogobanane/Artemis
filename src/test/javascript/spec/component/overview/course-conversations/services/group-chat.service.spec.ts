@@ -1,13 +1,14 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { take } from 'rxjs/operators';
-import { generateExampleGroupChatDTO } from '../helpers/conversationExampleModels';
 import { TranslateService } from '@ngx-translate/core';
+import { take } from 'rxjs/operators';
+
 import { MockAccountService } from '../../../../helpers/mocks/service/mock-account.service';
 import { MockTranslateService } from '../../../../helpers/mocks/service/mock-translate.service';
+import { generateExampleGroupChatDTO } from '../helpers/conversationExampleModels';
 import { AccountService } from 'app/core/auth/account.service';
-import { GroupChatService } from 'app/shared/metis/conversations/group-chat.service';
 import { GroupChatDto } from 'app/entities/metis/conversation/group-chat.model';
+import { GroupChatService } from 'app/shared/metis/conversations/group-chat.service';
 
 describe('GroupChatService', () => {
     let service: GroupChatService;

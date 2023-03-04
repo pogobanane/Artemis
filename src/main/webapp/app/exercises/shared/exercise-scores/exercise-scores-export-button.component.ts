@@ -1,17 +1,18 @@
-import { StudentParticipation } from 'app/entities/participation/student-participation.model';
-import { roundValueSpecifiedByCourseSettings } from 'app/shared/util/utils';
-import { AlertService } from 'app/core/util/alert.service';
-import { ProgrammingExerciseStudentParticipation } from 'app/entities/participation/programming-exercise-student-participation.model';
-import { Exercise, ExerciseType, getCourseFromExercise } from 'app/entities/exercise.model';
 import { Component, Input, OnInit } from '@angular/core';
-import { ResultService } from 'app/exercises/shared/result/result.service';
-import { getTestCaseNamesFromResults, getTestCaseResults } from 'app/exercises/shared/result/result.utils';
-import { ProgrammingExercise } from 'app/entities/programming-exercise.model';
-import { GradingCriterion } from 'app/exercises/shared/structured-grading-criterion/grading-criterion.model';
-import { ResultWithPointsPerGradingCriterion } from 'app/entities/result-with-points-per-grading-criterion.model';
 import { faDownload } from '@fortawesome/free-solid-svg-icons';
 import { ExportToCsv } from 'export-to-csv';
+
+import { AlertService } from 'app/core/util/alert.service';
+import { Exercise, ExerciseType, getCourseFromExercise } from 'app/entities/exercise.model';
+import { ProgrammingExerciseStudentParticipation } from 'app/entities/participation/programming-exercise-student-participation.model';
+import { StudentParticipation } from 'app/entities/participation/student-participation.model';
+import { ProgrammingExercise } from 'app/entities/programming-exercise.model';
+import { ResultWithPointsPerGradingCriterion } from 'app/entities/result-with-points-per-grading-criterion.model';
 import { TestCaseResult } from 'app/entities/test-case-result.model';
+import { ResultService } from 'app/exercises/shared/result/result.service';
+import { getTestCaseNamesFromResults, getTestCaseResults } from 'app/exercises/shared/result/result.utils';
+import { GradingCriterion } from 'app/exercises/shared/structured-grading-criterion/grading-criterion.model';
+import { roundValueSpecifiedByCourseSettings } from 'app/shared/util/utils';
 
 @Component({
     selector: 'jhi-exercise-scores-export-button',

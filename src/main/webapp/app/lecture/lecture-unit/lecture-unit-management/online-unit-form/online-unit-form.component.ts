@@ -1,12 +1,13 @@
-import dayjs from 'dayjs/esm';
+import { HttpResponse } from '@angular/common/http';
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { faArrowLeft, faTimes } from '@fortawesome/free-solid-svg-icons';
+import dayjs from 'dayjs/esm';
 import { map } from 'rxjs';
-import { HttpResponse } from '@angular/common/http';
+
+import { LearningGoal } from 'app/entities/learningGoal.model';
 import { OnlineResourceDTO } from 'app/lecture/lecture-unit/lecture-unit-management/online-resource-dto.model';
 import { OnlineUnitService } from 'app/lecture/lecture-unit/lecture-unit-management/onlineUnit.service';
-import { LearningGoal } from 'app/entities/learningGoal.model';
 
 export interface OnlineUnitFormData {
     name?: string;

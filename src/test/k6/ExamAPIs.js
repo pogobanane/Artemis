@@ -1,25 +1,26 @@
-import { login } from './requests/requests.js';
 import { group, sleep } from 'k6';
-import { newCourse, deleteCourse, addUserToInstructorsInCourse } from './requests/course.js';
-import { createUsersIfNeeded } from './requests/user.js';
-import { createQuizExercise, submitRandomAnswerRESTExam } from './requests/quiz.js';
+
+import { addUserToInstructorsInCourse, deleteCourse, newCourse } from './requests/course.js';
 import {
-    newExam,
-    newExerciseGroup,
     addUserToStudentsInExam,
+    evaluateQuizzes,
     generateExams,
-    startExercises,
     getExamForUser,
     getStudentExams,
-    updateWorkingTime,
-    evaluateQuizzes,
+    newExam,
+    newExerciseGroup,
+    startExercises,
     startStudentExamForUser,
     submitExam,
+    updateWorkingTime,
 } from './requests/exam.js';
-import { submitRandomTextAnswerExam, newTextExercise } from './requests/text.js';
 import { newModelingExercise, submitRandomModelingAnswerExam } from './requests/modeling.js';
-import { createProgrammingExercise, ParticipationSimulation, simulateSubmission, TestResult } from './requests/programmingExercise.js';
-import { someSuccessfulErrorContentJava, allSuccessfulContentJava, buildErrorContentJava } from './resource/constants_java.js';
+import { ParticipationSimulation, TestResult, createProgrammingExercise, simulateSubmission } from './requests/programmingExercise.js';
+import { createQuizExercise, submitRandomAnswerRESTExam } from './requests/quiz.js';
+import { login } from './requests/requests.js';
+import { newTextExercise, submitRandomTextAnswerExam } from './requests/text.js';
+import { createUsersIfNeeded } from './requests/user.js';
+import { allSuccessfulContentJava, buildErrorContentJava, someSuccessfulErrorContentJava } from './resource/constants_java.js';
 
 // Version: 1.1
 // Creator: Firefox

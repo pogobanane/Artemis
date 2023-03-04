@@ -1,7 +1,8 @@
-import { PARTICIPATION, QUIZ_EXERCISES } from './endpoints.js';
 import { fail, sleep } from 'k6';
-import { nextAlphanumeric, nextWSSubscriptionId, randomArrayValue, extractDestination, extractMessageContent } from '../util/utils.js';
-import { QUIZ_EXERCISE, SUBMIT_QUIZ_LIVE, SUBMIT_QUIZ_EXAM } from './endpoints.js';
+
+import { extractDestination, extractMessageContent, nextAlphanumeric, nextWSSubscriptionId, randomArrayValue } from '../util/utils.js';
+import { PARTICIPATION, QUIZ_EXERCISES } from './endpoints.js';
+import { QUIZ_EXERCISE, SUBMIT_QUIZ_EXAM, SUBMIT_QUIZ_LIVE } from './endpoints.js';
 
 export function createQuizExercise(artemis, course, exerciseGroup = null, startQuiz = true, setReleaseDate = true) {
     let res;

@@ -1,4 +1,5 @@
 import { EMPTY, of } from 'rxjs';
+
 import { IRepositoryFileService } from 'app/exercises/shared/result/repository.service';
 
 export class MockRepositoryFileService implements IRepositoryFileService {

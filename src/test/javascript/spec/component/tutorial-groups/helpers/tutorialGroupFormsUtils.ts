@@ -1,6 +1,7 @@
 // util methods for testing tutorial group forms as they all follow the same patterns
-
 import { ComponentFixture } from '@angular/core/testing';
+
+import { runOnPushChangeDetection } from '../../../helpers/on-push-change-detection.helper';
 import {
     TutorialGroupFreePeriodFormComponent,
     TutorialGroupFreePeriodFormData,
@@ -10,14 +11,13 @@ import {
     TutorialGroupSessionFormData,
 } from 'app/course/tutorial-groups/tutorial-groups-management/tutorial-group-sessions/crud/tutorial-group-session-form/tutorial-group-session-form.component';
 import {
-    TutorialGroupFormComponent,
-    TutorialGroupFormData,
-} from 'app/course/tutorial-groups/tutorial-groups-management/tutorial-groups/crud/tutorial-group-form/tutorial-group-form.component';
-import {
     TutorialGroupsConfigurationFormComponent,
     TutorialGroupsConfigurationFormData,
 } from 'app/course/tutorial-groups/tutorial-groups-management/tutorial-groups-configuration/crud/tutorial-groups-configuration-form/tutorial-groups-configuration-form.component';
-import { runOnPushChangeDetection } from '../../../helpers/on-push-change-detection.helper';
+import {
+    TutorialGroupFormComponent,
+    TutorialGroupFormData,
+} from 'app/course/tutorial-groups/tutorial-groups-management/tutorial-groups/crud/tutorial-group-form/tutorial-group-form.component';
 
 type SupportedForms = TutorialGroupFreePeriodFormComponent | TutorialGroupSessionFormComponent | TutorialGroupsConfigurationFormComponent | TutorialGroupFormComponent;
 type SupportedFixtures = ComponentFixture<SupportedForms>;
