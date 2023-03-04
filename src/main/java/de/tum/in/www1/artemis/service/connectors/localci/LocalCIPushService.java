@@ -3,6 +3,7 @@ package de.tum.in.www1.artemis.service.connectors.localci;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -12,23 +13,22 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import de.tum.in.www1.artemis.domain.Commit;
-import de.tum.in.www1.artemis.domain.ProgrammingExercise;
-import de.tum.in.www1.artemis.domain.ProgrammingSubmission;
-import de.tum.in.www1.artemis.domain.Result;
+import de.tum.in.www1.artemis.domain.*;
 import de.tum.in.www1.artemis.domain.enumeration.RepositoryType;
 import de.tum.in.www1.artemis.domain.enumeration.SubmissionType;
 import de.tum.in.www1.artemis.domain.participation.ProgrammingExerciseParticipation;
+import de.tum.in.www1.artemis.domain.participation.ProgrammingExerciseStudentParticipation;
 import de.tum.in.www1.artemis.domain.participation.SolutionProgrammingExerciseParticipation;
+import de.tum.in.www1.artemis.domain.participation.StudentParticipation;
 import de.tum.in.www1.artemis.exception.localvc.LocalVCException;
-import de.tum.in.www1.artemis.repository.SolutionProgrammingExerciseParticipationRepository;
-import de.tum.in.www1.artemis.repository.TemplateProgrammingExerciseParticipationRepository;
+import de.tum.in.www1.artemis.repository.*;
 import de.tum.in.www1.artemis.security.SecurityUtils;
 import de.tum.in.www1.artemis.service.connectors.ContinuousIntegrationTriggerService;
 import de.tum.in.www1.artemis.service.connectors.localci.dto.LocalCIBuildResultNotificationDTO;
@@ -46,13 +46,15 @@ public class LocalCIPushService {
     @Value("${artemis.version-control.url}")
     private URL localVCBaseUrl;
 
-    private final ProgrammingExerciseService programmingExerciseService;
+    private final TeamRepository teamRepository;
+
+    private final ProgrammingExerciseStudentParticipationRepository programmingExerciseStudentParticipationRepository;
+
+    private final StudentParticipationRepository studentParticipationRepository;
 
     private final TemplateProgrammingExerciseParticipationRepository templateProgrammingExerciseParticipationRepository;
 
     private final SolutionProgrammingExerciseParticipationRepository solutionProgrammingExerciseParticipationRepository;
-
-    private final ProgrammingExerciseParticipationService programmingExerciseParticipationService;
 
     private final ProgrammingSubmissionService programmingSubmissionService;
 
@@ -66,23 +68,26 @@ public class LocalCIPushService {
 
     private final ProgrammingTriggerService programmingTriggerService;
 
-    public LocalCIPushService(ProgrammingExerciseService programmingExerciseService,
-            TemplateProgrammingExerciseParticipationRepository templateProgrammingExerciseParticipationRepository,
-            SolutionProgrammingExerciseParticipationRepository solutionProgrammingExerciseParticipationRepository,
-            ProgrammingExerciseParticipationService programmingExerciseParticipationService, ProgrammingSubmissionService programmingSubmissionService,
+    private final ProgrammingExerciseRepository programmingExerciseRepository;
+
+    public LocalCIPushService(TeamRepository teamRepository, ProgrammingExerciseStudentParticipationRepository programmingExerciseStudentParticipationRepository,
+            StudentParticipationRepository studentParticipationRepository, TemplateProgrammingExerciseParticipationRepository templateProgrammingExerciseParticipationRepository,
+            SolutionProgrammingExerciseParticipationRepository solutionProgrammingExerciseParticipationRepository, ProgrammingSubmissionService programmingSubmissionService,
             ProgrammingMessagingService programmingMessagingService, LocalCIExecutorService localCIExecutorService,
             ProgrammingExerciseGradingService programmingExerciseGradingService, Optional<ContinuousIntegrationTriggerService> continuousIntegrationTriggerService,
-            ProgrammingTriggerService programmingTriggerService) {
-        this.programmingExerciseService = programmingExerciseService;
+            ProgrammingTriggerService programmingTriggerService, ProgrammingExerciseRepository programmingExerciseRepository) {
+        this.teamRepository = teamRepository;
+        this.programmingExerciseStudentParticipationRepository = programmingExerciseStudentParticipationRepository;
+        this.studentParticipationRepository = studentParticipationRepository;
         this.templateProgrammingExerciseParticipationRepository = templateProgrammingExerciseParticipationRepository;
         this.solutionProgrammingExerciseParticipationRepository = solutionProgrammingExerciseParticipationRepository;
-        this.programmingExerciseParticipationService = programmingExerciseParticipationService;
         this.programmingSubmissionService = programmingSubmissionService;
         this.programmingMessagingService = programmingMessagingService;
         this.localCIExecutorService = localCIExecutorService;
         this.programmingExerciseGradingService = programmingExerciseGradingService;
         this.continuousIntegrationTriggerService = continuousIntegrationTriggerService;
         this.programmingTriggerService = programmingTriggerService;
+        this.programmingExerciseRepository = programmingExerciseRepository;
     }
 
     public void processNewPush(String commitHash, Repository repository) {
@@ -105,7 +110,13 @@ public class LocalCIPushService {
         ProgrammingExercise exercise;
 
         try {
-            exercise = programmingExerciseService.findOneByProjectKey(projectKey, false);
+            List<ProgrammingExercise> exercises;
+            exercises = programmingExerciseRepository.findByProjectKey(projectKey);
+
+            if (exercises.size() != 1) {
+                throw new EntityNotFoundException("No exercise or multiple exercises found for the given project key: " + projectKey);
+            }
+            exercise = exercises.get(0);
         }
         catch (EntityNotFoundException e) {
             // This should never happen, as the unambiguous exercise is already retrieved in the LocalVCPushFilter.
@@ -201,8 +212,7 @@ public class LocalCIPushService {
             else {
                 // TODO: Figure out what to do in case of a test run.
                 boolean isPracticeRepository = localVCRepositoryUrl.isPracticeRepository();
-                participation = programmingExerciseParticipationService.findStudentParticipationByExerciseAndStudentLoginAndTestRun(exercise, repositoryTypeOrUserName,
-                        isPracticeRepository, true);
+                participation = getProgrammingExerciseParticipation(repositoryTypeOrUserName, exercise, isPracticeRepository);
             }
         }
         catch (EntityNotFoundException e) {
@@ -230,6 +240,47 @@ public class LocalCIPushService {
             // Throwing an exception here would lead to the Git client request getting stuck.
             // Instead, the user can see in the UI that creating the submission failed.
         }
+    }
+
+    @NotNull
+    private ProgrammingExerciseParticipation getProgrammingExerciseParticipation(String repositoryTypeOrUserName, ProgrammingExercise exercise, boolean isPracticeRepository) {
+        Optional<ProgrammingExerciseStudentParticipation> participationOpt;
+        ProgrammingExerciseParticipation participation;
+        if (exercise.isTeamMode()) {
+            Team team = teamRepository.findOneByExerciseCourseIdAndShortNameOrThrow(exercise.getCourseViaExerciseGroupOrCourseMember().getId(), repositoryTypeOrUserName);
+
+            participationOpt = programmingExerciseStudentParticipationRepository.findWithSubmissionsByExerciseIdAndTeamId(exercise.getId(), team.getId());
+
+            if (participationOpt.isEmpty()) {
+                throw new EntityNotFoundException("Participation could not be found by exerciseId " + exercise.getId() + " and team " + repositoryTypeOrUserName);
+            }
+
+            participation = participationOpt.get();
+        }
+
+        if (exercise.isExamExercise()) {
+            participationOpt = programmingExerciseStudentParticipationRepository.findWithSubmissionsByExerciseIdAndStudentLogin(exercise.getId(), repositoryTypeOrUserName);
+
+            if (participationOpt.isEmpty()) {
+                throw new EntityNotFoundException("Participation could not be found by exerciseId " + exercise.getId() + " and user " + repositoryTypeOrUserName);
+            }
+
+            participation = participationOpt.get();
+        }
+
+        // Exercise is course exercise for a single student.
+
+        Optional<StudentParticipation> participationOpt2;
+
+        participationOpt2 = studentParticipationRepository.findWithEagerSubmissionsByExerciseIdAndStudentLoginAndTestRun(exercise.getId(), repositoryTypeOrUserName,
+                isPracticeRepository);
+
+        if (participationOpt2.isEmpty()) {
+            throw new EntityNotFoundException("Participation could not be found by exerciseId " + exercise.getId() + " and user " + repositoryTypeOrUserName);
+        }
+
+        participation = (ProgrammingExerciseStudentParticipation) participationOpt2.get();
+        return participation;
     }
 
     private Commit extractCommitInfo(String commitHash, Repository repository) {

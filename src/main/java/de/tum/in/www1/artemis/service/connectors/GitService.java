@@ -54,6 +54,7 @@ import de.tum.in.www1.artemis.domain.participation.StudentParticipation;
 import de.tum.in.www1.artemis.exception.GitException;
 import de.tum.in.www1.artemis.service.FileService;
 import de.tum.in.www1.artemis.service.ZipFileService;
+import de.tum.in.www1.artemis.service.connectors.localci.LocalCIPushService;
 import de.tum.in.www1.artemis.service.connectors.localvc.LocalVCRepositoryUrl;
 import de.tum.in.www1.artemis.web.rest.errors.EntityNotFoundException;
 
@@ -97,6 +98,8 @@ public class GitService {
     @Value("${artemis.git.email}")
     private String artemisGitEmail;
 
+    private final LocalCIPushService localCIPushService;
+
     private final Map<Path, Repository> cachedRepositories = new ConcurrentHashMap<>();
 
     private final Map<Path, Path> cloneInProgressOperations = new ConcurrentHashMap<>();
@@ -115,7 +118,8 @@ public class GitService {
 
     private static final String REMOTE_NAME = "origin";
 
-    public GitService(Environment environment, FileService fileService, ZipFileService zipFileService) {
+    public GitService(Environment environment, LocalCIPushService localCIPushService, FileService fileService, ZipFileService zipFileService) {
+        this.localCIPushService = localCIPushService;
         log.info("file.encoding={}", System.getProperty("file.encoding"));
         log.info("sun.jnu.encoding={}", System.getProperty("sun.jnu.encoding"));
         log.info("Default Charset={}", Charset.defaultCharset());
