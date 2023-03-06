@@ -1,4 +1,4 @@
-import { FeedbackItemServiceImpl } from 'app/exercises/shared/feedback/item/feedback-item-service';
+import { FeedbackItemServiceImpl } from 'app/exercises/shared/feedback/item/feedback-item.service';
 import { TranslateService } from '@ngx-translate/core';
 import { Feedback } from 'app/entities/feedback.model';
 import { FeedbackItem } from 'app/exercises/shared/feedback/item/feedback-item';

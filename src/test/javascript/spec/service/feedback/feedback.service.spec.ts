@@ -1,4 +1,4 @@
-import { FeedbackService } from 'app/exercises/shared/feedback/feedback-service';
+import { FeedbackService } from 'app/exercises/shared/feedback/feedback.service';
 import { Feedback } from 'app/entities/feedback.model';
 import { ResultService } from 'app/exercises/shared/result/result.service';
 

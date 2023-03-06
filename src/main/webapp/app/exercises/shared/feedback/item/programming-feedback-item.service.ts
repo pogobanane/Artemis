@@ -1,4 +1,4 @@
-import { FeedbackItemService } from 'app/exercises/shared/feedback/item/feedback-item-service';
+import { FeedbackItemService } from 'app/exercises/shared/feedback/item/feedback-item.service';
 import { Injectable } from '@angular/core';
 import { Feedback, FeedbackType, STATIC_CODE_ANALYSIS_FEEDBACK_IDENTIFIER, SUBMISSION_POLICY_FEEDBACK_IDENTIFIER } from 'app/entities/feedback.model';
 import { TranslateService } from '@ngx-translate/core';
