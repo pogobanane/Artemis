@@ -66,6 +66,7 @@ export class FeedbackItemServiceImpl implements FeedbackItemService {
     private createGradingInstructionFeedbackItem(feedback: Feedback, showTestDetails: boolean): FeedbackItem {
         const gradingInstruction = feedback.gradingInstruction!;
 
+        // TODO: subsequent is not possible here as it is only applicable to programming exercises
         return {
             type: feedback.isSubsequent ? 'Subsequent' : 'Reviewer',
             name: showTestDetails ? this.translateService.instant('artemisApp.course.tutor') : this.translateService.instant('artemisApp.result.detail.feedback'),
