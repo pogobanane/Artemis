@@ -46,7 +46,7 @@ public class FeedbackResource {
         this.programmingExerciseParticipationService = programmingExerciseParticipationService;
     }
 
-    @GetMapping("participations/{participationId}/results/resultId/items")
+    @GetMapping("participations/{participationId}/results/{resultId}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<FeedbackDTO>> getByResult(@PathVariable Long participationId, @PathVariable Long resultId) {
         log.debug("REST request to get feedback items for result : {}", resultId);
