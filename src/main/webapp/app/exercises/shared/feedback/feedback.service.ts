@@ -4,10 +4,15 @@ import { Result } from 'app/entities/result.model';
 import { ResultService } from 'app/exercises/shared/result/result.service';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { Participation } from 'app/entities/participation/participation.model';
+import { FeedbackItem } from 'app/exercises/shared/feedback/item/feedback-item';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({ providedIn: 'root' })
 export class FeedbackService {
-    constructor(private resultService: ResultService) {}
+    private feedbackResourceUrl = SERVER_API_URL + 'api/feedbacks';
+
+    constructor(private http: HttpClient, private resultService: ResultService) {}
 
     /**
      * Filters the feedback based on the filter input
@@ -29,5 +34,18 @@ export class FeedbackService {
      */
     public getFeedbacksForResult(participationId: number, result: Result): Observable<Feedback[]> {
         return this.resultService.getFeedbackDetailsForResult(participationId, result).pipe(map(({ body: feedbackList }) => feedbackList!));
+    }
+
+    /**
+     * Loads the missing feedback details
+     * @param participation the current participation
+     * @param result
+     */
+    public getFeedbackItemsForResult(participation: Participation, result: Result): Observable<FeedbackItem[]> {
+        return this.http.get<FeedbackItem[]>(`${this.feedbackResourceUrl}/${participation.id}/results/${result.id}/items`, { observe: 'response' }).pipe(
+            map((res) => {
+                return res.body ?? [];
+            }),
+        );
     }
 }
