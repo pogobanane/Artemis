@@ -5,7 +5,6 @@ import { ResultService } from 'app/exercises/shared/result/result.service';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Participation } from 'app/entities/participation/participation.model';
-import { FeedbackItem } from 'app/exercises/shared/feedback/item/feedback-item';
 import { HttpClient } from '@angular/common/http';
 
 @Injectable({ providedIn: 'root' })
@@ -41,11 +40,9 @@ export class FeedbackService {
      * @param participation the current participation
      * @param result
      */
-    public getFeedbackItemsForResult(participation: Participation, result: Result): Observable<FeedbackItem[]> {
-        return this.http.get<FeedbackItem[]>(`${this.feedbackResourceUrl}/${participation.id}/results/${result.id}/items`, { observe: 'response' }).pipe(
-            map((res) => {
-                return res.body ?? [];
-            }),
-        );
+    public getFeedbackDTOForResult(participation: Participation, result: Result): Observable<Feedback[]> {
+        return this.http
+            .get<Feedback[]>(`${this.feedbackResourceUrl}/${participation.id}/results/${result.id}/feedback`, { observe: 'response' })
+            .pipe(map((res) => res.body ?? []));
     }
 }
