@@ -165,6 +165,7 @@ repositories {
 }
 
 dependencies {
+    implementation "org.jacoco:org.jacoco.agent:0.8.8"
     implementation "com.offbytwo.jenkins:jenkins-client:0.3.8"
     implementation "org.gitlab4j:gitlab4j-api:5.0.1"
 
@@ -200,7 +201,14 @@ dependencies {
     implementation "org.imsglobal:basiclti-util:1.2.0"
     implementation "org.jasypt:jasypt:1.9.3"
     implementation "me.xdrop:fuzzywuzzy:1.4.0"
-    implementation "com.atlassian.bamboo:bamboo-specs:8.2.5"
+    implementation "com.atlassian.bamboo:bamboo-specs:9.2.1"
+    implementation ("org.yaml:snakeyaml") {
+        version {
+            strictly "1.33" // needed for Bamboo-specs and to reduce the number of vulnerabilities, also see https://mvnrepository.com/artifact/org.yaml/snakeyaml
+        }
+    }
+
+
     implementation "com.thoughtworks.qdox:qdox:2.0.2"
     implementation "io.sentry:sentry-logback:6.4.2"
     implementation "io.sentry:sentry-spring-boot-starter:6.4.2"
