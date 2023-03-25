@@ -86,6 +86,9 @@ class RepositoryIntegrationTest extends AbstractSpringIntegrationBambooBitbucket
     private ProgrammingExerciseParticipationService programmingExerciseParticipationService;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private PlagiarismComparisonRepository plagiarismComparisonRepository;
 
     @Autowired
@@ -991,16 +994,18 @@ class RepositoryIntegrationTest extends AbstractSpringIntegrationBambooBitbucket
 
     void checkCanAccessParticipation(ProgrammingExercise programmingExercise, ProgrammingExerciseStudentParticipation participation, boolean shouldBeAllowed,
             boolean shouldBeAllowedTemplateSolution) {
-        var isAllowed = programmingExerciseParticipationService.canAccessParticipation(participation);
+        User user = userRepository.getUserWithGroupsAndAuthorities();
+
+        var isAllowed = programmingExerciseParticipationService.canAccessParticipation(participation, user);
         assertThat(isAllowed).isEqualTo(shouldBeAllowed);
 
-        var isAllowedSolution = programmingExerciseParticipationService.canAccessParticipation(programmingExercise.getSolutionParticipation());
+        var isAllowedSolution = programmingExerciseParticipationService.canAccessParticipation(programmingExercise.getSolutionParticipation(), user);
         assertThat(isAllowedSolution).isEqualTo(shouldBeAllowedTemplateSolution);
 
-        var isAllowedTemplate = programmingExerciseParticipationService.canAccessParticipation(programmingExercise.getTemplateParticipation());
+        var isAllowedTemplate = programmingExerciseParticipationService.canAccessParticipation(programmingExercise.getTemplateParticipation(), user);
         assertThat(isAllowedTemplate).isEqualTo(shouldBeAllowedTemplateSolution);
 
-        var responseOther = programmingExerciseParticipationService.canAccessParticipation(null);
+        var responseOther = programmingExerciseParticipationService.canAccessParticipation(null, user);
         assertThat(responseOther).isFalse();
     }
 
