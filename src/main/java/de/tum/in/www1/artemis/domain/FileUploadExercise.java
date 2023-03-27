@@ -22,6 +22,10 @@ public class FileUploadExercise extends Exercise {
     @Column(name = "filePattern")
     private String filePattern;
 
+    public FileUploadExercise() {
+        super(FILE_UPLOAD);
+    }
+
     public String getFilePattern() {
         return filePattern;
     }

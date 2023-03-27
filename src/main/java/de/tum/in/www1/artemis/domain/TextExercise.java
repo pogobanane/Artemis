@@ -33,6 +33,10 @@ public class TextExercise extends Exercise {
     @JsonIgnore
     private TextAssessmentKnowledge knowledge;
 
+    public TextExercise() {
+        super(TEXT);
+    }
+
     public String getExampleSolution() {
         return exampleSolution;
     }

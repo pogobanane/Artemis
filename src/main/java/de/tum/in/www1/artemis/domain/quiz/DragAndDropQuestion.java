@@ -57,6 +57,10 @@ public class DragAndDropQuestion extends QuizQuestion {
     @JsonView(QuizView.After.class)
     private List<DragAndDropMapping> correctMappings = new ArrayList<>();
 
+    public DragAndDropQuestion() {
+        super(QuizQuestionType.DRAG_AND_DROP);
+    }
+
     public String getBackgroundFilePath() {
         return backgroundFilePath;
     }

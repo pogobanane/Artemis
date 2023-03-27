@@ -35,6 +35,10 @@ public class MultipleChoiceQuestion extends QuizQuestion {
     @JsonView(QuizView.Before.class)
     private boolean singleChoice = false;
 
+    public MultipleChoiceQuestion() {
+        super(QuizQuestionType.MULTIPLE_CHOICE);
+    }
+
     public List<AnswerOption> getAnswerOptions() {
         return answerOptions;
     }

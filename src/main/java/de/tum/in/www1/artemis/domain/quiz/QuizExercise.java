@@ -84,6 +84,10 @@ public class QuizExercise extends Exercise {
     @JsonView(QuizView.Before.class)
     private Set<QuizBatch> quizBatches = new HashSet<>();
 
+    public QuizExercise() {
+        super(QUIZ);
+    }
+
     public Boolean isRandomizeQuestionOrder() {
         return randomizeQuestionOrder;
     }

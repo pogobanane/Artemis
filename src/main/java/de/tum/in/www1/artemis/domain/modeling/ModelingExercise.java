@@ -41,6 +41,10 @@ public class ModelingExercise extends Exercise {
     @Transient
     private ZonedDateTime clusterBuildDate;
 
+    public ModelingExercise() {
+        super(MODELING);
+    }
+
     public DiagramType getDiagramType() {
         return diagramType;
     }

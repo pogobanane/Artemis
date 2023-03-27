@@ -52,6 +52,10 @@ public class ShortAnswerQuestion extends QuizQuestion {
     @JsonView(QuizView.Before.class)
     private Boolean matchLetterCase = false;
 
+    public ShortAnswerQuestion() {
+        super(QuizQuestionType.SHORT_ANSWER);
+    }
+
     public List<ShortAnswerSpot> getSpots() {
         return spots;
     }

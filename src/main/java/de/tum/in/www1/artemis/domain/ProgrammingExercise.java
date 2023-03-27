@@ -148,6 +148,10 @@ public class ProgrammingExercise extends Exercise {
     @Transient
     private boolean checkoutSolutionRepositoryTransient = false;
 
+    public ProgrammingExercise() {
+        super(PROGRAMMING);
+    }
+
     /**
      * Convenience getter. The actual URL is stored in the {@link TemplateProgrammingExerciseParticipation}
      *

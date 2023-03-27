@@ -28,6 +28,8 @@ import de.tum.in.www1.artemis.domain.quiz.QuizExercise;
 import de.tum.in.www1.artemis.domain.view.QuizView;
 import de.tum.in.www1.artemis.web.rest.dto.DueDateStat;
 import de.tum.in.www1.artemis.web.rest.errors.BadRequestAlertException;
+import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * An Exercise.
@@ -45,6 +47,11 @@ import de.tum.in.www1.artemis.web.rest.errors.BadRequestAlertException;
         @JsonSubTypes.Type(value = QuizExercise.class, name = "quiz"), @JsonSubTypes.Type(value = TextExercise.class, name = "text"),
         @JsonSubTypes.Type(value = FileUploadExercise.class, name = "file-upload"), })
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+@Schema(type = "object", title = "Exercise", subTypes = { ProgrammingExercise.class, ModelingExercise.class, QuizExercise.class, TextExercise.class,
+        FileUploadExercise.class }, discriminatorMapping = { @DiscriminatorMapping(value = "programming", schema = ProgrammingExercise.class),
+                @DiscriminatorMapping(value = "modeling", schema = ModelingExercise.class), @DiscriminatorMapping(value = "quiz", schema = QuizExercise.class),
+                @DiscriminatorMapping(value = "text", schema = TextExercise.class),
+                @DiscriminatorMapping(value = "file-upload", schema = FileUploadExercise.class), }, discriminatorProperty = "type")
 public abstract class Exercise extends BaseExercise implements LearningObject {
 
     @Column(name = "allow_complaints_for_automatic_assessments")
@@ -178,6 +185,23 @@ public abstract class Exercise extends BaseExercise implements LearningObject {
 
     @Transient
     private Long numberOfRatingsTransient;
+
+    @Schema(required = true)
+    @Transient
+    private ExerciseType exerciseType;
+
+    // TODO: keep the type name to stay compatible with current json in the client? otherwise quizQuestionTypeAsString might fit better
+    @Schema(required = true)
+    @Transient
+    private String type;
+
+    public Exercise() {
+    }
+
+    public Exercise(ExerciseType exerciseType) {
+        this.exerciseType = exerciseType;
+        this.type = exerciseType.name().toLowerCase().replace('_', '-');
+    }
 
     @Override
     public boolean isCompletedFor(User user) {

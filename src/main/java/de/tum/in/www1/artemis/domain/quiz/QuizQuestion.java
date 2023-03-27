@@ -12,6 +12,8 @@ import de.tum.in.www1.artemis.domain.DomainObject;
 import de.tum.in.www1.artemis.domain.enumeration.ScoringType;
 import de.tum.in.www1.artemis.domain.quiz.scoring.ScoringStrategy;
 import de.tum.in.www1.artemis.domain.view.QuizView;
+import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * A QuizQuestion.
@@ -27,6 +29,9 @@ import de.tum.in.www1.artemis.domain.view.QuizView;
 @JsonSubTypes({ @JsonSubTypes.Type(value = MultipleChoiceQuestion.class, name = "multiple-choice"), @JsonSubTypes.Type(value = DragAndDropQuestion.class, name = "drag-and-drop"),
         @JsonSubTypes.Type(value = ShortAnswerQuestion.class, name = "short-answer") })
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+@Schema(type = "object", title = "QuizQuestion", subTypes = { MultipleChoiceQuestion.class, DragAndDropQuestion.class, ShortAnswerQuestion.class }, discriminatorMapping = {
+        @DiscriminatorMapping(value = "multiple-choice", schema = MultipleChoiceQuestion.class), @DiscriminatorMapping(value = "drag-and-drop", schema = DragAndDropQuestion.class),
+        @DiscriminatorMapping(value = "short-answer", schema = ShortAnswerQuestion.class) }, discriminatorProperty = "type")
 public abstract class QuizQuestion extends DomainObject {
 
     @Column(name = "title")
@@ -69,6 +74,28 @@ public abstract class QuizQuestion extends DomainObject {
     @ManyToOne
     @JsonIgnore
     private QuizExercise exercise;
+
+    @Schema(required = true)
+    @Transient
+    private QuizQuestionType quizQuestionType;
+
+    // TODO: keep the type name to stay compatible with current json in the client? otherwise quizQuestionTypeAsString might fit better if this is even necessary?
+    @Schema(required = true)
+    @Transient
+    private String type;
+
+    // TODO: should this be moved to domain/enumeration to a own file?
+    public enum QuizQuestionType {
+        MULTIPLE_CHOICE, DRAG_AND_DROP, SHORT_ANSWER
+    }
+
+    public QuizQuestion() {
+    }
+
+    public QuizQuestion(QuizQuestionType quizQuestionType) {
+        this.quizQuestionType = quizQuestionType;
+        this.type = quizQuestionType.name().toLowerCase().replace('_', '-');
+    }
 
     public String getTitle() {
         return title;
