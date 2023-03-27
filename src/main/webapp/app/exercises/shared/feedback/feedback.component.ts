@@ -26,7 +26,7 @@ import dayjs from 'dayjs/esm';
 import { FeedbackItemService, FeedbackItemServiceImpl } from 'app/exercises/shared/feedback/item/feedback-item-service';
 import { ProgrammingFeedbackItemService } from 'app/exercises/shared/feedback/item/programming-feedback-item.service';
 import { FeedbackService } from 'app/exercises/shared/feedback/feedback-service';
-import { resultIsPreliminary } from '../result/result.utils';
+import { evaluateTemplateStatus, isOnlyCompilationTested, resultIsPreliminary } from '../result/result.utils';
 import { FeedbackNode } from 'app/exercises/shared/feedback/node/feedback-node';
 import { ChartData } from 'app/exercises/shared/feedback/chart/feedback-chart-data';
 import { FeedbackChartService } from 'app/exercises/shared/feedback/chart/feedback-chart.service';
@@ -49,7 +49,6 @@ export class FeedbackComponent implements OnInit {
     @Input() result: Result;
     // Specify the feedback.text values that should be shown, all other values will not be visible.
     @Input() feedbackFilter: string[];
-    @Input() showTestDetails = false;
     @Input() showScoreChart = false;
     @Input() exerciseType: ExerciseType;
     /**
@@ -73,10 +72,12 @@ export class FeedbackComponent implements OnInit {
     faCircleNotch = faCircleNotch;
     faExclamationTriangle = faExclamationTriangle;
 
+    private showTestDetails = false;
     isLoading = false;
     loadingFailed = false;
     buildLogs: BuildLogEntryArray;
     course?: Course;
+    isOnlyCompilationTested: boolean;
 
     commitHashURLTemplate?: string;
     commitHash?: string;
@@ -130,6 +131,8 @@ export class FeedbackComponent implements OnInit {
 
         this.commitHash = this.getCommitHash().slice(0, 11);
 
+        this.isOnlyCompilationTested = isOnlyCompilationTested(this.result, evaluateTemplateStatus(this.exercise, this.result.participation, this.result, false));
+
         // Get active profiles, to distinguish between Bitbucket and GitLab for the commit link of the result
         this.profileService.getProfileInfo().subscribe((info: ProfileInfo) => {
             this.commitHashURLTemplate = info?.commitHashURLTemplate;
@@ -154,6 +157,9 @@ export class FeedbackComponent implements OnInit {
         if (!this.exerciseType && isProgrammingExerciseParticipation(this.result?.participation)) {
             this.exerciseType = ExerciseType.PROGRAMMING;
         }
+
+        this.showTestDetails =
+            this.exercise?.isAtLeastTutor || (this.exerciseType === ExerciseType.PROGRAMMING && (this.exercise as ProgrammingExercise)?.showTestNamesToStudents) || false;
     }
 
     /**

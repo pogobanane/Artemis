@@ -6,11 +6,12 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Subject, combineLatest, finalize } from 'rxjs';
 import { AlertService } from 'app/core/util/alert.service';
 import { faPlus, faUmbrellaBeach } from '@fortawesome/free-solid-svg-icons';
-import { Course } from 'app/entities/course.model';
+import { Course, isMessagingEnabled } from 'app/entities/course.model';
 import { onError } from 'app/shared/util/global.utils';
 import { TutorialGroupFreePeriod } from 'app/entities/tutorial-group/tutorial-group-free-day.model';
 import { TutorialGroupsConfigurationService } from 'app/course/tutorial-groups/services/tutorial-groups-configuration.service';
 import { takeUntil } from 'rxjs/operators';
+import { TutorialGroupsConfiguration } from 'app/entities/tutorial-group/tutorial-groups-configuration.model';
 
 @Component({
     selector: 'jhi-tutorial-groups-management',
@@ -24,10 +25,14 @@ export class TutorialGroupsManagementComponent implements OnInit, OnDestroy {
     course: Course;
     isAtLeastInstructor = false;
 
+    configuration: TutorialGroupsConfiguration;
+
     isLoading = false;
     tutorialGroups: TutorialGroup[] = [];
     faPlus = faPlus;
     faUmbrellaBeach = faUmbrellaBeach;
+
+    readonly isMessagingEnabled = isMessagingEnabled;
 
     tutorialGroupFreeDays: TutorialGroupFreePeriod[] = [];
 
@@ -84,9 +89,9 @@ export class TutorialGroupsManagementComponent implements OnInit, OnDestroy {
                     });
                     this.tutorialGroups = tutorialGroups;
 
-                    const configuration = configurationRes.body!;
-                    if (configuration.tutorialGroupFreePeriods) {
-                        this.tutorialGroupFreeDays = configuration.tutorialGroupFreePeriods;
+                    this.configuration = configurationRes.body!;
+                    if (this.configuration.tutorialGroupFreePeriods) {
+                        this.tutorialGroupFreeDays = this.configuration.tutorialGroupFreePeriods;
                     }
                 },
                 error: (res: HttpErrorResponse) => onError(this.alertService, res),

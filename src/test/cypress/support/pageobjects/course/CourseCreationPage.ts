@@ -1,6 +1,6 @@
 import dayjs from 'dayjs/esm';
 import { enterDate } from '../../utils';
-import { BASE_API, POST, PUT } from '../../../support/constants';
+import { BASE_API, POST, PUT } from '../../constants';
 
 /**
  * A class which encapsulates UI selectors and actions for the course creation page.
@@ -162,7 +162,7 @@ export class CourseCreationPage {
 
     /**
      * Sets the maximal complaint text limit
-     * @param maxComplaintsTimeDays the maximal complaint text limit
+     * @param maxComplaintTextLimit the maximal complaint text limit
      */
     setMaxComplaintTextLimit(maxComplaintTextLimit: number) {
         cy.get('#field_maxComplaintTextLimit').clear().type(maxComplaintTextLimit.toString());
@@ -194,18 +194,6 @@ export class CourseCreationPage {
      */
     setMaxRequestMoreFeedbackTimeDays(maxRequestMoreFeedbackTimeDays: number) {
         cy.get('#field_maxRequestMoreFeedbackTimeDays').clear().type(maxRequestMoreFeedbackTimeDays.toString());
-    }
-
-    /**
-     * Sets if posts are enabled
-     * @param posts if posts should be enabled
-     */
-    setPosts(posts: boolean) {
-        if (posts) {
-            cy.get('#field_postsEnabled').check();
-        } else {
-            cy.get('#field_postsEnabled').uncheck();
-        }
     }
 
     /**

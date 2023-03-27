@@ -44,7 +44,7 @@ class ProgrammingExerciseBitbucketBambooIntegrationTest extends AbstractSpringIn
     @BeforeEach
     void setup() throws Exception {
         programmingExerciseTestService.setupTestUsers(TEST_PREFIX, 0, 0, 0, 0);
-        programmingExerciseTestService.setup(this, versionControlService, continuousIntegrationService, programmingExerciseStudentParticipationRepository);
+        programmingExerciseTestService.setup(this, versionControlService, continuousIntegrationService);
         bambooRequestMockProvider.enableMockingOfRequests(true);
         bitbucketRequestMockProvider.enableMockingOfRequests(true);
         bitbucketRequestMockProvider.mockDefaultBranch(defaultBranch, programmingExerciseTestService.exercise.getProjectKey());
@@ -241,13 +241,6 @@ class ProgrammingExerciseBitbucketBambooIntegrationTest extends AbstractSpringIn
     @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
     void resumeProgrammingExerciseByTriggeringInstructorBuild_correctInitializationState(ExerciseMode exerciseMode) throws Exception {
         programmingExerciseTestService.resumeProgrammingExerciseByTriggeringInstructorBuild_correctInitializationState(exerciseMode);
-    }
-
-    @Test
-    @WithMockUser(username = TEST_PREFIX + studentLogin, roles = "USER")
-    void startProgrammingExerciseStudentSubmissionFailedWithBuildlog() throws Exception {
-        mockUsers(numberOfStudents, "student");
-        programmingExerciseTestService.startProgrammingExerciseStudentSubmissionFailedWithBuildlog();
     }
 
     @Test

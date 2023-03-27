@@ -2,10 +2,11 @@ import { Participation } from 'app/entities/participation/participation.model';
 import { TextExercise } from 'app/entities/text-exercise.model';
 import { Exam } from 'app/entities/exam.model';
 import { Exercise } from 'app/entities/exercise.model';
+import { Exercise as CypressExercise } from 'src/test/cypress/support/pageobjects/exam/ExamParticipation';
 import { ExerciseGroup } from 'app/entities/exercise-group.model';
 import { ProgrammingExercise } from 'app/entities/programming-exercise.model';
-import { Course } from 'app/entities/course.model';
-import { BASE_API, DELETE, GET, POST, PUT } from '../constants';
+import { Course, CourseInformationSharingConfiguration } from 'app/entities/course.model';
+import { BASE_API, CourseWideContext, DELETE, EXERCISE_TYPE, GET, POST, PUT } from '../constants';
 import programmingExerciseTemplate from '../../fixtures/exercise/programming/template.json';
 import { dayjsToString, generateUUID, parseArrayBufferAsJsonObject } from '../utils';
 import examTemplate from '../../fixtures/exam/template.json';
@@ -63,6 +64,8 @@ export class CourseManagementRequests {
         end = day().add(2, 'hours'),
         fileName?: string,
         file?: Blob,
+        allowCommunication = true,
+        allowMessaging = true,
     ): Cypress.Chainable<Cypress.Response<Course>> {
         const course = new Course();
         course.title = courseName;
@@ -70,6 +73,16 @@ export class CourseManagementRequests {
         course.testCourse = true;
         course.startDate = start;
         course.endDate = end;
+
+        if (allowCommunication && allowMessaging) {
+            course.courseInformationSharingConfiguration = CourseInformationSharingConfiguration.COMMUNICATION_AND_MESSAGING;
+        } else if (allowCommunication) {
+            course.courseInformationSharingConfiguration = CourseInformationSharingConfiguration.COMMUNICATION_ONLY;
+        } else if (allowMessaging) {
+            course.courseInformationSharingConfiguration = CourseInformationSharingConfiguration.MESSAGING_ONLY;
+        } else {
+            course.courseInformationSharingConfiguration = CourseInformationSharingConfiguration.DISABLED;
+        }
 
         const allowGroupCustomization: boolean = Cypress.env('allowGroupCustomization');
         if (customizeGroups && allowGroupCustomization) {
@@ -162,22 +175,22 @@ export class CourseManagementRequests {
 
     updateModelingExerciseDueDate(exercise: ModelingExercise, due = day()) {
         exercise.dueDate = due;
-        return this.updateExercise(exercise, CypressExerciseType.MODELING);
+        return this.updateExercise(exercise, EXERCISE_TYPE.Modeling);
     }
 
-    private updateExercise(exercise: Exercise, type: CypressExerciseType) {
+    private updateExercise(exercise: Exercise, type: EXERCISE_TYPE) {
         let url: string;
         switch (type) {
-            case CypressExerciseType.PROGRAMMING:
+            case EXERCISE_TYPE.Programming:
                 url = PROGRAMMING_EXERCISE_BASE;
                 break;
-            case CypressExerciseType.TEXT:
+            case EXERCISE_TYPE.Text:
                 url = TEXT_EXERCISE_BASE;
                 break;
-            case CypressExerciseType.MODELING:
+            case EXERCISE_TYPE.Modeling:
                 url = MODELING_EXERCISE_BASE;
                 break;
-            case CypressExerciseType.QUIZ:
+            case EXERCISE_TYPE.Quiz:
             default:
                 throw new Error(`Exercise type '${type}' is not supported yet!`);
         }
@@ -216,6 +229,22 @@ export class CourseManagementRequests {
         return cy.request({ method: POST, url: `${COURSE_BASE}${courseId}/${roleIdentifier}/${username}` });
     }
 
+    createCoursePost(course: Course, title: string, content: string, context: CourseWideContext) {
+        const body = {
+            content,
+            course: {
+                id: course.id,
+                title: course.title,
+            },
+            courseWideContext: context,
+            displayPriority: 'NONE',
+            title,
+            tags: [],
+            visibleForStudents: true,
+        };
+        return cy.request({ method: POST, url: `${COURSE_BASE}${course.id}/posts`, body });
+    }
+
     /**
      * Creates an exam with the provided settings.
      * @param exam the exam object created by a {@link CypressExamBuilder}
@@ -239,6 +268,24 @@ export class CourseManagementRequests {
      */
     registerStudentForExam(exam: Exam, student: CypressCredentials) {
         return cy.request({ method: POST, url: COURSE_BASE + exam.course!.id + '/exams/' + exam.id + '/students/' + student.username });
+    }
+
+    /**
+     * Creates an exam with the provided settings.
+     * @param exam the exam object created by a {@link CypressExamBuilder}
+     * @param exerciseArray an array of exercises
+     * @param workingTime the working time in seconds
+     * @returns <Chainable> request response
+     */
+    createExamTestRun(exam: Exam, exerciseArray: Array<CypressExercise>, workingTime = 1080) {
+        const courseId = exam.course!.id;
+        const examId = exam.id!;
+        const body = {
+            exam,
+            exerciseArray,
+            workingTime,
+        };
+        return cy.request({ url: COURSE_BASE + courseId + '/exams/' + examId + '/test-run', method: POST, body });
     }
 
     /**
@@ -311,7 +358,7 @@ export class CourseManagementRequests {
 
     updateModelingExerciseAssessmentDueDate(exercise: ModelingExercise, due = day()) {
         exercise.assessmentDueDate = due;
-        return this.updateExercise(exercise, CypressExerciseType.MODELING);
+        return this.updateExercise(exercise, EXERCISE_TYPE.Modeling);
     }
 
     deleteModelingExercise(exerciseID: number) {
@@ -483,12 +530,12 @@ export class CourseManagementRequests {
 
     updateTextExerciseDueDate(exercise: TextExercise, due = day()) {
         exercise.dueDate = due;
-        return this.updateExercise(exercise, CypressExerciseType.TEXT);
+        return this.updateExercise(exercise, EXERCISE_TYPE.Text);
     }
 
     updateTextExerciseAssessmentDueDate(exercise: TextExercise, due = day()) {
         exercise.assessmentDueDate = due;
-        return this.updateExercise(exercise, CypressExerciseType.TEXT);
+        return this.updateExercise(exercise, EXERCISE_TYPE.Text);
     }
 
     deleteLecture(lectureId: number) {
@@ -645,13 +692,6 @@ export enum CypressAssessmentType {
     AUTOMATIC,
     SEMI_AUTOMATIC,
     MANUAL,
-}
-
-export enum CypressExerciseType {
-    PROGRAMMING,
-    MODELING,
-    TEXT,
-    QUIZ,
 }
 
 export function convertCourseAfterMultiPart(response: Cypress.Response<Course>): Course {

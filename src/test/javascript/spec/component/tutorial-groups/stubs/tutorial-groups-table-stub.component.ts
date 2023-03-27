@@ -16,6 +16,13 @@ export class TutorialGroupsTableStubComponent {
     @Input()
     showIdColumn = false;
 
+    tutorialGroupsSplitAcrossMultipleCampuses = false;
+    mixOfOfflineAndOfflineTutorialGroups = false;
+    mifOfDifferentLanguages = false;
+
+    @Input()
+    showChannelColumn = false;
+
     @Input()
     tutorialGroups: TutorialGroup[] = [];
 
@@ -39,6 +46,9 @@ export class TutorialGroupsTableStubComponent {
             <div *ngIf="showIdColumn">
                 <span>{{ tutorialGroup.id }}</span>
             </div>
+            <div *ngIf="showChannelColumn">
+                <span>{{ tutorialGroup?.channel?.name || '' }}</span>
+            </div>
             <div *ngIf="extraColumn">
                 <ng-template [ngTemplateOutlet]="extraColumn" [ngTemplateOutletContext]="{ $implicit: tutorialGroup }"></ng-template>
             </div>
@@ -48,6 +58,16 @@ export class TutorialGroupsTableStubComponent {
 export class TutorialGroupRowStubComponent {
     @Input()
     showIdColumn = false;
+
+    @Input()
+    tutorialGroupsSplitAcrossMultipleCampuses = false;
+    @Input()
+    mixOfOfflineAndOfflineTutorialGroups = false;
+    @Input()
+    mifOfDifferentLanguages = false;
+
+    @Input()
+    showChannelColumn = false;
 
     @Input() extraColumn: TemplateRef<any>;
 
