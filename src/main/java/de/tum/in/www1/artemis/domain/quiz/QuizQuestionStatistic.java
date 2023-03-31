@@ -6,6 +6,9 @@ import org.hibernate.annotations.DiscriminatorOptions;
 
 import com.fasterxml.jackson.annotation.*;
 
+import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 @Entity
 @DiscriminatorValue(value = "Q")
 @DiscriminatorOptions(force = true)
@@ -14,6 +17,10 @@ import com.fasterxml.jackson.annotation.*;
         @JsonSubTypes.Type(value = DragAndDropQuestionStatistic.class, name = "drag-and-drop"),
         @JsonSubTypes.Type(value = ShortAnswerQuestionStatistic.class, name = "short-answer") })
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+@Schema(type = "object", title = "QuizQuestionStatistic", subTypes = { MultipleChoiceQuestionStatistic.class, DragAndDropQuestionStatistic.class,
+        ShortAnswerQuestionStatistic.class }, discriminatorMapping = { @DiscriminatorMapping(value = "MC", schema = MultipleChoiceQuestionStatistic.class),
+                @DiscriminatorMapping(value = "DD", schema = DragAndDropQuestionStatistic.class),
+                @DiscriminatorMapping(value = "SA", schema = ShortAnswerQuestionStatistic.class) }, discriminatorProperty = "type")
 public abstract class QuizQuestionStatistic extends QuizStatistic {
 
     @Column(name = "rated_correct_counter")
