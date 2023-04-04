@@ -20,6 +20,8 @@ import { MockNgbModalService } from '../../helpers/mocks/service/mock-ngb-modal.
 import { PrerequisiteImportComponent } from 'app/course/learning-goals/learning-goal-management/prerequisite-import.component';
 import { Edge } from '@swimlane/ngx-graph';
 import { Component } from '@angular/core';
+import { LearningGoalImportComponent } from 'app/course/learning-goals/learning-goal-management/learning-goal-import.component';
+import { By } from '@angular/platform-browser';
 
 // eslint-disable-next-line @angular-eslint/component-selector
 @Component({ selector: 'ngx-graph', template: '' })
@@ -164,10 +166,29 @@ describe('LearningGoalManagementComponent', () => {
 
         fixture.detectChanges();
 
-        component.openImportModal();
+        component.openPrerequisiteSelectionModal();
 
         expect(modalService.open).toHaveBeenCalledOnce();
         expect(modalService.open).toHaveBeenCalledWith(PrerequisiteImportComponent, { size: 'lg', backdrop: 'static' });
+        expect(modalRef.componentInstance.disabledIds).toBeArrayOfSize(3);
+        expect(modalRef.componentInstance.disabledIds).toContainAllValues([1, 5, 3]);
+    });
+
+    it('should open import modal for learning goals', () => {
+        const modalRef = {
+            result: Promise.resolve({ id: 456 } as LearningGoal),
+            componentInstance: {},
+        } as NgbModalRef;
+        jest.spyOn(modalService, 'open').mockReturnValue(modalRef);
+
+        fixture.detectChanges();
+
+        // component.openImportModal();
+        const importButton = fixture.debugElement.query(By.css('#learningGoalImportButton'));
+        importButton.nativeElement.click();
+
+        expect(modalService.open).toHaveBeenCalledOnce();
+        expect(modalService.open).toHaveBeenCalledWith(LearningGoalImportComponent, { size: 'lg', backdrop: 'static' });
         expect(modalRef.componentInstance.disabledIds).toBeArrayOfSize(3);
         expect(modalRef.componentInstance.disabledIds).toContainAllValues([1, 5, 3]);
     });
