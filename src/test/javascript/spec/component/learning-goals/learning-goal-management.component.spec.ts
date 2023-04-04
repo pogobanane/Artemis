@@ -22,6 +22,7 @@ import { Edge } from '@swimlane/ngx-graph';
 import { Component } from '@angular/core';
 import { LearningGoalImportComponent } from 'app/course/learning-goals/learning-goal-management/learning-goal-import.component';
 import { By } from '@angular/platform-browser';
+import '@angular/localize/init';
 
 // eslint-disable-next-line @angular-eslint/component-selector
 @Component({ selector: 'ngx-graph', template: '' })
@@ -40,7 +41,7 @@ describe('LearningGoalManagementComponent', () => {
 
     beforeEach(() => {
         TestBed.configureTestingModule({
-            imports: [ArtemisTestModule, RouterTestingModule.withRoutes([])],
+            imports: [ArtemisTestModule, RouterTestingModule.withRoutes([]), NgbProgressbar],
             declarations: [
                 LearningGoalManagementComponent,
                 LearningGoalCardStubComponent,
@@ -49,8 +50,6 @@ describe('LearningGoalManagementComponent', () => {
                 MockDirective(DeleteButtonDirective),
                 MockDirective(HasAnyAuthorityDirective),
                 MockDirective(NgbPanel),
-                MockComponent(NgbProgressbar),
-                MockComponent(NgbAccordion),
             ],
             providers: [
                 MockProvider(AccountService),
