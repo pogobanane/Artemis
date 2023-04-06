@@ -17,6 +17,8 @@ import de.tum.in.www1.artemis.domain.*;
 import de.tum.in.www1.artemis.domain.enumeration.InitializationState;
 import de.tum.in.www1.artemis.domain.enumeration.SubmissionType;
 import de.tum.in.www1.artemis.domain.view.QuizView;
+import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * A Participation.
@@ -35,6 +37,12 @@ import de.tum.in.www1.artemis.domain.view.QuizView;
         @JsonSubTypes.Type(value = ProgrammingExerciseStudentParticipation.class, name = "programming"),
         @JsonSubTypes.Type(value = TemplateProgrammingExerciseParticipation.class, name = "template"),
         @JsonSubTypes.Type(value = SolutionProgrammingExerciseParticipation.class, name = "solution"), })
+@Schema(type = "object", title = "Participation", subTypes = { StudentParticipation.class, ProgrammingExerciseStudentParticipation.class,
+        TemplateProgrammingExerciseParticipation.class, SolutionProgrammingExerciseParticipation.class }, discriminatorMapping = {
+                @DiscriminatorMapping(value = "SP", schema = StudentParticipation.class),
+                @DiscriminatorMapping(value = "PESP", schema = ProgrammingExerciseStudentParticipation.class),
+                @DiscriminatorMapping(value = "TPEP", schema = TemplateProgrammingExerciseParticipation.class),
+                @DiscriminatorMapping(value = "SPEP", schema = SolutionProgrammingExerciseParticipation.class) }, discriminatorProperty = "type")
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public abstract class Participation extends DomainObject implements ParticipationInterface {
 
