@@ -248,7 +248,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
         activate: 'activate.title',
         password: 'global.menu.account.password',
         reset: 'global.menu.account.password',
-        register: 'register.title',
+        register: 'artemisApp.studentDashboard.enroll.title',
         settings: 'global.menu.account.settings',
         course_management: 'global.menu.course',
         exercises: 'artemisApp.course.exercises',

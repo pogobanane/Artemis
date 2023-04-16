@@ -92,11 +92,11 @@
                     "tooltip": "Ermöglicht den Nachrichtenaustausch zwischen Nutzer:innen in privaten oder öffentlichen Kanälen, Gruppenchats oder Direktnachrichten. Kanäle können nur von Lehrenden und Tutor:innen erstellt werden. Nutzer:innen können selbst öffentlichen Kanälen beitreten und müssen zu privaten Kanälen hinzugefügt werden. Alle Nutzer:innen können einen privaten Gruppenchat starten und andere Nutzer:innen hinzufügen. Ein Gruppenchat ist auf zehn Mitglieder:innen begrenzt. Alle Nutzer:innen können Direktnachrichten an andere Nutzer:innen senden. Die Chats finden im Nachrichtenbereich des Kurses statt."
                 }
             },
-            "registrationEnabled": {
-                "title": "Kursregistrierung für Studierende aktiviert",
-                "description": "Aktiviere diese Checkbox, damit sich Studierende selbständig im Kurs registrieren können, sofern dieser aktiv ist (zwischen Start und Ende des Kurses). Du kannst optional eine Nachricht eingeben, die Studierende bei der Registrierung bestätigen müssen."
+            "enrollmentEnabled": {
+                "title": "Kurseinschreibung für Studierende aktiviert",
+                "description": "Aktiviere diese Checkbox, damit sich Studierende selbständig im Kurs einschreiben können, sofern dieser aktiv ist (zwischen Start und Ende des Kurses). Du kannst optional eine Nachricht eingeben, die Studierende bei der Einschreibung bestätigen müssen."
             },
-            "registrationConfirmationMessage": "Nachricht zur Bestätigung der Registrierung",
+            "enrollmentConfirmationMessage": "Nachricht zur Bestätigung der Einschreibung",
             "exercises": "Aufgaben",
             "programmingExercises": "Programmieraufgaben",
             "quizExercises": "Quizaufgaben",
