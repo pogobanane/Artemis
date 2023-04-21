@@ -27,6 +27,7 @@ import de.tum.in.www1.artemis.domain.participation.Participation;
 import de.tum.in.www1.artemis.domain.participation.StudentParticipation;
 import de.tum.in.www1.artemis.domain.view.QuizView;
 import de.tum.in.www1.artemis.web.rest.errors.BadRequestAlertException;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * A QuizExercise contains multiple quiz quizQuestions, which can be either multiple choice, drag and drop or short answer. Artemis supports live quizzes with a start and end time
@@ -59,6 +60,7 @@ public class QuizExercise extends Exercise {
     @Enumerated(EnumType.STRING)
     @Column(name = "quiz_mode", columnDefinition = "varchar(63) default 'SYNCHRONIZED'", nullable = false)
     @JsonView(QuizView.Before.class)
+    @Schema(defaultValue = "SYNCHRONIZED")
     private QuizMode quizMode = QuizMode.SYNCHRONIZED; // default value
 
     /**

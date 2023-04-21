@@ -30,6 +30,7 @@ import de.tum.in.www1.artemis.domain.view.QuizView;
 import de.tum.in.www1.artemis.service.FilePathService;
 import de.tum.in.www1.artemis.service.FileService;
 import de.tum.in.www1.artemis.web.rest.errors.BadRequestAlertException;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * A Course.
@@ -90,6 +91,7 @@ public class Course extends DomainObject {
 
     @Column(name = "test_course", nullable = false)
     @JsonView({ QuizView.Before.class })
+    @Schema(defaultValue = "false")
     private boolean testCourse = false;
 
     @Enumerated(EnumType.STRING)
@@ -104,6 +106,7 @@ public class Course extends DomainObject {
 
     @Column(name = "online_course")
     @JsonView(QuizView.Before.class)
+    @Schema(defaultValue = "false")
     private Boolean onlineCourse = false;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
@@ -113,30 +116,37 @@ public class Course extends DomainObject {
     @Enumerated(EnumType.ORDINAL)
     @Column(name = "info_sharing_config", nullable = false)
     @JsonView(QuizView.Before.class)
+    @Schema(defaultValue = "COMMUNICATION_AND_MESSAGING")
     private CourseInformationSharingConfiguration courseInformationSharingConfiguration = CourseInformationSharingConfiguration.COMMUNICATION_AND_MESSAGING; // default value
 
     @Column(name = "max_complaints", nullable = false)
     @JsonView(QuizView.Before.class)
+    @Schema(defaultValue = "3")
     private Integer maxComplaints = 3;  // default value
 
     @Column(name = "max_team_complaints", nullable = false)
     @JsonView(QuizView.Before.class)
+    @Schema(defaultValue = "3")
     private Integer maxTeamComplaints = 3;  // default value
 
     @Column(name = "max_complaint_time_days", nullable = false)
     @JsonView(QuizView.Before.class)
+    @Schema(defaultValue = "7")
     private int maxComplaintTimeDays = 7;   // default value
 
     @Column(name = "max_request_more_feedback_time_days", nullable = false)
     @JsonView(QuizView.Before.class)
+    @Schema(defaultValue = "7")
     private int maxRequestMoreFeedbackTimeDays = 7;   // default value
 
     @Column(name = "max_complaint_text_limit")
     @JsonView(QuizView.Before.class)
+    @Schema(defaultValue = "2000")
     private int maxComplaintTextLimit = 2000;
 
     @Column(name = "max_complaint_response_text_limit")
     @JsonView(QuizView.Before.class)
+    @Schema(defaultValue = "2000")
     private int maxComplaintResponseTextLimit = 2000;
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
@@ -167,6 +177,7 @@ public class Course extends DomainObject {
 
     @Column(name = "accuracy_of_scores", nullable = false)
     @JsonView(QuizView.Before.class)
+    @Schema(defaultValue = "1")
     private Integer accuracyOfScores = 1; // default value
 
     /**

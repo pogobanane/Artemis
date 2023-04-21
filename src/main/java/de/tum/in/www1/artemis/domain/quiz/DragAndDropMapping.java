@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 import de.tum.in.www1.artemis.domain.DomainObject;
 import de.tum.in.www1.artemis.domain.view.QuizView;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * A DragAndDropMapping.
@@ -31,6 +32,7 @@ public class DragAndDropMapping extends DomainObject {
 
     @Column(name = "invalid")
     @JsonView(QuizView.Before.class)
+    @Schema(defaultValue = "false")
     private Boolean invalid = false;
 
     @ManyToOne

@@ -65,6 +65,7 @@ public abstract class QuizQuestion extends DomainObject {
 
     @Column(name = "invalid")
     @JsonView(QuizView.Before.class)
+    @Schema(defaultValue = "false")
     private Boolean invalid = false;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)

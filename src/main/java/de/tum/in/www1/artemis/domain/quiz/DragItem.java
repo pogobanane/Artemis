@@ -17,6 +17,7 @@ import de.tum.in.www1.artemis.domain.TempIdObject;
 import de.tum.in.www1.artemis.domain.view.QuizView;
 import de.tum.in.www1.artemis.service.FilePathService;
 import de.tum.in.www1.artemis.service.FileService;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * A DragItem.
@@ -43,6 +44,7 @@ public class DragItem extends TempIdObject {
 
     @Column(name = "invalid")
     @JsonView(QuizView.Before.class)
+    @Schema(defaultValue = "false")
     private Boolean invalid = false;
 
     @ManyToOne

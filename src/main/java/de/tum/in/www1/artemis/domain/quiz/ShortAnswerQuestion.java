@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 import de.tum.in.www1.artemis.domain.quiz.scoring.*;
 import de.tum.in.www1.artemis.domain.view.QuizView;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * A ShortAnswerQuestion.
@@ -46,10 +47,12 @@ public class ShortAnswerQuestion extends QuizQuestion {
 
     @Column(name = "similarity_value")
     @JsonView(QuizView.Before.class)
+    @Schema(defaultValue = "85")
     private Integer similarityValue = 85;
 
     @Column(name = "match_letter_case")
     @JsonView(QuizView.Before.class)
+    @Schema(defaultValue = "false")
     private Boolean matchLetterCase = false;
 
     public ShortAnswerQuestion() {

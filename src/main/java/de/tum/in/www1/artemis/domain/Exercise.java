@@ -62,6 +62,7 @@ public abstract class Exercise extends BaseExercise implements LearningObject {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "included_in_overall_score")
+    @Schema(defaultValue = "INCLUDED_COMPLETELY")
     private IncludedInOverallScore includedInOverallScore = IncludedInOverallScore.INCLUDED_COMPLETELY;
 
     @Column(name = "problem_statement")
@@ -94,10 +95,12 @@ public abstract class Exercise extends BaseExercise implements LearningObject {
 
     @Nullable
     @Column(name = "presentation_score_enabled")
+    @Schema(defaultValue = "false")
     private Boolean presentationScoreEnabled = false;
 
     @Nullable
     @Column(name = "second_correction_enabled")
+    @Schema(defaultValue = "false")
     private Boolean secondCorrectionEnabled = false;
 
     @ManyToOne

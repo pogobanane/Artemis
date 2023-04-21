@@ -29,6 +29,7 @@ import de.tum.in.www1.artemis.domain.participation.TemplateProgrammingExercisePa
 import de.tum.in.www1.artemis.domain.submissionpolicy.SubmissionPolicy;
 import de.tum.in.www1.artemis.service.programming.ProgrammingLanguageFeature;
 import de.tum.in.www1.artemis.web.rest.errors.BadRequestAlertException;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * A ProgrammingExercise.
@@ -83,6 +84,7 @@ public class ProgrammingExercise extends Exercise {
 
     @Nullable
     @Column(name = "test_cases_changed", table = "programming_exercise_details")
+    @Schema(defaultValue = "false")
     private Boolean testCasesChanged = false;   // default value
 
     @Column(name = "project_key", table = "programming_exercise_details", nullable = false)
