@@ -451,7 +451,7 @@ pitest {
 
 openApi {
     customBootRun {
-        args = ["--spring.profiles.active=dev,artemis,scheduling,local"]
+        args = ["--spring.profiles.active=dev,artemis,scheduling,local,openapigenerator"]
     }
     waitTimeInSeconds = 900
     apiDocsUrl = "http://localhost:8080/api-docs"

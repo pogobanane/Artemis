@@ -1,0 +1,3 @@
+springdoc:
+    # TODO: check how far this includes the Info endpoint inside the SDK
+    show-actuator: true
