@@ -28,6 +28,8 @@ services:
         depends_on:
             artemis-app:
                 condition: service_started
+        logging:
+            driver: none
         volumes:
             - ./nginx/artemis-nginx-cypress.conf:/etc/nginx/conf.d/artemis-nginx-cypress.conf:ro
         ports:
