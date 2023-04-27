@@ -1324,7 +1324,7 @@ describe('QuizExercise Management Detail Component', () => {
         describe('saving', () => {
             let quizExerciseServiceCreateStub: jest.SpyInstance;
             let quizExerciseServiceUpdateStub: jest.SpyInstance;
-            let exerciseStub: jest.SpyInstance;
+            let exerciseSanitizeSpy: jest.SpyInstance;
             const saveQuizWithPendingChangesCache = () => {
                 comp.cacheValidation();
                 comp.pendingChangesCache = true;
@@ -1347,7 +1347,7 @@ describe('QuizExercise Management Detail Component', () => {
                 quizExerciseServiceCreateStub.mockReturnValue(of(new HttpResponse<QuizExercise>({ body: quizExercise })));
                 quizExerciseServiceUpdateStub = jest.spyOn(quizExerciseService, 'update');
                 quizExerciseServiceUpdateStub.mockReturnValue(of(new HttpResponse<QuizExercise>({ body: quizExercise })));
-                exerciseStub = jest.spyOn(Exercise, 'sanitize');
+                exerciseSanitizeSpy = jest.spyOn(Exercise, 'sanitize');
             });
 
             afterEach(() => {
@@ -1357,7 +1357,7 @@ describe('QuizExercise Management Detail Component', () => {
             it('should call create if valid and quiz exercise no id', () => {
                 comp.quizExercise.id = undefined;
                 saveQuizWithPendingChangesCache();
-                expect(exerciseStub).toHaveBeenCalledWith(comp.quizExercise);
+                expect(exerciseSanitizeSpy).toHaveBeenCalledWith(comp.quizExercise);
                 expect(quizExerciseServiceCreateStub).toHaveBeenCalledOnce();
                 expect(quizExerciseServiceUpdateStub).not.toHaveBeenCalled();
             });
@@ -1366,7 +1366,7 @@ describe('QuizExercise Management Detail Component', () => {
                 comp.quizExercise.testRunParticipationsExist = true;
                 comp.isExamMode = true;
                 saveQuizWithPendingChangesCache();
-                expect(exerciseStub).not.toHaveBeenCalledWith(comp.quizExercise);
+                expect(exerciseSanitizeSpy).not.toHaveBeenCalledWith(comp.quizExercise);
                 expect(quizExerciseServiceCreateStub).not.toHaveBeenCalled();
                 expect(quizExerciseServiceUpdateStub).not.toHaveBeenCalled();
                 expect(quizExerciseServiceUpdateStub).not.toHaveBeenCalledWith(comp.quizExercise, {});
@@ -1374,17 +1374,16 @@ describe('QuizExercise Management Detail Component', () => {
 
             it('should update if valid and quiz exercise has id', () => {
                 saveQuizWithPendingChangesCache();
-                expect(exerciseStub).toHaveBeenCalledWith(comp.quizExercise);
+                expect(exerciseSanitizeSpy).toHaveBeenCalledWith(comp.quizExercise);
                 expect(quizExerciseServiceCreateStub).not.toHaveBeenCalled();
-                expect(quizExerciseServiceUpdateStub).toHaveBeenCalledOnce();
-                expect(quizExerciseServiceUpdateStub).toHaveBeenCalledWith(comp.quizExercise, {});
+                expect(quizExerciseServiceUpdateStub).toHaveBeenCalledOnceWith(comp.quizExercise.id, comp.quizExercise, new Map<string, Blob>(), {});
             });
 
             it('should not save if not valid', () => {
                 comp.quizIsValid = false;
                 comp.pendingChangesCache = true;
                 comp.save();
-                expect(exerciseStub).not.toHaveBeenCalled();
+                expect(exerciseSanitizeSpy).not.toHaveBeenCalled();
                 expect(quizExerciseServiceCreateStub).not.toHaveBeenCalled();
                 expect(quizExerciseServiceUpdateStub).not.toHaveBeenCalled();
             });
@@ -1392,7 +1391,7 @@ describe('QuizExercise Management Detail Component', () => {
             it('should call update with notification text if there is one', () => {
                 comp.notificationText = 'test';
                 saveQuizWithPendingChangesCache();
-                expect(quizExerciseServiceUpdateStub).toHaveBeenCalledWith(comp.quizExercise, { notificationText: 'test' });
+                expect(quizExerciseServiceUpdateStub).toHaveBeenCalledWith(comp.quizExercise.id, comp.quizExercise, new Map<string, Blob>(), { notificationText: 'test' });
             });
 
             it('should call alert service if response has no body on update', () => {
