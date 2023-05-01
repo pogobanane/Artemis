@@ -323,8 +323,11 @@ public class DataExportService {
                 else if (submission instanceof QuizSubmission) {
                     createCsvForQuizAnswers((QuizExercise) exercise, participation, outputDir);
                 }
-
-                createResultsCsvFile(submission, outputDir);
+                // do not leak information via the data export
+                if (exercise.isCourseExercise() && exercise.isAssessmentDueDateOver()
+                        || exercise.isExamExercise() && exercise.getExamViaExerciseGroupOrCourseMember().resultsPublished()) {
+                    createResultsCsvFile(submission, outputDir);
+                }
             }
         }
         return exerciseWorkingDir;
