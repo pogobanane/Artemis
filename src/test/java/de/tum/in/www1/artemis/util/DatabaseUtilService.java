@@ -854,10 +854,14 @@ public class DatabaseUtilService {
     }
 
     public Course createCourseWithExamAndExerciseGroupAndExercises(User user) {
+        return createCourseWithExamAndExerciseGroupAndExercises(user, false);
+    }
+
+    public Course createCourseWithExamAndExerciseGroupAndExercises(User user, boolean withProgrammingExercise) {
         Course course = createCourse();
         Exam exam = addExam(course, user, ZonedDateTime.now().minusMinutes(1), ZonedDateTime.now(), ZonedDateTime.now().plusMinutes(1));
         course.addExam(exam);
-        addExerciseGroupsAndExercisesToExam(exam, false);
+        addExerciseGroupsAndExercisesToExam(exam, withProgrammingExercise);
         return courseRepo.save(course);
     }
 
@@ -1739,6 +1743,69 @@ public class DatabaseUtilService {
         studentExam.setWorkingTime((int) Duration.between(exam.getStartDate(), exam.getEndDate()).toSeconds() + additionalWorkingTime);
         studentExam = studentExamRepository.save(studentExam);
         return studentExam;
+    }
+
+    public StudentExam addExercisesWithParticipationsAndSubmissionsToStudentExam(Exam exam, StudentExam studentExam, String validModel, URI localRepoPath) {
+        var exerciseGroups = exam.getExerciseGroups();
+        // text exercise
+        var exercise = exerciseGroups.get(0).getExercises().iterator().next();
+        var participation = ModelFactory.generateStudentParticipation(InitializationState.INITIALIZED, exercise, studentExam.getUser());
+        Submission submission = ModelFactory.generateTextSubmission("Test Submission", Language.ENGLISH, true);
+        studentExam.addExercise(exercise);
+        exercise.addParticipation(participation);
+        participation.addSubmission(submission);
+        submission.setParticipation(participation);
+        studentParticipationRepo.save(participation);
+        submissionRepository.save(submission);
+
+        exerciseRepo.save(exercise);
+        // quiz exercise
+        exercise = exerciseGroups.get(1).getExercises().iterator().next();
+        participation = ModelFactory.generateStudentParticipation(InitializationState.INITIALIZED, exercise, studentExam.getUser());
+        submission = ModelFactory.generateQuizSubmission(true);
+        exercise.addParticipation(participation);
+        participation.addSubmission(submission);
+        submission.setParticipation(participation);
+        studentExam.addExercise(exercise);
+        studentParticipationRepo.save(participation);
+        submissionRepository.save(submission);
+        exerciseRepo.save(exercise);
+        // file upload
+        exercise = exerciseGroups.get(2).getExercises().iterator().next();
+        participation = ModelFactory.generateStudentParticipation(InitializationState.INITIALIZED, exercise, studentExam.getUser());
+        submission = ModelFactory.generateFileUploadSubmission(true);
+        exercise.addParticipation(participation);
+        participation.addSubmission(submission);
+        submission.setParticipation(participation);
+        studentExam.addExercise(exercise);
+        studentParticipationRepo.save(participation);
+        submissionRepository.save(submission);
+        exerciseRepo.save(exercise);
+        // modeling
+        exercise = exerciseGroups.get(3).getExercises().iterator().next();
+        participation = ModelFactory.generateStudentParticipation(InitializationState.INITIALIZED, exercise, studentExam.getUser());
+        submission = ModelFactory.generateModelingSubmission(validModel, true);
+        exercise.addParticipation(participation);
+        participation.addSubmission(submission);
+        submission.setParticipation(participation);
+        studentExam.addExercise(exercise);
+        studentParticipationRepo.save(participation);
+        submissionRepository.save(submission);
+        exerciseRepo.save(exercise);
+        // programming
+        exercise = exerciseGroups.get(6).getExercises().iterator().next();
+        addStudentParticipationForProgrammingExerciseForLocalRepo((ProgrammingExercise) exercise, studentExam.getUser().getLogin(), localRepoPath);
+        submission = ModelFactory.generateProgrammingSubmission(true, "abc123", SubmissionType.MANUAL);
+        exercise.addParticipation(participation);
+        participation.addSubmission(submission);
+        submission.setParticipation(participation);
+        studentExam.addExercise(exercise);
+        studentParticipationRepo.save(participation);
+        submissionRepository.save(submission);
+        exerciseRepo.save(exercise);
+
+        return studentExamRepository.save(studentExam);
+
     }
 
     public Exam addExerciseGroupsAndExercisesToExam(Exam exam, boolean withProgrammingExercise) {
