@@ -1,5 +1,7 @@
 package de.tum.in.www1.artemis;
 
+import static org.springframework.beans.CachedIntrospectionResults.IGNORE_BEANINFO_PROPERTY_NAME;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -10,15 +12,18 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.info.GitProperties;
+import org.springframework.core.SpringProperties;
 import org.springframework.core.env.Environment;
 
 import de.tum.in.www1.artemis.config.ProgrammingLanguageConfiguration;
+import de.tum.in.www1.artemis.web.rest.dto.PostContextFilter;
 import tech.jhipster.config.DefaultProfileUtil;
 import tech.jhipster.config.JHipsterConstants;
 
@@ -50,6 +55,10 @@ public class ArtemisApp {
         if (activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT) && activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_CLOUD)) {
             log.error("You have misconfigured your application! It should not run with both the 'dev' and 'cloud' profiles at the same time.");
         }
+        log.info("BeanInfo ignore flag set: " + SpringProperties.getFlag(IGNORE_BEANINFO_PROPERTY_NAME));
+        var startTime = System.currentTimeMillis();
+        var pd = BeanUtils.getPropertyDescriptors(PostContextFilter.class);
+        log.info("Found {} property descriptors for post context filter after {} ms", pd.length, System.currentTimeMillis() - startTime);
     }
 
     /**
