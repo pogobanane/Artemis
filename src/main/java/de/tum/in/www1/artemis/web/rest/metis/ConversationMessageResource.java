@@ -72,6 +72,7 @@ public class ConversationMessageResource {
     @GetMapping("courses/{courseId}/messages")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<Post>> getMessages(@ApiParam Pageable pageable, PostContextFilter postContextFilter, Principal principal) {
+        log.info("Entry /courses/{courseId}/messages");
         long timeNanoStart = System.nanoTime();
         Page<Post> coursePosts = conversationMessagingService.getMessages(pageable, postContextFilter);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), coursePosts);
