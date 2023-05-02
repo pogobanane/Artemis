@@ -854,12 +854,15 @@ public class DatabaseUtilService {
     }
 
     public Course createCourseWithExamAndExerciseGroupAndExercises(User user) {
-        return createCourseWithExamAndExerciseGroupAndExercises(user, false);
+        return createCourseWithExamAndExerciseGroupAndExercises("tumuser", user, false);
     }
 
-    public Course createCourseWithExamAndExerciseGroupAndExercises(User user, boolean withProgrammingExercise) {
-        Course course = createCourse();
+    public Course createCourseWithExamAndExerciseGroupAndExercises(String userPrefix, User user, boolean withProgrammingExercise) {
+        Course course = ModelFactory.generateCourse(null, pastTimestamp, futureFutureTimestamp, new HashSet<>(), userPrefix + "student", userPrefix + "tutor",
+                userPrefix + "editor", userPrefix + "instructor");
+        courseRepo.save(course);
         Exam exam = addExam(course, user, ZonedDateTime.now().minusMinutes(1), ZonedDateTime.now(), ZonedDateTime.now().plusMinutes(1));
+        exam.setWorkingTime(60 * 60);
         course.addExam(exam);
         addExerciseGroupsAndExercisesToExam(exam, withProgrammingExercise);
         return courseRepo.save(course);
@@ -1726,6 +1729,7 @@ public class DatabaseUtilService {
     public StudentExam addStudentExamWithUser(Exam exam, User user) {
         StudentExam studentExam = ModelFactory.generateStudentExam(exam);
         studentExam.setUser(user);
+        studentExam.setWorkingTime((int) Duration.between(exam.getStartDate(), exam.getEndDate()).toSeconds());
         studentExam = studentExamRepository.save(studentExam);
         return studentExam;
     }
@@ -1794,9 +1798,8 @@ public class DatabaseUtilService {
         exerciseRepo.save(exercise);
         // programming
         exercise = exerciseGroups.get(6).getExercises().iterator().next();
-        addStudentParticipationForProgrammingExerciseForLocalRepo((ProgrammingExercise) exercise, studentExam.getUser().getLogin(), localRepoPath);
+        participation = addStudentParticipationForProgrammingExerciseForLocalRepo((ProgrammingExercise) exercise, studentExam.getUser().getLogin(), localRepoPath);
         submission = ModelFactory.generateProgrammingSubmission(true, "abc123", SubmissionType.MANUAL);
-        exercise.addParticipation(participation);
         participation.addSubmission(submission);
         submission.setParticipation(participation);
         studentExam.addExercise(exercise);
@@ -1827,6 +1830,7 @@ public class DatabaseUtilService {
         var exerciseGroup5 = exam.getExerciseGroups().get(5);
 
         TextExercise textExercise1 = ModelFactory.generateTextExerciseForExam(exerciseGroup0);
+        textExercise1.setTitle("Text1");
         TextExercise textExercise2 = ModelFactory.generateTextExerciseForExam(exerciseGroup0);
         textExercise1.setKnowledge(textAssessmentKnowledgeService.createNewKnowledge());
         textExercise2.setKnowledge(textAssessmentKnowledgeService.createNewKnowledge());
@@ -1835,6 +1839,7 @@ public class DatabaseUtilService {
         exerciseRepo.save(textExercise2);
 
         QuizExercise quizExercise1 = createQuizForExam(exerciseGroup1);
+        quizExercise1.setTitle("quiz1");
         QuizExercise quizExercise2 = createQuizForExam(exerciseGroup1);
         exerciseGroup1.setExercises(Set.of(quizExercise1, quizExercise2));
         exerciseRepo.save(quizExercise1);
@@ -1843,6 +1848,7 @@ public class DatabaseUtilService {
         FileUploadExercise fileUploadExercise1 = ModelFactory.generateFileUploadExerciseForExam("pdf", exerciseGroup2);
         FileUploadExercise fileUploadExercise2 = ModelFactory.generateFileUploadExerciseForExam("pdf", exerciseGroup2);
         exerciseGroup2.setExercises(Set.of(fileUploadExercise1, fileUploadExercise2));
+        fileUploadExercise1.setTitle("FileUpload1");
         exerciseRepo.save(fileUploadExercise1);
         exerciseRepo.save(fileUploadExercise2);
 
@@ -1874,6 +1880,8 @@ public class DatabaseUtilService {
             var exerciseGroup6 = exam.getExerciseGroups().get(6);
             // Programming exercises need a proper setup for 'prepare exam start' to work
             ProgrammingExercise programmingExercise1 = ModelFactory.generateProgrammingExerciseForExam(exerciseGroup6);
+            programmingExercise1.setTitle("Test Programming Exercise");
+            programmingExercise1.setShortName("TSTEXC");
             exerciseRepo.save(programmingExercise1);
             addTemplateParticipationForProgrammingExercise(programmingExercise1);
             addSolutionParticipationForProgrammingExercise(programmingExercise1);
