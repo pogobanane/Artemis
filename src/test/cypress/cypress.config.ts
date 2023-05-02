@@ -44,6 +44,7 @@ export default defineConfig({
     viewportHeight: 1080,
     defaultCommandTimeout: 20000,
     responseTimeout: 120000,
+    projectId: 'u3874c',
     reporter: 'junit',
     reporterOptions: {
         mochaFile: 'build/cypress/test-reports/test-results.[hash].xml',

@@ -51,11 +51,12 @@ services:
             CYPRESS_username: "${bamboo_cypress_username_template}"
             CYPRESS_password: "${bamboo_cypress_password_template}"
             CYPRESS_allowGroupCustomization: "true"
+            CYPRESS_RECORD_KEY: "${cypress_record_key}"
             CYPRESS_studentGroupName: "artemis-e2etest-students"
             CYPRESS_tutorGroupName: "artemis-e2etest-tutors"
             CYPRESS_editorGroupName: "artemis-e2etest-editors"
             CYPRESS_instructorGroupName: "artemis-e2etest-instructors"
-        command: sh -c "cd /app/artemis/src/test/cypress && chmod 777 /root && npm ci && npm run cypress:run -- --config retries=2"
+        command: sh -c "cd /app/artemis/src/test/cypress && chmod 777 /root && npm ci && npm run cypress:run"
         volumes:
             - ..:/app/artemis
         networks:

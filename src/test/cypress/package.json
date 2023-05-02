@@ -20,7 +20,7 @@
     },
     "scripts": {
         "cypress:open": "cypress open",
-        "cypress:run": "cypress run --browser=chrome",
+        "cypress:run": "cypress run --browser=chrome --record",
         "detect:flakies": "coverage-git-compare bamboo $BAMBOO_PLAN_KEY $BAMBOO_BUILD_NUMBER $BAMBOO_TOKEN",
         "update": "npm-upgrade"
     }
