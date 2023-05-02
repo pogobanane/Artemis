@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.CachedIntrospectionResults;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseProperties;
@@ -55,10 +56,6 @@ public class ArtemisApp {
         if (activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT) && activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_CLOUD)) {
             log.error("You have misconfigured your application! It should not run with both the 'dev' and 'cloud' profiles at the same time.");
         }
-        log.info("BeanInfo ignore flag set: " + SpringProperties.getFlag(IGNORE_BEANINFO_PROPERTY_NAME));
-        var startTime = System.currentTimeMillis();
-        var pd = BeanUtils.getPropertyDescriptors(PostContextFilter.class);
-        log.info("Found {} property descriptors for post context filter after {} ms", pd.length, System.currentTimeMillis() - startTime);
     }
 
     /**
@@ -74,6 +71,20 @@ public class ArtemisApp {
         var buildProperties = context.getBean(BuildProperties.class);
         var gitProperties = context.getBean(GitProperties.class);
         logApplicationStartup(env, buildProperties, gitProperties);
+
+        new Thread(() -> {
+            try {
+                Thread.sleep(4000);
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            CachedIntrospectionResults.acceptClassLoader(PostContextFilter.class.getClassLoader());
+            log.info("BeanInfo ignore flag set: " + SpringProperties.getFlag(IGNORE_BEANINFO_PROPERTY_NAME));
+            var startTime = System.currentTimeMillis();
+            var pd = BeanUtils.getPropertyDescriptors(PostContextFilter.class);
+            log.info("Found {} property descriptors for post context filter after {} ms", pd.length, System.currentTimeMillis() - startTime);
+        }).start();
     }
 
     private static void logApplicationStartup(Environment env, BuildProperties buildProperties, GitProperties gitProperties) {
