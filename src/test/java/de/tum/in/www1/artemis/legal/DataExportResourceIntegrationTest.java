@@ -92,11 +92,11 @@ class DataExportResourceIntegrationTest extends AbstractSpringIntegrationBambooB
         Predicate<Path> generalUserInformationCsv = path -> "general_user_information.csv".equals(path.getFileName().toString());
         Predicate<Path> courseDir = path -> path.getFileName().toString().startsWith("course_short");
         assertThat(extractedZipDirPath).isDirectoryContaining(generalUserInformationCsv).isDirectoryContaining(courseDir);
-        var courseDirPath = getCourseOrExamDirectoryPath(extractedZipDirPath);
+        var courseDirPath = getCourseWithoutExamDirectoryPath(extractedZipDirPath);
         assertThat(courseDirPath).isDirectoryContaining(path -> path.getFileName().toString().endsWith("FileUpload2"))
                 .isDirectoryContaining(path -> path.getFileName().toString().endsWith("Modeling0"))
                 .isDirectoryContaining(path -> path.getFileName().toString().endsWith("Modeling3")).isDirectoryContaining(path -> path.getFileName().toString().endsWith("Text1"))
-                .isDirectoryContaining(path -> path.getFileName().toString().endsWith("TSTEXC")).isDirectoryContaining(path -> path.getFileName().toString().endsWith("quiz"));
+                .isDirectoryContaining(path -> path.getFileName().toString().endsWith("Programming")).isDirectoryContaining(path -> path.getFileName().toString().endsWith("quiz"));
         getExerciseDirectoryPaths(courseDirPath).forEach(this::assertCorrectContentForExercise);
 
     }
@@ -114,7 +114,7 @@ class DataExportResourceIntegrationTest extends AbstractSpringIntegrationBambooB
         database.addQuizExerciseToCourseWithParticipationAndSubmissionForUser(course1, TEST_PREFIX + "student1");
         database.addSubmission(participation, submission);
         database.addSubmission(participation, submission2);
-        database.addResultToSubmission(submission, AssessmentType.AUTOMATIC, null, 3.0, true, ZonedDateTime.now().minusMinutes(2));
+        database.addResultToSubmission(submission2, AssessmentType.AUTOMATIC, null, 3.0, true, ZonedDateTime.now().minusMinutes(2));
         // Mock student repo
         Repository studentRepository = gitService.getExistingCheckedOutRepositoryByLocalPath(programmingExerciseTestService.studentRepo.localRepoFile.toPath(), null);
         doReturn(studentRepository).when(gitService).getOrCheckoutRepository(eq(participation.getVcsRepositoryUrl()), anyString(), anyBoolean());
@@ -126,7 +126,7 @@ class DataExportResourceIntegrationTest extends AbstractSpringIntegrationBambooB
         var course = database.createCourseWithExamAndExerciseGroupAndExercises(TEST_PREFIX, userForExport, true);
         programmingExerciseTestService.setup(this, versionControlService, continuousIntegrationService);
         var exam = course.getExams().iterator().next();
-        exam = examRepository.findWithExerciseGroupsExercisesParticipationsAndSubmissionsById(exam.getId()).get();
+        exam = examRepository.findWithExerciseGroupsExercisesParticipationsAndSubmissionsAndResultsById(exam.getId()).get();
         var studentExam = database.addStudentExamWithUser(exam, userForExport);
         studentExam = database.addExercisesWithParticipationsAndSubmissionsToStudentExam(exam, studentExam, validModel,
                 programmingExerciseTestService.studentRepo.localRepoFile.toURI());
@@ -136,14 +136,13 @@ class DataExportResourceIntegrationTest extends AbstractSpringIntegrationBambooB
     }
 
     private void assertCorrectContentForExercise(Path exerciseDirPath) {
-        // TODO add results to submissions for exam
         Predicate<Path> participationFile = path -> path.getFileName().toString().endsWith(FILE_FORMAT_CSV) && path.getFileName().toString().contains("participation");
         Predicate<Path> resultsFile = path -> path.getFileName().toString().endsWith(FILE_FORMAT_CSV) && path.getFileName().toString().contains("results");
         Predicate<Path> submissionFile = path -> path.getFileName().toString().endsWith(FILE_FORMAT_CSV) && path.getFileName().toString().contains("submission");
         assertThat(exerciseDirPath).isDirectoryContaining(participationFile);
-        // assertThat(exerciseDirPath).isDirectoryContaining(resultsFile);
+        assertThat(exerciseDirPath).isDirectoryContaining(resultsFile);
         assertThat(exerciseDirPath).isDirectoryContaining(submissionFile);
-        if (exerciseDirPath.toString().contains("TSTEXC")) {
+        if (exerciseDirPath.toString().contains("Programming")) {
             // zip file of the repository
             assertThat(exerciseDirPath).isDirectoryContaining(path -> path.getFileName().toString().endsWith(".zip"));
         }
@@ -155,11 +154,28 @@ class DataExportResourceIntegrationTest extends AbstractSpringIntegrationBambooB
             // submission text txt file
             assertThat(exerciseDirPath).isDirectoryContaining(path -> path.getFileName().toString().endsWith("_text.txt"));
         }
+        else if (exerciseDirPath.toString().contains("quiz")) {
+            assertThat(exerciseDirPath).isDirectoryContaining(path -> path.getFileName().toString().endsWith("_answers.csv"));
+        }
 
     }
 
-    private Path getCourseOrExamDirectoryPath(Path rootPath) throws IOException {
-        try (var files = Files.list(rootPath).filter(Files::isDirectory)) {
+    private Path getCourseWithoutExamDirectoryPath(Path rootPath) throws IOException {
+        return getDirectoryByPredicate(rootPath, path -> !path.getFileName().toString().contains("exam"));
+    }
+
+    private Path getCourseWithExamDirectoryPath(Path rootPath) throws IOException {
+        return getDirectoryByPredicate(rootPath, path -> path.getFileName().toString().contains("exam"));
+    }
+
+    private Path getDirectoryByPredicate(Path rootPath, Predicate<Path> predicate) throws IOException {
+        try (var files = Files.list(rootPath).filter(Files::isDirectory).filter(predicate)) {
+            return files.findFirst().get();
+        }
+    }
+
+    private Path getExamDirectoryPath(Path coursePath) throws IOException {
+        try (var files = Files.list(coursePath).filter(Files::isDirectory)) {
             return files.findFirst().get();
         }
     }
@@ -184,9 +200,9 @@ class DataExportResourceIntegrationTest extends AbstractSpringIntegrationBambooB
         // extract zip file and check content
         zipFileTestUtilService.extractZipFileRecursively(dataExportFromDb.getFilePath());
         Path extractedZipDirPath = Path.of(dataExportFromDb.getFilePath().substring(0, dataExportFromDb.getFilePath().length() - 4));
-        var courseDirPath = getCourseOrExamDirectoryPath(extractedZipDirPath);
+        var courseDirPath = getCourseWithExamDirectoryPath(extractedZipDirPath);
         assertThat(courseDirPath).isDirectoryContaining(path -> path.getFileName().toString().startsWith("exam"));
-        var examDirPath = getCourseOrExamDirectoryPath(courseDirPath);
+        var examDirPath = getExamDirectoryPath(courseDirPath);
         getExerciseDirectoryPaths(examDirPath).forEach(this::assertCorrectContentForExercise);
         assertThat(examDirPath).isDirectoryContaining(path -> path.getFileName().toString().endsWith("result.csv"));
 
