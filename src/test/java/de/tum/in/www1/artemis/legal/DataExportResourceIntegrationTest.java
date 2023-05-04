@@ -136,6 +136,7 @@ class DataExportResourceIntegrationTest extends AbstractSpringIntegrationBambooB
     }
 
     private void assertCorrectContentForExercise(Path exerciseDirPath) {
+        // TODO add results to submissions for exam
         Predicate<Path> participationFile = path -> path.getFileName().toString().endsWith(FILE_FORMAT_CSV) && path.getFileName().toString().contains("participation");
         Predicate<Path> resultsFile = path -> path.getFileName().toString().endsWith(FILE_FORMAT_CSV) && path.getFileName().toString().contains("results");
         Predicate<Path> submissionFile = path -> path.getFileName().toString().endsWith(FILE_FORMAT_CSV) && path.getFileName().toString().contains("submission");
@@ -187,6 +188,7 @@ class DataExportResourceIntegrationTest extends AbstractSpringIntegrationBambooB
         assertThat(courseDirPath).isDirectoryContaining(path -> path.getFileName().toString().startsWith("exam"));
         var examDirPath = getCourseOrExamDirectoryPath(courseDirPath);
         getExerciseDirectoryPaths(examDirPath).forEach(this::assertCorrectContentForExercise);
+        assertThat(examDirPath).isDirectoryContaining(path -> path.getFileName().toString().endsWith("result.csv"));
 
     }
 

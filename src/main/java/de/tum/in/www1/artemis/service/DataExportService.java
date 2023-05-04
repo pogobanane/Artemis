@@ -24,7 +24,9 @@ import de.tum.in.www1.artemis.domain.participation.ProgrammingExerciseStudentPar
 import de.tum.in.www1.artemis.domain.participation.StudentParticipation;
 import de.tum.in.www1.artemis.domain.quiz.*;
 import de.tum.in.www1.artemis.repository.*;
+import de.tum.in.www1.artemis.service.exam.ExamService;
 import de.tum.in.www1.artemis.service.programming.ProgrammingExerciseExportService;
+import de.tum.in.www1.artemis.web.rest.dto.ExamScoresDTO;
 import de.tum.in.www1.artemis.web.rest.dto.RepositoryExportOptionsDTO;
 import de.tum.in.www1.artemis.web.rest.errors.AccessForbiddenException;
 
@@ -49,6 +51,8 @@ public class DataExportService {
 
     private final Logger log = LoggerFactory.getLogger(DataExportService.class);
 
+    private final ExamService examService;
+
     private final ZipFileService zipFileService;
 
     private final ProgrammingExerciseExportService programmingExerciseExportService;
@@ -71,16 +75,19 @@ public class DataExportService {
 
     private Path workingDirectory;
 
-    private StudentExamRepository studentExamRepository;
+    private final StudentExamRepository studentExamRepository;
 
-    public DataExportService(CourseRepository courseRepository, UserRepository userRepository, AuthorizationCheckService authorizationCheckService, ZipFileService zipFileService,
-            ProgrammingExerciseExportService programmingExerciseExportService, ProgrammingExerciseRepository programmingExerciseRepository,
+    private final StudentParticipationRepository studentParticipationRepository;
+
+    public DataExportService(CourseRepository courseRepository, UserRepository userRepository, AuthorizationCheckService authorizationCheckService, ExamService examService,
+            ZipFileService zipFileService, ProgrammingExerciseExportService programmingExerciseExportService, ProgrammingExerciseRepository programmingExerciseRepository,
             ModelingExerciseRepository modelingExerciseRepository, TextExerciseRepository textExerciseRepository, FileUploadExerciseRepository fileUploadExerciseRepository,
             QuizExerciseRepository quizExerciseRepository, DataExportRepository dataExportRepository, QuizQuestionRepository quizQuestionRepository,
-            QuizSubmissionRepository quizSubmissionRepository, StudentExamRepository studentExamRepository) {
+            QuizSubmissionRepository quizSubmissionRepository, StudentExamRepository studentExamRepository, StudentParticipationRepository studentParticipationRepository) {
         this.courseRepository = courseRepository;
         this.userRepository = userRepository;
         this.authorizationCheckService = authorizationCheckService;
+        this.examService = examService;
         this.zipFileService = zipFileService;
         this.programmingExerciseExportService = programmingExerciseExportService;
         this.programmingExerciseRepository = programmingExerciseRepository;
@@ -92,6 +99,7 @@ public class DataExportService {
         this.quizQuestionRepository = quizQuestionRepository;
         this.quizSubmissionRepository = quizSubmissionRepository;
         this.studentExamRepository = studentExamRepository;
+        this.studentParticipationRepository = studentParticipationRepository;
     }
 
     /**
@@ -199,8 +207,37 @@ public class DataExportService {
                 createNonProgrammingExerciseExport(exercise, examWorkingDir, examOutputDir);
             }
         }
+
+        // leave out the results if the results are not published yet to avoid leaking information through the data export
+        if (studentExam.areResultsPublishedYet()) {
+            addExamScores(studentExam, examWorkingDir);
+        }
         addGeneralExamInformation(studentExam, examWorkingDir);
         createExamZipFile(studentExam, courseOutputDir, examOutputDir);
+    }
+
+    private void addExamScores(StudentExam studentExam, Path examWorkingDir) throws IOException {
+        var studentExamGrade = examService.getStudentExamGradeForDataExport(studentExam);
+        var studentResult = studentExamGrade.studentResult();
+        var outputDir = retrieveOutputDirectoryCreateIfNotExistent(examWorkingDir);
+        String[] headers = new String[] { "overall points", "passed", "overall grade", "grade with bonus", "overall score (%)" };
+        CSVFormat csvFormat = CSVFormat.DEFAULT.builder().setHeader(headers).build();
+
+        try (final CSVPrinter printer = new CSVPrinter(Files.newBufferedWriter(outputDir.resolve("exam_" + studentExam.getId() + "_result" + CSV_FILE_EXTENSION)), csvFormat)) {
+            printer.printRecord(getExamResultsStreamToPrint(studentResult));
+            printer.flush();
+
+        }
+    }
+
+    private Stream<?> getExamResultsStreamToPrint(ExamScoresDTO.StudentResult studentResult) {
+        var builder = Stream.builder();
+        builder.add(studentResult.overallPointsAchieved());
+        builder.add(studentResult.hasPassed());
+        builder.add(studentResult.overallGrade());
+        builder.add(studentResult.gradeWithBonus());
+        builder.add(studentResult.overallScoreAchieved());
+        return builder.build();
     }
 
     private void createExamZipFile(StudentExam studentExam, Path courseOutputDir, Path examOutputDir) throws IOException {
