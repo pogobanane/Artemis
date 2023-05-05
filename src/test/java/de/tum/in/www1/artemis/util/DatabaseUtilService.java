@@ -2692,15 +2692,34 @@ public class DatabaseUtilService {
         return addProgrammingExerciseToCourse(course, enableStaticCodeAnalysis, false, ProgrammingLanguage.JAVA);
     }
 
+    public ProgrammingExercise addProgrammingExerciseToCourse(Course course, ZonedDateTime releaseDate, ZonedDateTime dueDate, ZonedDateTime assessmentDueDate,
+            ZonedDateTime buildAfterDueDate, boolean enableStaticCodeAnalysis) {
+        return addProgrammingExerciseToCourse(course, enableStaticCodeAnalysis, false, ProgrammingLanguage.JAVA, releaseDate, dueDate, assessmentDueDate, buildAfterDueDate);
+    }
+
     public ProgrammingExercise addProgrammingExerciseToCourse(Course course, boolean enableStaticCodeAnalysis, boolean enableTestwiseCoverageAnalysis,
             ProgrammingLanguage programmingLanguage) {
         return addProgrammingExerciseToCourse(course, enableStaticCodeAnalysis, enableTestwiseCoverageAnalysis, programmingLanguage, "Programming", "TSTEXC");
     }
 
     public ProgrammingExercise addProgrammingExerciseToCourse(Course course, boolean enableStaticCodeAnalysis, boolean enableTestwiseCoverageAnalysis,
+            ProgrammingLanguage programmingLanguage, ZonedDateTime releaseDate, ZonedDateTime dueDate, ZonedDateTime assessmentDueDate, ZonedDateTime buildAfterDueDate) {
+        return addProgrammingExerciseToCourse(course, enableStaticCodeAnalysis, enableTestwiseCoverageAnalysis, programmingLanguage, "Programming", "TSTEXC", releaseDate, dueDate,
+                assessmentDueDate, buildAfterDueDate);
+    }
+
+    public ProgrammingExercise addProgrammingExerciseToCourse(Course course, boolean enableStaticCodeAnalysis, boolean enableTestwiseCoverageAnalysis,
             ProgrammingLanguage programmingLanguage, String title, String shortName) {
+        return addProgrammingExerciseToCourse(course, enableStaticCodeAnalysis, enableTestwiseCoverageAnalysis, programmingLanguage, title, shortName,
+                ZonedDateTime.now().plusDays(1), ZonedDateTime.now().plusDays(2), ZonedDateTime.now().plusDays(3), ZonedDateTime.now().plusDays(5));
+    }
+
+    public ProgrammingExercise addProgrammingExerciseToCourse(Course course, boolean enableStaticCodeAnalysis, boolean enableTestwiseCoverageAnalysis,
+            ProgrammingLanguage programmingLanguage, String title, String shortName, ZonedDateTime releaseDate, ZonedDateTime dueDate, ZonedDateTime assessmentDueDate,
+            ZonedDateTime buildAndTestStudentSubmissionsAfterDueDate) {
         var programmingExercise = (ProgrammingExercise) new ProgrammingExercise().course(course);
-        populateProgrammingExercise(programmingExercise, shortName, title, enableStaticCodeAnalysis, enableTestwiseCoverageAnalysis, programmingLanguage);
+        populateProgrammingExercise(programmingExercise, shortName, title, enableStaticCodeAnalysis, enableTestwiseCoverageAnalysis, programmingLanguage, releaseDate, dueDate,
+                assessmentDueDate, buildAndTestStudentSubmissionsAfterDueDate);
         programmingExercise.setPresentationScoreEnabled(course.getPresentationScore() != 0);
 
         programmingExercise = programmingExerciseRepository.save(programmingExercise);
@@ -2749,13 +2768,20 @@ public class DatabaseUtilService {
 
     private void populateProgrammingExercise(ProgrammingExercise programmingExercise, String shortName, String title, boolean enableStaticCodeAnalysis,
             boolean enableTestwiseCoverageAnalysis, ProgrammingLanguage programmingLanguage) {
+        populateProgrammingExercise(programmingExercise, shortName, title, enableStaticCodeAnalysis, enableTestwiseCoverageAnalysis, programmingLanguage,
+                ZonedDateTime.now().plusDays(1), ZonedDateTime.now().plusDays(2), ZonedDateTime.now().plusDays(3), ZonedDateTime.now().plusDays(5));
+    }
+
+    private void populateProgrammingExercise(ProgrammingExercise programmingExercise, String shortName, String title, boolean enableStaticCodeAnalysis,
+            boolean enableTestwiseCoverageAnalysis, ProgrammingLanguage programmingLanguage, ZonedDateTime releaseDate, ZonedDateTime dueDate, ZonedDateTime assessmentDueDate,
+            ZonedDateTime buildAndTestAfterDueDate) {
         programmingExercise.setProgrammingLanguage(programmingLanguage);
         programmingExercise.setShortName(shortName);
         programmingExercise.generateAndSetProjectKey();
-        programmingExercise.setReleaseDate(ZonedDateTime.now().minusDays(1));
-        programmingExercise.setDueDate(ZonedDateTime.now().minusHours(1));
-        programmingExercise.setAssessmentDueDate(ZonedDateTime.now().minusMinutes(1));
-        programmingExercise.setBuildAndTestStudentSubmissionsAfterDueDate(ZonedDateTime.now().plusDays(5));
+        programmingExercise.setReleaseDate(releaseDate);
+        programmingExercise.setDueDate(dueDate);
+        programmingExercise.setAssessmentDueDate(assessmentDueDate);
+        programmingExercise.setBuildAndTestStudentSubmissionsAfterDueDate(buildAndTestAfterDueDate);
         programmingExercise.setBonusPoints(0D);
         programmingExercise.setPublishBuildPlanUrl(false);
         programmingExercise.setMaxPoints(42.0);

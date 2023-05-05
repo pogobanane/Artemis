@@ -44,6 +44,12 @@ class DataExportResourceIntegrationTest extends AbstractSpringIntegrationBambooB
 
     private static final String TEST_PREFIX = "dataexport";
 
+    private static final ZonedDateTime pastReleaseDate = ZonedDateTime.now().minusDays(5);
+
+    private static final ZonedDateTime pastDueDate = ZonedDateTime.now().minusDays(2);
+
+    private static final ZonedDateTime pastAssessmentDueDate = ZonedDateTime.now().minusDays(1);
+
     @Value("${artemis.data-export-path}")
     Path dataExportPath;
 
@@ -104,7 +110,7 @@ class DataExportResourceIntegrationTest extends AbstractSpringIntegrationBambooB
     private void prepareCourseDataForDataExportCreation() throws Exception {
         String validModel = FileUtils.loadFileFromResources("test-data/model-submission/model.54727.json");
         Course course1 = database.addCourseWithExercisesAndSubmissions(TEST_PREFIX, "", 4, 2, 1, 1, false, 1, validModel);
-        var programmingExercise = database.addProgrammingExerciseToCourse(course1, false);
+        var programmingExercise = database.addProgrammingExerciseToCourse(course1, pastReleaseDate, pastDueDate, pastAssessmentDueDate, null, false);
         programmingExerciseTestService.setup(this, versionControlService, continuousIntegrationService);
         var participation = database.addStudentParticipationForProgrammingExerciseForLocalRepo(programmingExercise, TEST_PREFIX + "student1",
                 programmingExerciseTestService.studentRepo.localRepoFile.toURI());
