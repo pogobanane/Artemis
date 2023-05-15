@@ -28,11 +28,9 @@ public class ModelingExercise extends Exercise {
     private DiagramType diagramType;
 
     @Column(name = "example_solution_model")
-    @Lob
     private String exampleSolutionModel;
 
     @Column(name = "example_solution_explanation")
-    @Lob
     private String exampleSolutionExplanation;
 
     @ManyToOne
@@ -67,6 +65,7 @@ public class ModelingExercise extends Exercise {
         this.exampleSolutionExplanation = exampleSolutionExplanation;
     }
 
+    @JsonIgnore
     public ZonedDateTime getClusterBuildDate() {
         return clusterBuildDate;
     }

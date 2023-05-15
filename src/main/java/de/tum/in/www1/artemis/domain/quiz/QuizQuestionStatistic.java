@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.*;
         @JsonSubTypes.Type(value = DragAndDropQuestionStatistic.class, name = "drag-and-drop"),
         @JsonSubTypes.Type(value = ShortAnswerQuestionStatistic.class, name = "short-answer") })
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public abstract class QuizQuestionStatistic extends QuizStatistic {
+public abstract class QuizQuestionStatistic extends QuizStatistic implements QuizQuestionComponent<QuizQuestion> {
 
     @Column(name = "rated_correct_counter")
     private Integer ratedCorrectCounter = 0;
@@ -50,12 +50,17 @@ public abstract class QuizQuestionStatistic extends QuizStatistic {
         this.quizQuestion = quizQuestion;
     }
 
+    @JsonIgnore
+    public void setQuestion(QuizQuestion quizQuestion) {
+        setQuizQuestion(quizQuestion);
+    }
+
     /**
      * increase participants, all the DropLocationCounter if the DragAndDropAssignment is correct and if the complete question is correct, than increase the correctCounter
      *
      * @param submittedAnswer the submittedAnswer object which contains all selected answers
      * @param rated           specify if the Result was rated ( participated during the releaseDate and the dueDate of the quizExercise) or unrated ( participated after the dueDate
-     *                        of the quizExercise)
+     *                            of the quizExercise)
      */
     public void addResult(SubmittedAnswer submittedAnswer, boolean rated) {
         changeStatisticBasedOnResult(submittedAnswer, rated, 1);
@@ -66,7 +71,7 @@ public abstract class QuizQuestionStatistic extends QuizStatistic {
      *
      * @param submittedAnswer the submittedAnswer object which contains all selected answers
      * @param rated           specify if the Result was rated ( participated during the releaseDate and the dueDate of the quizExercise) or unrated ( participated after the dueDate
-     *                        of the quizExercise)
+     *                            of the quizExercise)
      */
     public void removeOldResult(SubmittedAnswer submittedAnswer, boolean rated) {
         changeStatisticBasedOnResult(submittedAnswer, rated, -1);
@@ -82,5 +87,11 @@ public abstract class QuizQuestionStatistic extends QuizStatistic {
         setParticipantsUnrated(0);
         setRatedCorrectCounter(0);
         setUnRatedCorrectCounter(0);
+    }
+
+    @Override
+    public String toString() {
+        return getClass() + "{" + "ratedCorrectCounter=" + ratedCorrectCounter + ", unRatedCorrectCounter=" + unRatedCorrectCounter + "participantsRated=" + getParticipantsRated()
+                + ", participantsUnrated=" + getParticipantsUnrated() + '}';
     }
 }

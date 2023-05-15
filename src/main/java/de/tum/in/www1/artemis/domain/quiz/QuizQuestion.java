@@ -217,6 +217,7 @@ public abstract class QuizQuestion extends DomainObject {
      * NOTE: do not use this in a transactional context and do not save the returned object to the database
      * This method is useful when we want to cut off attributes while sending entities to the client and we are only interested in the id of the object
      * We use polymorphism here, so subclasses should implement / override this method to create the correct object type
+     *
      * @return an empty question just including the id of the object
      */
     public abstract QuizQuestion copyQuestionId();
@@ -235,4 +236,10 @@ public abstract class QuizQuestion extends DomainObject {
      * @return a boolean which is true if the question-changes make an update necessary and false if not
      */
     public abstract boolean isUpdateOfResultsAndStatisticsNecessary(QuizQuestion originalQuizQuestion);
+
+    /**
+     * Initialize QuizQuestionStatistic of the implementor
+     *
+     */
+    public abstract void initializeStatistic();
 }

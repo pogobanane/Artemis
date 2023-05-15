@@ -75,6 +75,9 @@ describe('Profile Service', () => {
                 packageNameRequired: true,
                 checkoutSolutionRepositoryAllowed: false,
                 projectTypes: [],
+                testwiseCoverageAnalysisSupported: true,
+                auxiliaryRepositoriesSupported: true,
+                publishBuildPlanUrlAllowed: true,
             },
             {
                 programmingLanguage: 'PYTHON',
@@ -84,6 +87,9 @@ describe('Profile Service', () => {
                 packageNameRequired: false,
                 checkoutSolutionRepositoryAllowed: false,
                 projectTypes: [],
+                testwiseCoverageAnalysisSupported: false,
+                auxiliaryRepositoriesSupported: true,
+                publishBuildPlanUrlAllowed: true,
             },
             {
                 programmingLanguage: 'SWIFT',
@@ -93,6 +99,9 @@ describe('Profile Service', () => {
                 packageNameRequired: true,
                 checkoutSolutionRepositoryAllowed: false,
                 projectTypes: ['PLAIN', 'XCODE'],
+                testwiseCoverageAnalysisSupported: false,
+                auxiliaryRepositoriesSupported: true,
+                publishBuildPlanUrlAllowed: true,
             },
             {
                 programmingLanguage: 'C',
@@ -102,6 +111,9 @@ describe('Profile Service', () => {
                 packageNameRequired: false,
                 checkoutSolutionRepositoryAllowed: false,
                 projectTypes: [],
+                testwiseCoverageAnalysisSupported: false,
+                auxiliaryRepositoriesSupported: true,
+                publishBuildPlanUrlAllowed: true,
             },
             {
                 programmingLanguage: 'JAVA',
@@ -111,6 +123,9 @@ describe('Profile Service', () => {
                 packageNameRequired: true,
                 checkoutSolutionRepositoryAllowed: false,
                 projectTypes: ['PLAIN_MAVEN', 'MAVEN_MAVEN'],
+                testwiseCoverageAnalysisSupported: true,
+                auxiliaryRepositoriesSupported: true,
+                publishBuildPlanUrlAllowed: true,
             },
         ],
         versionControlUrl: 'https://artemistest2gitlab.ase.in.tum.de',
@@ -123,6 +138,18 @@ describe('Profile Service', () => {
         allowedEmailPattern: '([a-zA-Z0-9_\\-\\.\\+]+)@((tum\\.de)|(in\\.tum\\.de)|(mytum\\.de))',
         allowedEmailPatternReadable: '@tum.de, @in.tum.de, @mytum.de',
         activeProfiles: ['prod', 'jenkins', 'gitlab', 'athene', 'openapi', 'apollon'],
+        git: {
+            branch: 'clone-repo-button',
+            commit: {
+                id: {
+                    abbrev: '95ef2a',
+                },
+                time: '2022-11-20T20:35:01Z',
+                user: {
+                    name: 'Max Musterman',
+                },
+            },
+        },
     };
 
     const expectedProfileInfo: ProfileInfo = {
@@ -177,6 +204,9 @@ describe('Profile Service', () => {
                 projectTypes: [],
                 sequentialTestRuns: true,
                 staticCodeAnalysis: false,
+                testwiseCoverageAnalysisSupported: true,
+                auxiliaryRepositoriesSupported: true,
+                publishBuildPlanUrlAllowed: true,
             },
             {
                 checkoutSolutionRepositoryAllowed: false,
@@ -186,6 +216,9 @@ describe('Profile Service', () => {
                 projectTypes: [],
                 sequentialTestRuns: false,
                 staticCodeAnalysis: false,
+                testwiseCoverageAnalysisSupported: false,
+                auxiliaryRepositoriesSupported: true,
+                publishBuildPlanUrlAllowed: true,
             },
             {
                 checkoutSolutionRepositoryAllowed: false,
@@ -195,6 +228,9 @@ describe('Profile Service', () => {
                 projectTypes: [ProjectType.PLAIN, ProjectType.XCODE],
                 sequentialTestRuns: false,
                 staticCodeAnalysis: true,
+                testwiseCoverageAnalysisSupported: false,
+                auxiliaryRepositoriesSupported: true,
+                publishBuildPlanUrlAllowed: true,
             },
             {
                 checkoutSolutionRepositoryAllowed: false,
@@ -204,6 +240,9 @@ describe('Profile Service', () => {
                 projectTypes: [],
                 sequentialTestRuns: false,
                 staticCodeAnalysis: false,
+                testwiseCoverageAnalysisSupported: false,
+                auxiliaryRepositoriesSupported: true,
+                publishBuildPlanUrlAllowed: true,
             },
             {
                 checkoutSolutionRepositoryAllowed: false,
@@ -213,8 +252,23 @@ describe('Profile Service', () => {
                 projectTypes: [ProjectType.PLAIN_MAVEN, ProjectType.MAVEN_MAVEN],
                 sequentialTestRuns: true,
                 staticCodeAnalysis: true,
+                testwiseCoverageAnalysisSupported: true,
+                auxiliaryRepositoriesSupported: true,
+                publishBuildPlanUrlAllowed: true,
             },
         ],
+        git: {
+            branch: 'clone-repo-button',
+            commit: {
+                id: {
+                    abbrev: '95ef2a',
+                },
+                time: '2022-11-20T20:35:01Z',
+                user: {
+                    name: 'Max Musterman',
+                },
+            },
+        },
     };
 
     beforeEach(() => {
@@ -240,7 +294,7 @@ describe('Profile Service', () => {
             service.getProfileInfo().subscribe(() => {});
 
             const req = httpMock.expectOne({ method: 'GET' });
-            const infoUrl = SERVER_API_URL + 'management/info';
+            const infoUrl = 'management/info';
             expect(req.request.url).toEqual(infoUrl);
         });
 
