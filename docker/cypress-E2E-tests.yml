@@ -19,6 +19,8 @@ services:
             - ./artemis/config/cypress-application-local.env
         environment:
             SPRING_PROFILES_ACTIVE: "artemis,bamboo,bitbucket,jira,prod,docker"
+        volumes:
+            - ./.docker-data/artemis-data:/opt/artemis/data
 
     nginx:
         extends:
