@@ -88,6 +88,7 @@ describe('Exercise Scores Component', () => {
         participantIdentifier: 'participationId',
         participantName: 'participantName',
         results: [{ assessmentType: AssessmentType.MANUAL }],
+        submissions: [],
     };
     const scoresToFilter = [3, 11, 22, 33, 44, 55, 66, 77, 88, 99];
     let participationsToFilter: Participation[];

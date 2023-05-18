@@ -361,12 +361,12 @@ describe('ModelingAssessmentEditorComponent', () => {
             } else if (errorKeyFromServer === 'complaintLock') {
                 expect(errorSpy).toHaveBeenCalledOnce();
                 expect(errorSpy).toHaveBeenCalledWith(errorMessage, errorParams);
-                expect(component.result?.participation?.results).toBeUndefined();
+                expect(component.result).toBeUndefined();
             } else {
                 // Handle all other errors
                 expect(errorSpy).toHaveBeenCalledOnce();
                 expect(errorSpy).toHaveBeenCalledWith('artemisApp.modelingAssessmentEditor.messages.updateAfterComplaintFailed');
-                expect(component.result?.participation?.results).toBeUndefined();
+                expect(component.result).toBeUndefined();
             }
             expect(onSuccessCalled).toBe(!errorKeyFromServer);
             expect(onErrorCalled).toBe(!!errorKeyFromServer);

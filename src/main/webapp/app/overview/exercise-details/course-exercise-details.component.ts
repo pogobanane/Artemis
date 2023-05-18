@@ -249,16 +249,14 @@ export class CourseExerciseDetailsComponent implements OnInit, OnDestroy {
      */
     private filterUnfinishedResults(participations?: StudentParticipation[]) {
         participations?.forEach((participation: Participation) => {
-            if (participation.results) {
-                participation.results = participation.results.filter((result: Result) => result.completionDate);
-            }
+            participation.results = participation.results.filter((result: Result) => result.completionDate);
         });
     }
 
     sortResults() {
         if (this.studentParticipations?.length) {
-            this.studentParticipations.forEach((participation) => participation.results?.sort(this.resultSortFunction));
-            this.sortedHistoryResults = this.studentParticipations.flatMap((participation) => participation.results ?? []).sort(this.resultSortFunction);
+            this.studentParticipations.forEach((participation) => participation.results.sort(this.resultSortFunction));
+            this.sortedHistoryResults = this.studentParticipations.flatMap((participation) => participation.results).sort(this.resultSortFunction);
         }
     }
 
@@ -304,7 +302,7 @@ export class CourseExerciseDetailsComponent implements OnInit, OnDestroy {
                     hasExerciseDueDatePassed(changedParticipation.exercise, changedParticipation) &&
                     changedParticipation.id === this.gradedStudentParticipation?.id &&
                     // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
-                    changedParticipation.results?.length! > this.gradedStudentParticipation?.results?.length!
+                    changedParticipation.results.length > this.gradedStudentParticipation?.results.length!
                 ) {
                     this.alertService.success('artemisApp.exercise.lateSubmissionResultReceived');
                 }
@@ -389,10 +387,10 @@ export class CourseExerciseDetailsComponent implements OnInit, OnDestroy {
      * Loads and stores the complaint if any exists. Furthermore, loads the latest rated result and stores it.
      */
     loadComplaintAndLatestRatedResult(): void {
-        if (!this.gradedStudentParticipation?.submissions?.[0] || !this.sortedHistoryResults?.length) {
+        if (!this.gradedStudentParticipation?.submissions[0] || !this.sortedHistoryResults?.length) {
             return;
         }
-        this.complaintService.findBySubmissionId(this.gradedStudentParticipation!.submissions![0].id!).subscribe({
+        this.complaintService.findBySubmissionId(this.gradedStudentParticipation!.submissions[0].id!).subscribe({
             next: (res) => {
                 if (!res.body) {
                     return;
@@ -408,7 +406,7 @@ export class CourseExerciseDetailsComponent implements OnInit, OnDestroy {
             return;
         }
 
-        const ratedResults = this.gradedStudentParticipation?.results?.filter((result: Result) => result.rated).sort(this.resultSortFunction);
+        const ratedResults = this.gradedStudentParticipation?.results.filter((result: Result) => result.rated).sort(this.resultSortFunction);
         if (ratedResults) {
             const latestResult = ratedResults.last();
             if (latestResult) {

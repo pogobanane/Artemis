@@ -168,7 +168,7 @@ export class ExamParticipationSummaryComponent implements OnInit {
      * returns the students' submission for the exercise, undefined if no participation could be found
      */
     getSubmissionForExercise(exercise: Exercise) {
-        return exercise?.studentParticipations?.[0]?.submissions?.[0];
+        return exercise?.studentParticipations?.[0]?.submissions[0];
     }
 
     /**

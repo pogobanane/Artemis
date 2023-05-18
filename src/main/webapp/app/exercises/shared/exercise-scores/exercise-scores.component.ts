@@ -182,12 +182,12 @@ export class ExerciseScoresComponent implements OnInit, OnDestroy {
     private handleNewParticipations(participationsResponse: HttpResponse<Participation[]>) {
         this.participations = participationsResponse.body ?? [];
         this.participations.forEach((participation) => {
-            participation.results?.forEach((result, index) => {
-                participation.results![index].durationInMinutes = dayjs(result.completionDate).diff(participation.initializationDate, 'seconds');
+            participation.results.forEach((result, index) => {
+                participation.results[index].durationInMinutes = dayjs(result.completionDate).diff(participation.initializationDate, 'seconds');
             });
-            participation.results?.sort((result1, result2) => (result1.id ?? 0) - (result2.id ?? 0));
-            if (participation.results?.[0].submission) {
-                participation.submissions = [participation.results?.[0].submission];
+            participation.results.sort((result1, result2) => (result1.id ?? 0) - (result2.id ?? 0));
+            if (participation.results[0].submission) {
+                participation.submissions = [participation.results[0].submission];
             }
         });
         this.filteredParticipations = this.filterByScoreRange(this.participations);
@@ -221,17 +221,17 @@ export class ExerciseScoresComponent implements OnInit, OnDestroy {
     filterParticipationsByProp = (participation: Participation): boolean => {
         switch (this.resultCriteria.filterProp) {
             case FilterProp.SUCCESSFUL:
-                return !!participation.results?.[0]?.successful;
+                return !!participation.results[0]?.successful;
             case FilterProp.UNSUCCESSFUL:
-                return !participation.results?.[0]?.successful;
+                return !participation.results[0]?.successful;
             case FilterProp.BUILD_FAILED:
-                return !!(participation.submissions?.[0] && (participation.submissions?.[0] as ProgrammingSubmission).buildFailed);
+                return !!(participation.submissions[0] && (participation.submissions[0] as ProgrammingSubmission).buildFailed);
             case FilterProp.MANUAL:
-                return !!participation.results?.[0] && Result.isManualResult(participation.results[0]!);
+                return !!participation.results[0] && Result.isManualResult(participation.results[0]!);
             case FilterProp.AUTOMATIC:
-                return participation.results?.[0]?.assessmentType === AssessmentType.AUTOMATIC;
+                return participation.results[0]?.assessmentType === AssessmentType.AUTOMATIC;
             case FilterProp.LOCKED:
-                return !!participation.results?.[0] && !participation.results?.[0]?.completionDate;
+                return !!participation.results[0] && !participation.results[0]?.completionDate;
             case FilterProp.ALL:
             default:
                 return true;
@@ -343,13 +343,13 @@ export class ExerciseScoresComponent implements OnInit, OnDestroy {
         // If the range to filter against is [90%, 100%], a score of 100% also satisfies this range
         if (this.rangeFilter.upperBound === 100) {
             filterFunction = (participation: Participation) => {
-                const result = participation.results?.[0];
+                const result = participation.results[0];
                 return !!result?.score && result?.score >= this.rangeFilter!.lowerBound && result.score <= this.rangeFilter!.upperBound;
             };
         } else {
             // For any other range, the score must be strictly below the upper bound
             filterFunction = (participation: Participation) => {
-                const result = participation.results?.[0];
+                const result = participation.results[0];
                 return result?.score !== undefined && result.score >= this.rangeFilter!.lowerBound && result.score < this.rangeFilter!.upperBound;
             };
         }
@@ -395,7 +395,7 @@ export class ExerciseScoresComponent implements OnInit, OnDestroy {
     }
 
     getAssessmentLink(participation: Participation, correctionRound = 0) {
-        if (!this.exercise.type || !this.exercise.id || !this.course.id || !participation.submissions?.[0]?.id) {
+        if (!this.exercise.type || !this.exercise.id || !this.course.id || !participation.submissions[0]?.id) {
             return;
         }
         return getLinkToSubmissionAssessment(
@@ -403,10 +403,10 @@ export class ExerciseScoresComponent implements OnInit, OnDestroy {
             this.course.id,
             this.exercise.id,
             participation.id,
-            participation.submissions?.[0]?.id,
+            participation.submissions[0]?.id,
             this.exercise.exerciseGroup?.exam?.id,
             this.exercise.exerciseGroup?.id,
-            participation.results?.[correctionRound]?.id,
+            participation.results[correctionRound]?.id,
         );
     }
 

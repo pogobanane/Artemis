@@ -38,7 +38,7 @@ export class StandaloneFeedbackComponent implements OnInit {
                     participation.exercise = this.exercise;
                 }
 
-                const relevantResult = participation?.results?.find((result) => result.id == resultId);
+                const relevantResult = participation?.results.find((result) => result.id == resultId);
                 if (relevantResult) {
                     relevantResult.participation = participation;
                 }

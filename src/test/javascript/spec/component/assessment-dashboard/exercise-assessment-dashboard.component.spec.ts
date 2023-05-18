@@ -156,7 +156,7 @@ describe('ExerciseAssessmentDashboardComponent', () => {
         secondCorrectionEnabled: false,
     } as FileUploadExercise;
 
-    const participation = { id: 20, submissions: [] } as Participation;
+    const participation = { id: 20, results: [], submissions: [] } as Participation;
 
     const modelingSubmission = { id: 21 } as ModelingSubmission;
     const fileUploadSubmission = { id: 22 } as FileUploadSubmission;
@@ -448,7 +448,7 @@ describe('ExerciseAssessmentDashboardComponent', () => {
 
         expect(modelingSubmissionStubWithoutAssessment).toHaveBeenCalledTimes(2);
         expect(comp.assessedSubmissionsByRound?.get(1)![0]).toEqual(modelingSubmissionAssessed);
-        expect(comp.assessedSubmissionsByRound?.get(1)![0]?.participation!.submissions![0]).toEqual(comp.assessedSubmissionsByRound?.get(1)![0]);
+        expect(comp.assessedSubmissionsByRound?.get(1)![0]?.participation!.submissions[0]).toEqual(comp.assessedSubmissionsByRound?.get(1)![0]);
         expect(comp.assessedSubmissionsByRound?.get(1)![0]?.latestResult).toEqual(result2);
     });
 

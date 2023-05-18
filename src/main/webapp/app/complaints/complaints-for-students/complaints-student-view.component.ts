@@ -63,7 +63,7 @@ export class ComplaintsStudentViewComponent implements OnInit {
             // Make sure results and participation are connected
             this.result.participation = this.participation;
 
-            if (this.participation.submissions && this.participation.submissions.length > 0) {
+            if (this.participation.submissions.length > 0) {
                 this.submission = this.participation.submissions.sort((a, b) => b.id! - a.id!)[0];
             }
             // for course exercises we track the number of allowed complaints

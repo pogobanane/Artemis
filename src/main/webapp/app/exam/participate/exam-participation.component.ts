@@ -315,7 +315,7 @@ export class ExamParticipationComponent implements OnInit, OnDestroy, ComponentC
             this.studentExam.exercises!.forEach((exercise) => {
                 if (exercise.studentParticipations) {
                     exercise.studentParticipations!.forEach((participation) => {
-                        if (participation.submissions && participation.submissions.length > 0) {
+                        if (participation.submissions.length > 0) {
                             participation.submissions.forEach((submission) => {
                                 submission.isSynced = true;
                                 if (submission.submitted == undefined) {
@@ -326,9 +326,8 @@ export class ExamParticipationComponent implements OnInit, OnDestroy, ComponentC
                         } else if (exercise.type === ExerciseType.PROGRAMMING) {
                             // We need to provide a submission to update the navigation bar status indicator
                             // This is important otherwise the save mechanisms would not work properly
-                            if (!participation.submissions || participation.submissions.length === 0) {
-                                participation.submissions = [];
-                                participation.submissions.push(ProgrammingSubmission.createInitialCleanSubmissionForExam());
+                            if (participation.submissions.length === 0) {
+                                participation.submissions = [ProgrammingSubmission.createInitialCleanSubmissionForExam()];
                             }
                         }
                         // reconnect the participation with the exercise, in case this relationship was deleted before (e.g. due to breaking circular dependencies)
@@ -696,7 +695,7 @@ export class ExamParticipationComponent implements OnInit, OnDestroy, ComponentC
             map((createdParticipation: StudentParticipation) => {
                 // note: it is important that we exchange the existing student participation and that we do not push it
                 exercise.studentParticipations = [createdParticipation];
-                if (createdParticipation.submissions && createdParticipation.submissions.length > 0) {
+                if (createdParticipation.submissions.length > 0) {
                     createdParticipation.submissions[0].isSynced = true;
                 }
                 this.generateParticipationStatus.next('success');
@@ -860,7 +859,6 @@ export class ExamParticipationComponent implements OnInit, OnDestroy, ComponentC
                 if (
                     exerciseForSubmission?.studentParticipations &&
                     exerciseForSubmission.studentParticipations.length > 0 &&
-                    exerciseForSubmission.studentParticipations[0].submissions &&
                     exerciseForSubmission.studentParticipations[0].submissions.length > 0
                 ) {
                     if (programmingSubmissionObj.submission) {

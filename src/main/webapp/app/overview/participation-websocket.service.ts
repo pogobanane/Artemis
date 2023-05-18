@@ -90,7 +90,7 @@ export class ParticipationWebsocketService implements IParticipationWebsocketSer
         const cachedParticipation = this.cachedParticipations.get(result.participation!.id!);
         if (cachedParticipation) {
             // update the results with the new received one by filtering the old result
-            const updatedResults = [...(cachedParticipation.results || [])].filter((r) => r.id !== result.id);
+            const updatedResults = [...cachedParticipation.results].filter((r) => r.id !== result.id);
             updatedResults.push(result);
             // create a clone
             this.cachedParticipations.set(result.participation!.id!, { ...cachedParticipation, results: updatedResults } as StudentParticipation);

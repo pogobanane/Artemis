@@ -192,6 +192,7 @@ const fileUploadExercise: FileUploadExercise = {
                     hasComplaint: false,
                 },
             ],
+            submissions: [],
             student: {
                 id: 9,
                 login: 'artemis_test_user_1',
@@ -236,6 +237,7 @@ const quizExercise: QuizExercise = {
                     hasComplaint: false,
                 },
             ],
+            submissions: [],
             student: {
                 id: 9,
                 login: 'artemis_test_user_1',
@@ -282,6 +284,7 @@ const programmingExercise: ProgrammingExercise = {
                     hasComplaint: false,
                 },
             ],
+            submissions: [],
             student: {
                 id: 9,
                 login: 'artemis_test_user_1',

@@ -460,7 +460,7 @@ export class CourseManagementRequests {
             method: PUT,
             body: {
                 ...modelingExerciseSubmissionTemplate,
-                id: participation.submissions![0].id,
+                id: participation.submissions[0].id,
                 participation,
             },
         });

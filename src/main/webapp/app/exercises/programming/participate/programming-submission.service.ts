@@ -247,7 +247,7 @@ export class ProgrammingSubmissionService implements IProgrammingSubmissionServi
                 if (this.isResultOfLatestSubmission(result, exerciseId, participationId)) {
                     // Notify all result subscribers with the latest result if it belongs to the latest submission
                     // This will also trigger the resultObservable above, which emits that the submission is no longer pending
-                    this.participationWebsocketService.notifyAllResultSubscribers({ ...result, participation: { id: participationId } });
+                    this.participationWebsocketService.notifyAllResultSubscribers({ ...result, participation: { id: participationId, results: [], submissions: [] } });
                 } else {
                     // Otherwise, notify that submission subscribers that the result could not be retrieved
                     this.emitFailedSubmission(participationId, exerciseId);
@@ -359,11 +359,11 @@ export class ProgrammingSubmissionService implements IProgrammingSubmissionServi
                     return false;
                 }
                 // Without submissions, we can't determine if the latest submission is pending.
-                return !!exercise.studentParticipations[0].submissions && !!exercise.studentParticipations[0].submissions.length;
+                return exercise.studentParticipations[0].submissions.length > 0;
             })
             .forEach((exercise) => {
                 const participation = exercise.studentParticipations![0] as ProgrammingExerciseStudentParticipation;
-                const latestSubmission = participation.submissions!.reduce((current, next) => (current.id! > next.id! ? current : next)) as ProgrammingSubmission;
+                const latestSubmission = participation.submissions.reduce((current, next) => (current.id! > next.id! ? current : next)) as ProgrammingSubmission;
                 const latestResult = findLatestResult(participation.results);
                 const isPendingSubmission = !!latestSubmission && (!latestResult || (latestResult.submission && latestResult.submission.id !== latestSubmission.id));
                 // This needs to be done to clear the cache if exists and to prepare the subject for the later notification of the subscribers.

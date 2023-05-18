@@ -372,7 +372,7 @@ describe('FileUploadAssessmentComponent', () => {
 
         expect(comp.isLoading).toBeFalse();
         expect(comp.result).toEqual(changedResult);
-        expect(comp.participation.results![0]).toEqual(changedResult);
+        expect(comp.participation.results[0]).toEqual(changedResult);
     });
 
     describe('onUpdateAssessmentAfterComplaint', () => {
@@ -406,7 +406,7 @@ describe('FileUploadAssessmentComponent', () => {
             comp.onUpdateAssessmentAfterComplaint(assessmentAfterComplaint);
             expect(comp.isLoading).toBeFalse();
             expect(comp.result).toEqual(changedResult);
-            expect(comp.participation.results![0]).toEqual(changedResult);
+            expect(comp.participation.results[0]).toEqual(changedResult);
             expect(onSuccessCalled).toBeTrue();
             expect(onErrorCalled).toBeFalse();
         });

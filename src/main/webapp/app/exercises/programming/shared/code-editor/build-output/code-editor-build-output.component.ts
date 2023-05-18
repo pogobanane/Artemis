@@ -86,7 +86,7 @@ export class CodeEditorBuildOutputComponent implements AfterViewInit, OnInit, On
             this.setupResultWebsocket();
         }
         // If the participation changes and it has results, fetch the result details to decide if the build log should be shown
-        if (participationChange && this.participation?.results?.length) {
+        if (participationChange && this.participation?.results.length) {
             const latestResult = findLatestResult(this.participation.results);
             of(latestResult)
                 .pipe(

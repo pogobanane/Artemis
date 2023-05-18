@@ -211,21 +211,20 @@ describe('CodeEditorInstructorIntegration', () => {
 
     it('should load the exercise and select the template participation if no participation id is provided', () => {
         jest.resetModules();
-        // @ts-ignore
         const exercise = {
             id: 1,
             problemStatement,
-            studentParticipations: [{ id: 2, repositoryUrl: 'test' }],
-            templateParticipation: { id: 3, repositoryUrl: 'test2', results: [{ id: 9, submission: { id: 1, buildFailed: false } }] },
-            solutionParticipation: { id: 4, repositoryUrl: 'test3' },
+            studentParticipations: [{ id: 2, repositoryUrl: 'test', results: [], submissions: [] }],
+            templateParticipation: { id: 3, repositoryUrl: 'test2', results: [{ id: 9, submission: { id: 1, buildFailed: false } }], submissions: [] },
+            solutionParticipation: { id: 4, repositoryUrl: 'test3', results: [], submissions: [] },
             course: { id: 1 },
-        } as ProgrammingExercise;
+        } as unknown as ProgrammingExercise;
         exercise.studentParticipations = exercise.studentParticipations?.map((p) => {
             p.exercise = exercise;
             return p;
         });
-        exercise.templateParticipation = { ...exercise.templateParticipation, programmingExercise: exercise };
-        exercise.solutionParticipation = { ...exercise.solutionParticipation, programmingExercise: exercise };
+        exercise.templateParticipation = { ...exercise.templateParticipation!, programmingExercise: exercise };
+        exercise.solutionParticipation = { ...exercise.solutionParticipation!, programmingExercise: exercise };
 
         getFeedbackDetailsForResultStub.mockReturnValue(of([]));
         const setDomainSpy = jest.spyOn(domainService, 'setDomain');

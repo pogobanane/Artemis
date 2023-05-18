@@ -59,7 +59,7 @@ export class CourseCardComponent implements OnChanges {
 
             const nextExercisesWithAnyScore = this.exerciseService.getNextExercisesForDays(this.course.exercises!);
             // filters out every already successful (100%) exercise, only exercises left that still need work
-            const nextExercises = nextExercisesWithAnyScore.filter((exercise: Exercise) => !exercise.studentParticipations?.[0]?.submissions?.[0]?.results?.[0]?.successful);
+            const nextExercises = nextExercisesWithAnyScore.filter((exercise: Exercise) => !exercise.studentParticipations?.[0]?.submissions[0]?.results?.[0]?.successful);
 
             if (nextExercises.length > 0 && nextExercises[0]) {
                 this.nextRelevantExercise = nextExercises[0];

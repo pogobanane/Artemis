@@ -122,7 +122,7 @@ describe('Participation Service', () => {
         expect(mergedParticipation?.id).toEqual(participation1.id);
         expect(mergedParticipation?.results).toEqual([...participation1.results!, ...participation2.results!]);
         expect(mergedParticipation?.submissions).toEqual([...participation1.submissions!, ...participation2.submissions!]);
-        mergedParticipation?.results?.forEach((result) => expect(result.participation).toMatchObject(mergedParticipation));
+        mergedParticipation?.results.forEach((result) => expect(result.participation).toMatchObject(mergedParticipation));
         mergedParticipation?.submissions?.forEach((submission) => expect(submission.participation).toMatchObject(mergedParticipation));
     }));
 
@@ -175,8 +175,8 @@ describe('Participation Service', () => {
         expect(mergedParticipation?.id).toEqual(participation1.id);
         expect(mergedParticipation?.results).toEqual([...participation1.results!, ...participation2.results!]);
         expect(mergedParticipation?.submissions).toEqual([...participation1.submissions!, ...participation2.submissions!]);
-        mergedParticipation?.results?.forEach((result) => expect(result.participation).toMatchObject(mergedParticipation));
-        mergedParticipation?.submissions?.forEach((submission) => expect(submission.participation).toMatchObject(mergedParticipation));
+        mergedParticipation?.results.forEach((result) => expect(result.participation).toMatchObject(mergedParticipation));
+        mergedParticipation?.submissions.forEach((submission) => expect(submission.participation).toMatchObject(mergedParticipation));
     }));
 
     it('should update a Participation', fakeAsync(() => {

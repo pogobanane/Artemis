@@ -426,7 +426,7 @@ export class CourseScoresComponent implements OnInit, OnDestroy {
         const studentsMap = new Map<number, CourseScoresStudentStatistics>();
 
         for (const participation of this.allParticipationsOfCourse) {
-            participation.results?.forEach((result) => (result.participation = participation));
+            participation.results.forEach((result) => (result.participation = participation));
 
             // find all students by iterating through the participations
             const participationStudents = participation.student ? [participation.student] : participation.team!.students!;
@@ -454,7 +454,7 @@ export class CourseScoresComponent implements OnInit, OnDestroy {
     private updateStudentStatisticsWithExerciseResults(student: CourseScoresStudentStatistics, exercise: Exercise) {
         const relevantMaxPoints = exercise.maxPoints!;
         const participation = student.participations.find((part) => part.exercise!.id === exercise.id);
-        if (participation && participation.results && participation.results.length > 0) {
+        if (participation && participation.results.length > 0) {
             // we found a result, there should only be one
             const result = participation.results[0];
             if (participation.results.length > 1) {

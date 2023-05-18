@@ -100,7 +100,7 @@ describe('HeaderParticipationPage', () => {
 
     it('should display achieved points accordingly', () => {
         component.exercise.maxPoints = 100;
-        component.participation = { results: [] } as StudentParticipation;
+        component.participation = { results: [], submissions: [] } as StudentParticipation;
         component.ngOnChanges();
         expect(component.achievedPoints).toBeUndefined();
 

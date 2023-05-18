@@ -104,12 +104,12 @@ export class ParticipationSubmissionComponent implements OnInit {
                     // Check if requested participationId belongs to the template or solution participation
                     if (this.participationId === templateParticipation?.id) {
                         this.participation = templateParticipation;
-                        this.submissions = templateParticipation.submissions!;
+                        this.submissions = templateParticipation.submissions;
                         // This is needed to access the exercise in the result details
                         templateParticipation.programmingExercise = this.exercise;
                     } else if (this.participationId === solutionParticipation?.id) {
                         this.participation = solutionParticipation;
-                        this.submissions = solutionParticipation.submissions!;
+                        this.submissions = solutionParticipation.submissions;
                         // This is needed to access the exercise in the result details
                         solutionParticipation.programmingExercise = this.exercise;
                     } else {

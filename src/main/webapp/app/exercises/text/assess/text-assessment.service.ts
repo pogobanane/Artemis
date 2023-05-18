@@ -295,7 +295,7 @@ export class TextAssessmentService {
             }
             submissionForSending.atheneTextAssessmentTrackingToken = undefined;
 
-            submissionForSending.participation?.results!.forEach((result) => {
+            submissionForSending.participation?.results.forEach((result) => {
                 result.participation = undefined;
                 result.submission = undefined;
             });

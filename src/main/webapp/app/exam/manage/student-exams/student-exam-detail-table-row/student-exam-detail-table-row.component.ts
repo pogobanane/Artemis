@@ -38,12 +38,12 @@ export class StudentExamDetailTableRowComponent implements OnChanges {
         if (this.exercise.studentParticipations?.[0]) {
             this.studentParticipation = this.exercise.studentParticipations![0];
             // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
-            if (this.studentParticipation.submissions?.length! > 0) {
-                this.submission = this.studentParticipation.submissions![0];
+            if (this.studentParticipation.submissions.length! > 0) {
+                this.submission = this.studentParticipation.submissions[0];
             }
             // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
-            if (this.studentParticipation.results?.length! > 0) {
-                this.result = this.studentParticipation.results![0];
+            if (this.studentParticipation.results.length > 0) {
+                this.result = this.studentParticipation.results[0];
             }
         }
         if (this.course && this.course.id) {

@@ -51,7 +51,7 @@ export class ProgrammingExamSubmissionComponent extends ExamSubmissionComponent 
     readonly getCourseFromExercise = getCourseFromExercise;
 
     getSubmission() {
-        if (this.studentParticipation && this.studentParticipation.submissions && this.studentParticipation.submissions.length > 0) {
+        if (this.studentParticipation && this.studentParticipation.submissions.length > 0) {
             return this.studentParticipation.submissions[0];
         }
     }
@@ -100,7 +100,7 @@ export class ProgrammingExamSubmissionComponent extends ExamSubmissionComponent 
      * @param commitState current CommitState from CodeEditorActionsComponent
      */
     onCommitStateChange(commitState: CommitState): void {
-        if (this.studentParticipation.submissions && this.studentParticipation.submissions.length > 0) {
+        if (this.studentParticipation.submissions.length > 0) {
             if (commitState === CommitState.CLEAN && this.hasSubmittedOnce) {
                 this.studentParticipation.submissions[0].submitted = true;
                 this.studentParticipation.submissions[0].isSynced = true;

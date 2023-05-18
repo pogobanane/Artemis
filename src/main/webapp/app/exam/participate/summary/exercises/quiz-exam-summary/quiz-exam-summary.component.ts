@@ -47,10 +47,7 @@ export class QuizExamSummaryComponent implements OnInit {
     ngOnInit(): void {
         this.updateViewFromSubmission();
         this.result =
-            this.exercise.studentParticipations &&
-            this.exercise.studentParticipations.length > 0 &&
-            this.exercise.studentParticipations[0].results &&
-            this.exercise.studentParticipations[0].results.length > 0
+            this.exercise.studentParticipations && this.exercise.studentParticipations.length > 0 && this.exercise.studentParticipations[0].results.length > 0
                 ? this.exercise.studentParticipations[0].results[0]
                 : undefined;
     }
@@ -129,10 +126,7 @@ export class QuizExamSummaryComponent implements OnInit {
      */
     get showMissingResultsNotice(): boolean {
         if (this.exam && this.exam.publishResultsDate && this.exercise && this.exercise.studentParticipations && this.exercise.studentParticipations.length > 0) {
-            return (
-                dayjs(this.exam.publishResultsDate).isBefore(this.serverDateService.now()) &&
-                (!this.exercise.studentParticipations[0].results || this.exercise.studentParticipations[0].results.length <= 0)
-            );
+            return dayjs(this.exam.publishResultsDate).isBefore(this.serverDateService.now()) && this.exercise.studentParticipations[0].results.length <= 0;
         }
         return false;
     }

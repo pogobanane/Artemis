@@ -158,6 +158,7 @@ describe('CourseScoresComponent', () => {
         student: user2,
         exercise: textIncludedWith10Points10BonusPoints,
         results: [],
+        submissions: [],
     } as StudentParticipation;
     const participation6 = {
         id: 6,

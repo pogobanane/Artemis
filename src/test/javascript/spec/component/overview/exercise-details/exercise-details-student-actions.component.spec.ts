@@ -250,6 +250,7 @@ describe('ExerciseDetailsStudentActionsComponent', () => {
         const result: Result = { score: 50, rated: true };
         const participation: StudentParticipation = {
             results: [result],
+            submissions: [],
             individualDueDate: undefined,
         };
 
@@ -263,6 +264,7 @@ describe('ExerciseDetailsStudentActionsComponent', () => {
         const result: Result = { score: 100, rated: true };
         const participation: StudentParticipation = {
             results: [result],
+            submissions: [],
             individualDueDate: undefined,
         };
 

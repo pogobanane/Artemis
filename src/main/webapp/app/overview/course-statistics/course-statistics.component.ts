@@ -304,7 +304,7 @@ export class CourseStatisticsComponent implements OnInit, OnDestroy, AfterViewIn
                     this.pushToData(exercise, series);
                 } else {
                     exercise.studentParticipations.forEach((participation: StudentParticipation) => {
-                        if (participation.id && participation.results?.length) {
+                        if (participation.id && participation.results.length) {
                             const participationResult: Result | undefined = this.scoresStorageService.getStoredParticipationResult(participation.id);
                             if (participationResult?.rated) {
                                 const roundedParticipationScore = roundValueSpecifiedByCourseSettings(participationResult.score!, this.course);

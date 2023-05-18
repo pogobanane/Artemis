@@ -111,17 +111,17 @@ describe('ProgrammingExamSubmissionComponent', () => {
 
         component.onCommitStateChange(CommitState.CLEAN);
 
-        expect(component.studentParticipation.submissions![0].submitted).toBeTrue();
-        expect(component.studentParticipation.submissions![0].isSynced).toBeTrue();
+        expect(component.studentParticipation.submissions[0].submitted).toBeTrue();
+        expect(component.studentParticipation.submissions[0].isSynced).toBeTrue();
     });
 
     it('should desync on file change', () => {
         component.studentParticipation = newParticipation();
 
-        component.studentParticipation.submissions![0].isSynced = true;
+        component.studentParticipation.submissions[0].isSynced = true;
         component.onFileChanged();
 
-        expect(component.studentParticipation.submissions![0].isSynced).toBeFalse();
+        expect(component.studentParticipation.submissions[0].isSynced).toBeFalse();
     });
 
     it('should get submission', () => {

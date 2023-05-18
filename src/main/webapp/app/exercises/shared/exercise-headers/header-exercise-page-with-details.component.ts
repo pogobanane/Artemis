@@ -83,7 +83,7 @@ export class HeaderExercisePageWithDetailsComponent implements OnChanges, OnInit
                 this.individualComplaintDeadline = ComplaintService.getIndividualComplaintDueDate(
                     this.exercise,
                     this.course.maxComplaintTimeDays,
-                    this.studentParticipation?.results?.last(),
+                    this.studentParticipation?.results.last(),
                     this.studentParticipation,
                 );
             }
@@ -104,7 +104,7 @@ export class HeaderExercisePageWithDetailsComponent implements OnChanges, OnInit
         if (this.submissionPolicy) {
             this.countSubmissions();
         }
-        if (this.studentParticipation?.results?.length) {
+        if (this.studentParticipation?.results.length) {
             // The updated participation by the websocket is not guaranteed to be sorted, find the newest result (highest id)
             this.sortService.sortByProperty(this.studentParticipation.results, 'id', false);
 
@@ -175,13 +175,13 @@ export class HeaderExercisePageWithDetailsComponent implements OnChanges, OnInit
 
     private countSubmissions() {
         let submissionCompensation = 0;
-        if (this.studentParticipation?.submissions?.length) {
+        if (this.studentParticipation?.submissions.length) {
             submissionCompensation = !this.studentParticipation.submissions.first()?.results?.length ? 1 : 0;
         }
 
         const commitHashSet = new Set<string>();
         this.studentParticipation?.submissions
-            ?.filter((submission) => submission.type === SubmissionType.MANUAL && submission.results?.length)
+            .filter((submission) => submission.type === SubmissionType.MANUAL && submission.results?.length)
             .map((submission) => (submission as ProgrammingSubmission).commitHash)
             .forEach((commitHash: string) => commitHashSet.add(commitHash));
 

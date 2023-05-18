@@ -68,15 +68,6 @@ export const isModelingOrTextOrFileUpload = (participation: Participation) => {
     return exercise && (exercise.type === ExerciseType.MODELING || exercise.type === ExerciseType.TEXT || exercise.type === ExerciseType.FILE_UPLOAD);
 };
 /**
- * Checks if given participation has results.
- *
- * @param participation
- * @return {boolean}
- */
-export const hasResults = (participation: Participation) => {
-    return participation.results?.length;
-};
-/**
  * Check if a given participation is in due time of the given exercise based on its submission at index position 0.
  * Before the method is called, it must be ensured that the submission at index position 0 is suitable to check if
  * the participation is in due time of the exercise.
@@ -91,7 +82,7 @@ export const isParticipationInDueTime = (participation: Participation, exercise:
     }
 
     // If the participation has no submission, it cannot be in due time.
-    if (participation.submissions == undefined || participation.submissions.length <= 0) {
+    if (participation.submissions.length === 0) {
         return false;
     }
 

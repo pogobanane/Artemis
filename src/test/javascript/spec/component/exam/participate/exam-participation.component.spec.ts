@@ -349,12 +349,12 @@ describe('ExamParticipationComponent', () => {
         studentExam.exercises = [firstExercise, secondExercise];
         comp.examStarted(studentExam);
         expect(firstParticipation.submissions).toBeDefined();
-        expect(firstParticipation.submissions!.length).toBeGreaterThan(0);
+        expect(firstParticipation.submissions.length).toBeGreaterThan(0);
         expect(latestPendingSubmissionSpy).toHaveBeenCalledOnce();
-        expect(firstExercise.studentParticipations![0].submissions![0].submitted).toBeTrue();
+        expect(firstExercise.studentParticipations![0].submissions[0].submitted).toBeTrue();
 
         // Sync exercises with submission
-        const secondSubmission = secondExercise.studentParticipations![0].submissions![0];
+        const secondSubmission = secondExercise.studentParticipations![0].submissions[0];
         expect(secondSubmission.isSynced).toBeTrue();
         expect(secondSubmission.submitted).toBeFalse();
 

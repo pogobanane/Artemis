@@ -47,7 +47,7 @@ export class SubmissionResultStatusComponent implements OnChanges {
             this.quizNotStarted = ArtemisQuizService.notStarted(quizExercise);
         } else {
             this.uninitialized = !afterDueDate && !this.studentParticipation;
-            this.notSubmitted = !afterDueDate && !!this.studentParticipation && !this.studentParticipation.submissions?.length;
+            this.notSubmitted = !afterDueDate && !!this.studentParticipation && !this.studentParticipation.submissions.length;
         }
     }
 }

@@ -110,7 +110,7 @@ export class ExerciseDetailsStudentActionsComponent implements OnInit, OnChanges
         this.gradedParticipation = this.participationService.getSpecificStudentParticipation(studentParticipations, false);
         this.practiceParticipation = this.participationService.getSpecificStudentParticipation(studentParticipations, true);
 
-        this.hasRatedGradedResult = !!this.gradedParticipation?.results?.some((result) => result.rated === true);
+        this.hasRatedGradedResult = !!this.gradedParticipation?.results.some((result) => result.rated === true);
     }
 
     /**
@@ -194,7 +194,7 @@ export class ExerciseDetailsStudentActionsComponent implements OnInit, OnChanges
 
     isFeedbackRequestButtonDisabled(): boolean {
         const showUngradedResults = true;
-        const latestResult = this.gradedParticipation?.results && this.gradedParticipation.results.find(({ rated }) => showUngradedResults || rated === true);
+        const latestResult = this.gradedParticipation && this.gradedParticipation.results.find(({ rated }) => showUngradedResults || rated === true);
         const allHiddenTestsPassed = latestResult?.score !== undefined && latestResult.score >= 100;
 
         const requestAlreadySent = (this.gradedParticipation?.individualDueDate && this.gradedParticipation.individualDueDate.isBefore(Date.now())) ?? false;

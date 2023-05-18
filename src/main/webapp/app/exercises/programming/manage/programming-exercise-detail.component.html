@@ -426,14 +426,14 @@
                             class="me-2"
                         ></jhi-updating-result>
                         <jhi-programming-exercise-instructor-status
-                            *ngIf="programmingExercise.templateParticipation?.results?.length"
+                            *ngIf="programmingExercise.templateParticipation?.results.length"
                             class="repository-status-icon me-2"
                             [participationType]="ProgrammingExerciseParticipationType.TEMPLATE"
                             [participation]="programmingExercise.templateParticipation!"
                             [exercise]="programmingExercise"
                         ></jhi-programming-exercise-instructor-status>
                         <jhi-programming-exercise-instructor-trigger-build-button
-                            *ngIf="programmingExercise.templateParticipation?.results && programmingExercise.isAtLeastEditor"
+                            *ngIf="programmingExercise.templateParticipation?.results.length && programmingExercise.isAtLeastEditor"
                             [exercise]="programmingExercise"
                             [participation]="programmingExercise.templateParticipation!"
                         ></jhi-programming-exercise-instructor-trigger-build-button>
@@ -457,14 +457,14 @@
                             class="me-2"
                         ></jhi-updating-result>
                         <jhi-programming-exercise-instructor-status
-                            *ngIf="programmingExercise.solutionParticipation?.results?.length"
+                            *ngIf="programmingExercise.solutionParticipation?.results.length"
                             class="repository-status-icon me-2"
                             [participationType]="ProgrammingExerciseParticipationType.SOLUTION"
                             [participation]="programmingExercise.solutionParticipation!"
                             [exercise]="programmingExercise"
                         ></jhi-programming-exercise-instructor-status>
                         <jhi-programming-exercise-instructor-trigger-build-button
-                            *ngIf="programmingExercise.solutionParticipation?.results && programmingExercise.isAtLeastEditor"
+                            *ngIf="programmingExercise.solutionParticipation?.results.length && programmingExercise.isAtLeastEditor"
                             [exercise]="programmingExercise"
                             [participation]="programmingExercise.solutionParticipation!"
                         ></jhi-programming-exercise-instructor-trigger-build-button>

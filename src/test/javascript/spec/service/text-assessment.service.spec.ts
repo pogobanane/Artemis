@@ -215,7 +215,7 @@ describe('TextAssessment Service', () => {
 
     it('should not parse jwt from header', fakeAsync(() => {
         service.getFeedbackDataForExerciseSubmission(1, 1).subscribe((studentParticipation) => {
-            expect((studentParticipation.submissions![0] as TextSubmission).atheneTextAssessmentTrackingToken).toBeUndefined();
+            expect((studentParticipation.submissions[0] as TextSubmission).atheneTextAssessmentTrackingToken).toBeUndefined();
         });
 
         const mockRequest = httpMock.expectOne({ method: 'GET' });
@@ -225,7 +225,7 @@ describe('TextAssessment Service', () => {
 
     it('should parse jwt from header', fakeAsync(() => {
         service.getFeedbackDataForExerciseSubmission(1, 1).subscribe((studentParticipation) => {
-            expect((studentParticipation.submissions![0] as TextSubmission).atheneTextAssessmentTrackingToken).toBe('12345');
+            expect((studentParticipation.submissions[0] as TextSubmission).atheneTextAssessmentTrackingToken).toBe('12345');
         });
 
         const mockRequest = httpMock.expectOne({ method: 'GET' });
@@ -257,7 +257,7 @@ describe('TextAssessment Service', () => {
         service
             .getFeedbackDataForExerciseSubmission(participationId, submissionId, undefined, resultId)
             .pipe(take(1))
-            .subscribe((resp) => expect(resp.submissions?.[0].results?.[0].feedbacks).toEqual(result.feedbacks));
+            .subscribe((resp) => expect(resp.submissions[0]?.results?.[0].feedbacks).toEqual(result.feedbacks));
 
         const req = httpMock.expectOne({
             url: `api/participations/${participationId}/submissions/${submissionId}/for-text-assessment?resultId=6`,

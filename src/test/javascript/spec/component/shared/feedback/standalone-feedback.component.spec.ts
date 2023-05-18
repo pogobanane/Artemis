@@ -23,7 +23,7 @@ describe('StandaloneFeedbackComponent', () => {
     const course = { id: 1 } as unknown as Course;
     const exercise = new ProgrammingExercise(course, undefined);
     const participation = { id: 2 } as unknown as StudentParticipation;
-    const result = { id: 3, participation: { id: 2 } };
+    const result = { id: 3, participation: { id: 2, results: [], submissions: [] } };
     const latestDueDate = new Date();
 
     beforeEach(() => {

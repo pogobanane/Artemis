@@ -224,23 +224,17 @@ export class ParticipationService {
         }
 
         participations.forEach((participation) => {
-            if (participation.results) {
-                combinedParticipation.results = combinedParticipation.results ? combinedParticipation.results.concat(participation.results) : participation.results;
-            }
-            if (participation.submissions) {
-                combinedParticipation.submissions = combinedParticipation.submissions
-                    ? combinedParticipation.submissions.concat(participation.submissions)
-                    : participation.submissions;
-            }
+            combinedParticipation.results = combinedParticipation.results.concat(participation.results);
+            combinedParticipation.submissions = combinedParticipation.submissions ? combinedParticipation.submissions.concat(participation.submissions) : participation.submissions;
         });
 
         // make sure that results and submissions are connected with the participation because some components need this
-        if (combinedParticipation.results?.length) {
+        if (combinedParticipation.results.length) {
             combinedParticipation.results.forEach((result) => {
                 result.participation = combinedParticipation;
             });
         }
-        if (combinedParticipation.submissions?.length) {
+        if (combinedParticipation.submissions.length) {
             combinedParticipation.submissions.forEach((submission) => {
                 submission.participation = combinedParticipation;
             });

@@ -91,14 +91,14 @@ export class CodeEditorStudentContainerComponent implements OnInit, OnDestroy {
                         this.exercise = this.participation.exercise as ProgrammingExercise;
                         const dueDateHasPassed = hasExerciseDueDatePassed(this.exercise, this.participation);
                         this.determineRepoLockedState(dueDateHasPassed);
-                        this.latestResult = this.participation.results ? this.participation.results[0] : undefined;
+                        this.latestResult = this.participation.results[0];
                         this.isIllegalSubmission = this.latestResult?.submission?.type === SubmissionType.ILLEGAL;
                         this.checkForTutorAssessment(dueDateHasPassed);
                         this.course = getCourseFromExercise(this.exercise);
                         this.submissionPolicyService.getSubmissionPolicyOfProgrammingExercise(this.exercise.id!).subscribe((submissionPolicy) => {
                             this.exercise.submissionPolicy = submissionPolicy;
                         });
-                        if (this.participation.results && this.participation.results[0] && this.participation.results[0].feedbacks) {
+                        if (this.participation.results[0] && this.participation.results[0].feedbacks) {
                             checkSubsequentFeedbackInAssessment(this.participation.results[0].feedbacks);
                         }
                         this.loadStudentExerciseHints();
@@ -133,10 +133,10 @@ export class CodeEditorStudentContainerComponent implements OnInit, OnDestroy {
     loadParticipationWithLatestResult(participationId: number): Observable<StudentParticipation> {
         return this.programmingExerciseParticipationService.getStudentParticipationWithLatestResult(participationId).pipe(
             mergeMap((participation: ProgrammingExerciseStudentParticipation) =>
-                participation.results?.length
+                participation.results.length
                     ? this.loadResultDetails(participation, participation.results[0]).pipe(
                           map((feedbacks) => {
-                              participation.results![0].feedbacks = feedbacks;
+                              participation.results[0].feedbacks = feedbacks;
                               return participation;
                           }),
                           catchError(() => of(participation)),

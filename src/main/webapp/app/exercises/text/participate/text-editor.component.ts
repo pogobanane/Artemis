@@ -107,10 +107,10 @@ export class TextEditorComponent implements OnInit, OnDestroy, ComponentCanDeact
         this.isAfterPublishDate = !!this.textExercise.exerciseGroup?.exam?.publishResultsDate && dayjs().isAfter(this.textExercise.exerciseGroup.exam.publishResultsDate);
         this.course = getCourseFromExercise(this.textExercise);
 
-        if (participation.submissions?.length) {
+        if (participation.submissions.length) {
             this.submission = participation.submissions[0] as TextSubmission;
             setLatestSubmissionResult(this.submission, getLatestSubmissionResult(this.submission));
-            if (this.submission && this.submission.results && participation.results && (this.isAfterAssessmentDueDate || this.isAfterPublishDate)) {
+            if (this.submission && this.submission.results && (this.isAfterAssessmentDueDate || this.isAfterPublishDate)) {
                 this.result = this.submission.latestResult!;
                 this.result.participation = participation;
             }

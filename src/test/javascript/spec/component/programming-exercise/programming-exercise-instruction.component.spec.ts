@@ -108,9 +108,9 @@ describe('ProgrammingExerciseInstructionComponent', () => {
 
     it('should on participation change clear old subscription for participation results set up new one', () => {
         const exercise: ProgrammingExercise = { id: 1, numberOfAssessmentsOfCorrectionRounds: [], secondCorrectionEnabled: false, studentAssignedTeamIdComputed: false };
-        const oldParticipation: Participation = { id: 1 };
+        const oldParticipation: Participation = { id: 1, results: [], submissions: [] };
         const result: Result = { id: 1 };
-        const participation: Participation = { id: 2, results: [result] };
+        const participation: Participation = { id: 2, results: [result], submissions: [] };
         const oldSubscription = new Subscription();
         subscribeForLatestResultOfParticipationStub.mockReturnValue(of());
         comp.exercise = exercise;

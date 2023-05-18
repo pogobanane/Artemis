@@ -409,7 +409,7 @@ export class CodeEditorTutorAssessmentContainerComponent implements OnInit, OnDe
         this.manualResultService.updateAfterComplaint(this.manualResult!.feedbacks!, assessmentAfterComplaint.complaintResponse, this.submission!.id!).subscribe({
             next: (result: Result) => {
                 assessmentAfterComplaint.onSuccess();
-                this.participation.results![0] = this.manualResult = result;
+                this.participation.results[0] = this.manualResult = result;
                 this.alertService.closeAll();
                 this.alertService.success('artemisApp.assessment.messages.updateAfterComplaintSuccessful');
             },
@@ -505,10 +505,7 @@ export class CodeEditorTutorAssessmentContainerComponent implements OnInit, OnDe
     }
 
     private handleSaveOrSubmitSuccessWithAlert(response: HttpResponse<Result>, translationKey: string): void {
-        if (!this.participation.results) {
-            this.participation.results = [];
-        }
-        this.participation.results![0] = this.manualResult = response.body!;
+        this.participation.results[0] = this.manualResult = response.body!;
         this.alertService.closeAll();
         this.alertService.success(translationKey);
         this.saveBusy = this.submitBusy = false;
@@ -586,10 +583,10 @@ export class CodeEditorTutorAssessmentContainerComponent implements OnInit, OnDe
     }
 
     private avoidCircularStructure() {
-        if (this.manualResult?.participation?.results) {
+        if (this.manualResult?.participation) {
             this.manualResult.participation.results = [];
         }
-        if (this.manualResult?.submission?.participation?.results) {
+        if (this.manualResult?.submission?.participation) {
             this.manualResult.submission.participation.results = [];
         }
     }

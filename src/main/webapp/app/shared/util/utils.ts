@@ -121,8 +121,8 @@ export const average = (values: Array<number>): number => {
  * finds the latest result based on the max id
  * @param results
  */
-export const findLatestResult = (results: Result[] | undefined) => {
-    return results?.length ? results.reduce((current, result) => (current.id! > result.id! ? current : result)) : undefined;
+export const findLatestResult = (results: Result[]) => {
+    return results.length ? results.reduce((current, result) => (current.id! > result.id! ? current : result)) : undefined;
 };
 
 /**

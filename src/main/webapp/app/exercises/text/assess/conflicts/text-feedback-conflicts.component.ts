@@ -110,7 +110,7 @@ export class TextFeedbackConflictsComponent extends TextAssessmentBaseComponent 
             const participationId = Number(this.activatedRoute.snapshot.paramMap.get('participationId'));
             const participation = await lastValueFrom(this.assessmentsService.getFeedbackDataForExerciseSubmission(participationId, submissionId));
 
-            this.leftSubmission = participation!.submissions![0];
+            this.leftSubmission = participation!.submissions[0];
             setLatestSubmissionResult(this.leftSubmission, getLatestSubmissionResult(this.leftSubmission));
             this.exercise = participation!.exercise as TextExercise;
         }

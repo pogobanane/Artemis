@@ -91,7 +91,7 @@ export class ResultComponent implements OnInit, OnChanges {
             this.exercise = this.exercise ?? getExercise(this.participation);
             this.participation.exercise = this.exercise;
 
-            if (this.participation.results?.length) {
+            if (this.participation.results.length) {
                 if (this.exercise && this.exercise.type === ExerciseType.MODELING) {
                     // sort results by completionDate descending to ensure the newest result is shown
                     // this is important for modeling exercises since students can have multiple tries

@@ -239,7 +239,7 @@ describe('CodeEditorContainerIntegration', () => {
 
         // called by build output
         expect(getFeedbackDetailsForResultStub).toHaveBeenCalledOnce();
-        expect(getFeedbackDetailsForResultStub).toHaveBeenCalledWith(participation.id!, participation.results![0]);
+        expect(getFeedbackDetailsForResultStub).toHaveBeenCalledWith(participation.id!, participation.results[0]);
     };
 
     const loadFile = (fileName: string, fileContent: string) => {
@@ -314,7 +314,7 @@ describe('CodeEditorContainerIntegration', () => {
 
         // called by build output & instructions
         expect(getFeedbackDetailsForResultStub).toHaveBeenCalledOnce();
-        expect(getFeedbackDetailsForResultStub).toHaveBeenCalledWith(participation.id!, participation.results![0]);
+        expect(getFeedbackDetailsForResultStub).toHaveBeenCalledWith(participation.id!, participation.results[0]);
 
         flush();
         discardPeriodicTasks();

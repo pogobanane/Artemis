@@ -356,7 +356,7 @@ export class FileUploadAssessmentComponent implements OnInit, OnDestroy {
     private updateParticipationWithResult(): void {
         this.showResult = false;
         this.changeDetectorRef.detectChanges();
-        this.participation.results![0] = this.result!;
+        this.participation.results[0] = this.result!;
         this.showResult = true;
         this.changeDetectorRef.detectChanges();
     }

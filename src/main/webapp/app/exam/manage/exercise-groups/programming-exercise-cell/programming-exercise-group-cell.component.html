@@ -10,7 +10,7 @@
                 <a href="{{ programmingExercise.templateParticipation?.repositoryUrl || '' }}" target="_blank">Template</a>
             </span>
             <jhi-programming-exercise-instructor-status
-                *ngIf="programmingExercise.templateParticipation?.results?.length"
+                *ngIf="programmingExercise.templateParticipation?.results.length"
                 [participationType]="participationType.TEMPLATE"
                 [participation]="programmingExercise.templateParticipation!"
                 [exercise]="programmingExercise"
@@ -21,7 +21,7 @@
                 <a href="{{ programmingExercise.solutionParticipation!.repositoryUrl! }}" target="_blank">Solution</a>
             </span>
             <jhi-programming-exercise-instructor-status
-                *ngIf="programmingExercise.solutionParticipation?.results?.length"
+                *ngIf="programmingExercise.solutionParticipation?.results.length"
                 [participationType]="participationType.SOLUTION"
                 [participation]="programmingExercise.solutionParticipation!"
                 [exercise]="programmingExercise"

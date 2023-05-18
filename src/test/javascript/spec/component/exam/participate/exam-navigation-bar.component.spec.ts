@@ -178,7 +178,7 @@ describe('Exam Navigation Bar Component', () => {
     });
 
     it('should set the exercise button status for submitted submission', () => {
-        comp.exercises[0].studentParticipations![0].submissions![0] = { submitted: true };
+        comp.exercises[0].studentParticipations![0].submissions[0] = { submitted: true };
 
         const result = comp.setExerciseButtonStatus(0);
 
@@ -187,7 +187,7 @@ describe('Exam Navigation Bar Component', () => {
     });
 
     it('should set the exercise button status for submitted and synced submission active', () => {
-        comp.exercises[0].studentParticipations![0].submissions![0] = { submitted: true, isSynced: true };
+        comp.exercises[0].studentParticipations![0].submissions[0] = { submitted: true, isSynced: true };
 
         const result = comp.setExerciseButtonStatus(0);
 
@@ -195,7 +195,7 @@ describe('Exam Navigation Bar Component', () => {
     });
 
     it('should set the exercise button status for submitted and synced submission not active', () => {
-        comp.exercises[0].studentParticipations![0].submissions![0] = { submitted: true, isSynced: true };
+        comp.exercises[0].studentParticipations![0].submissions[0] = { submitted: true, isSynced: true };
 
         const result = comp.setExerciseButtonStatus(1);
 
@@ -209,7 +209,7 @@ describe('Exam Navigation Bar Component', () => {
     });
 
     it('should get the exercise button tooltip with submitted and synced submission', () => {
-        comp.exercises[0].studentParticipations![0].submissions![0] = { submitted: true, isSynced: true };
+        comp.exercises[0].studentParticipations![0].submissions[0] = { submitted: true, isSynced: true };
 
         const result = comp.getExerciseButtonTooltip(comp.exercises[0]);
 
@@ -217,7 +217,7 @@ describe('Exam Navigation Bar Component', () => {
     });
 
     it('should get the exercise button tooltip with submitted submission', () => {
-        comp.exercises[0].studentParticipations![0].submissions![0] = { submitted: true };
+        comp.exercises[0].studentParticipations![0].submissions[0] = { submitted: true };
 
         const result = comp.getExerciseButtonTooltip(comp.exercises[0]);
 
@@ -225,7 +225,7 @@ describe('Exam Navigation Bar Component', () => {
     });
 
     it('should get the exercise button tooltip with submission', () => {
-        comp.exercises[0].studentParticipations![0].submissions![0] = {};
+        comp.exercises[0].studentParticipations![0].submissions[0] = {};
 
         const result = comp.getExerciseButtonTooltip(comp.exercises[0]);
 
@@ -233,7 +233,7 @@ describe('Exam Navigation Bar Component', () => {
     });
 
     it('should get the exercise button tooltip with synced submission', () => {
-        comp.exercises[0].studentParticipations![0].submissions![0] = { isSynced: true };
+        comp.exercises[0].studentParticipations![0].submissions[0] = { isSynced: true };
 
         const result = comp.getExerciseButtonTooltip(comp.exercises[0]);
 

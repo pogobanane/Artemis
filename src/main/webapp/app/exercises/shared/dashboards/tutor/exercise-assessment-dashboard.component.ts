@@ -491,7 +491,7 @@ export class ExerciseAssessmentDashboardComponent implements OnInit {
                     })
                     .map((submission) => {
                         submission.participation!.submissions = [submission];
-                        submission.participation!.results = submission.results;
+                        submission.participation!.results = submission.results ?? [];
                         setLatestSubmissionResult(submission, getLatestSubmissionResult(submission));
                         return submission;
                     });

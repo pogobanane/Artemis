@@ -183,24 +183,20 @@ export class ExamParticipationService {
         studentExam.exercises!.forEach((exercise) => {
             if (exercise.studentParticipations) {
                 for (const participation of exercise.studentParticipations) {
-                    if (participation.results) {
-                        for (const result of participation.results) {
-                            delete result.participation;
-                            if (result.feedbacks) {
-                                for (const feedback of result.feedbacks) {
-                                    delete feedback.result;
-                                }
+                    for (const result of participation.results) {
+                        delete result.participation;
+                        if (result.feedbacks) {
+                            for (const feedback of result.feedbacks) {
+                                delete feedback.result;
                             }
                         }
                     }
-                    if (participation.submissions) {
-                        for (const submission of participation.submissions) {
-                            delete submission.participation;
-                            const result = getLatestSubmissionResult(submission);
-                            if (result) {
-                                delete result.participation;
-                                delete result.submission;
-                            }
+                    for (const submission of participation.submissions) {
+                        delete submission.participation;
+                        const result = getLatestSubmissionResult(submission);
+                        if (result) {
+                            delete result.participation;
+                            delete result.submission;
                         }
                     }
                     delete participation.exercise;
