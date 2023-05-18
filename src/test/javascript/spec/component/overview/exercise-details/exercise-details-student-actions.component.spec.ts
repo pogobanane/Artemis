@@ -233,9 +233,15 @@ describe('ExerciseDetailsStudentActionsComponent', () => {
     }));
 
     it('should correctly resume programming participation', () => {
-        const inactiveParticipation: ProgrammingExerciseStudentParticipation = { id: 1, initializationState: InitializationState.INACTIVE };
-        const activeParticipation: ProgrammingExerciseStudentParticipation = { id: 1, initializationState: InitializationState.INITIALIZED };
-        const practiceParticipation: ProgrammingExerciseStudentParticipation = { id: 2, testRun: true, initializationState: InitializationState.INACTIVE };
+        const inactiveParticipation: ProgrammingExerciseStudentParticipation = { id: 1, initializationState: InitializationState.INACTIVE, results: [], submissions: [] };
+        const activeParticipation: ProgrammingExerciseStudentParticipation = { id: 1, initializationState: InitializationState.INITIALIZED, results: [], submissions: [] };
+        const practiceParticipation: ProgrammingExerciseStudentParticipation = {
+            id: 2,
+            testRun: true,
+            initializationState: InitializationState.INACTIVE,
+            results: [],
+            submissions: [],
+        };
         comp.exercise = { id: 3, studentParticipations: [inactiveParticipation, practiceParticipation] } as ProgrammingExercise;
         comp.updateParticipations();
 
