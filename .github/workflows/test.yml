@@ -30,7 +30,14 @@ on:
     types:
     - created
 
-# Keep in sync with codeql-analysis.yml and build-deploy.yml
+# Limit the number of concurrent runs to one per PR
+# If a run is already in progress, cancel it
+# If the run is not for a PR, then this limit does not apply
+concurrency:
+  group: test-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+# Keep in sync with codeql-analysis.yml and build.yml
 env:
   CI: true
   node: 18
@@ -58,7 +65,7 @@ jobs:
         coverage-reports: build/reports/jacoco/test/jacocoTestReport.xml
       if: (github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name) && (success() || failure()) && github.event.pull_request.user.login != 'dependabot[bot]'
     - name: Annotate Server Test Results
-      uses: ashley-taylor/junit-report-annotations-action@9ac2f823854c677f30e062dfe779445e33e5d380
+      uses: ashley-taylor/junit-report-annotations-action@f9c1a5cbe28479439f82b80a5402a6d3aa1990ac
       if: always() && github.event.pull_request.user.login != 'dependabot[bot]'
       with:
         access-token: ${{ secrets.GITHUB_TOKEN }}
@@ -79,8 +86,12 @@ jobs:
         reporter: java-junit
 
   server-tests-mysql:
+      needs: [ server-tests ]
       runs-on: ubuntu-latest
       timeout-minutes: 120
+      # Limit the number of concurrent mysql tests to one in total
+      concurrency:
+          group: server-tests-mysql
       steps:
           - uses: actions/checkout@v3
           - name: Setup Java
@@ -116,8 +127,12 @@ jobs:
                 reporter: java-junit
 
   server-tests-postgres:
+      needs: [ server-tests ]
       runs-on: ubuntu-latest
       timeout-minutes: 150
+      # Limit the number of concurrent postgres tests to one in total
+      concurrency:
+          group: server-tests-postgres
       steps:
           - uses: actions/checkout@v3
           - name: Setup Java

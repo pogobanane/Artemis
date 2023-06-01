@@ -13,7 +13,7 @@ import { LocaleConversionService } from 'app/shared/service/locale-conversion.se
 import { JhiLanguageHelper } from 'app/core/language/language.helper';
 import { ParticipantScoresService, ScoresDTO } from 'app/shared/participant-scores/participant-scores.service';
 import { average, round, roundScorePercentSpecifiedByCourseSettings, roundValueSpecifiedByCourseSettings } from 'app/shared/util/utils';
-import { captureException } from '@sentry/browser';
+import { captureException } from '@sentry/angular-ivy';
 import { GradingSystemService } from 'app/grading-system/grading-system.service';
 import { GradeType, GradingScale } from 'app/entities/grading-scale.model';
 import { catchError } from 'rxjs/operators';
@@ -991,13 +991,5 @@ export class CourseScoresComponent implements OnInit, OnDestroy {
                 break;
         }
         this.changeDetector.detectChanges();
-    }
-
-    /**
-     * Handles the click on an arbitrary bar in the score distribution
-     * Delegates the user to the participant scores view of the course
-     */
-    accessParticipantScores(): void {
-        this.navigationUtilService.routeInNewTab(['course-management', this.course.id, 'participant-scores']);
     }
 }

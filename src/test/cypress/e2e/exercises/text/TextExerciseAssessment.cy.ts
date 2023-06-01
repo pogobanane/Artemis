@@ -63,7 +63,7 @@ describe('Text exercise assessment', () => {
             exerciseResult.shouldShowExerciseTitle(exercise.title!);
             exerciseResult.shouldShowProblemStatement(exercise.problemStatement!);
             exerciseResult.shouldShowScore(percentage);
-            exerciseResult.clickViewSubmission();
+            exerciseResult.clickOpenExercise(exercise.id!);
             textExerciseFeedback.shouldShowTextFeedback(1, tutorTextFeedback);
             textExerciseFeedback.shouldShowAdditionalFeedback(tutorFeedbackPoints, tutorFeedback);
             textExerciseFeedback.shouldShowScore(percentage);
@@ -72,7 +72,7 @@ describe('Text exercise assessment', () => {
 
         it('Instructor can see complaint and reject it', () => {
             cy.login(instructor, `/course-management/${course.id}/complaints`);
-            textExerciseAssessment.acceptComplaint('Makes sense').its('response.statusCode').should('eq', 200);
+            textExerciseAssessment.acceptComplaint('Makes sense', false).its('response.statusCode').should('eq', 200);
         });
     });
 

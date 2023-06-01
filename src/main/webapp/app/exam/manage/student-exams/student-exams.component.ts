@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { StudentExamService } from 'app/exam/manage/student-exams/student-exam.service';
-import { Subscription, forkJoin } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { StudentExam } from 'app/entities/student-exam.model';
 import { CourseManagementService } from 'app/course/manage/course-management.service';
@@ -19,6 +19,8 @@ import { ArtemisTranslatePipe } from 'app/shared/pipes/artemis-translate.pipe';
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 import { JhiWebsocketService } from 'app/core/websocket/websocket.service';
 import { convertDateFromServer } from 'app/utils/date.utils';
+import { ProfileService } from 'app/shared/layouts/profiles/profile.service';
+import { PROFILE_LOCALVC } from 'app/app.constants';
 
 const getWebsocketChannel = (examId: number) => `/topic/exams/${examId}/exercise-start-status`;
 
@@ -51,6 +53,7 @@ export class StudentExamsComponent implements OnInit, OnDestroy {
     isExamOver = false;
     longestWorkingTime?: number;
     isAdmin = false;
+    localVCEnabled = false;
 
     exercisePreparationStatus?: ExamExerciseStartPreparationStatus;
     exercisePreparationRunning = false;
@@ -70,6 +73,7 @@ export class StudentExamsComponent implements OnInit, OnDestroy {
         private accountService: AccountService,
         private artemisTranslatePipe: ArtemisTranslatePipe,
         private websocketService: JhiWebsocketService,
+        private profileService: ProfileService,
     ) {}
 
     /**
@@ -80,6 +84,10 @@ export class StudentExamsComponent implements OnInit, OnDestroy {
         this.courseId = Number(this.route.snapshot.paramMap.get('courseId'));
         this.examId = Number(this.route.snapshot.paramMap.get('examId'));
         this.loadAll();
+
+        this.profileService.getProfileInfo().subscribe((profileInfo) => {
+            this.localVCEnabled = profileInfo.activeProfiles.includes(PROFILE_LOCALVC);
+        });
 
         const channel = getWebsocketChannel(this.examId);
         this.websocketService.subscribe(channel);
@@ -99,35 +107,27 @@ export class StudentExamsComponent implements OnInit, OnDestroy {
             this.courseService.find(this.courseId).subscribe((courseResponse) => {
                 this.course = courseResponse.body!;
             });
-            const studentExamObservable = this.studentExamService.findAllForExam(this.courseId, this.examId).pipe(
-                tap((res) => {
+
+            this.examManagementService.find(this.courseId, this.examId, true).subscribe((examResponse) => {
+                this.exam = examResponse.body!;
+                this.isTestExam = this.exam.testExam!;
+                this.isExamStarted = this.exam.startDate ? this.exam.startDate.isBefore(dayjs()) : false;
+
+                this.studentExamService.findAllForExam(this.courseId, this.examId).subscribe((res) => {
                     this.setStudentExams(res.body);
                     this.longestWorkingTime = Math.max.apply(
                         null,
                         this.studentExams.map((studentExam) => studentExam.workingTime),
                     );
                     this.calculateIsExamOver();
-                }),
-            );
-
-            const examObservable = this.examManagementService.find(this.courseId, this.examId, true).pipe(
-                tap((examResponse) => {
-                    this.exam = examResponse.body!;
-                    this.isTestExam = this.exam.testExam!;
-                    this.isExamStarted = this.exam.startDate ? this.exam.startDate.isBefore(dayjs()) : false;
-                    this.calculateIsExamOver();
-                }),
-            );
+                    this.isLoading = false;
+                    if (this.exam.examUsers) {
+                        this.hasStudentsWithoutExam = this.studentExams.length < this.exam.examUsers.length;
+                    }
+                });
+            });
 
             this.examManagementService.getExerciseStartStatus(this.courseId, this.examId).subscribe((res) => this.setExercisePreparationStatus(res.body ?? undefined));
-
-            // Calculate hasStudentsWithoutExam only when both observables emitted
-            forkJoin([studentExamObservable, examObservable]).subscribe(() => {
-                this.isLoading = false;
-                if (this.exam.examUsers) {
-                    this.hasStudentsWithoutExam = this.studentExams.length < this.exam.examUsers.length;
-                }
-            });
         });
     }
 
@@ -319,10 +319,15 @@ export class StudentExamsComponent implements OnInit, OnDestroy {
         return studentExam.user?.login || '';
     };
 
-    private setStudentExams(studentExams: any): void {
-        if (studentExams) {
-            this.studentExams = studentExams;
+    private setStudentExams(studentExams: StudentExam[] | null): void {
+        if (!studentExams) {
+            return;
         }
+        this.studentExams = studentExams;
+        this.studentExams.forEach((studentExam: StudentExam) => {
+            studentExam.exam = this.exam;
+            studentExam.numberOfExamSessions = studentExam.examSessions?.length ?? 0;
+        });
     }
 
     /**

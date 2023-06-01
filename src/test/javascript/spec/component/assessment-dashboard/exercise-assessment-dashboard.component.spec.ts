@@ -67,6 +67,7 @@ import { MockTranslateService } from '../../helpers/mocks/service/mock-translate
 import { MockAccountService } from '../../helpers/mocks/service/mock-account.service';
 import { User } from 'app/core/user/user.model';
 import { TutorLeaderboardElement } from 'app/shared/dashboards/tutor-leaderboard/tutor-leaderboard.model';
+import { ProfileService } from 'app/shared/layouts/profiles/profile.service';
 
 describe('ExerciseAssessmentDashboardComponent', () => {
     let comp: ExerciseAssessmentDashboardComponent;
@@ -201,7 +202,6 @@ describe('ExerciseAssessmentDashboardComponent', () => {
     const lockLimitErrorResponse = new HttpErrorResponse({ error: { errorKey: 'lockedSubmissionsLimitReached' } });
 
     let navigateSpy: jest.SpyInstance;
-    let routingStub: jest.SpyInstance;
     const route = {
         snapshot: {
             paramMap: convertToParamMap({
@@ -252,6 +252,7 @@ describe('ExerciseAssessmentDashboardComponent', () => {
         MockProvider(ArtemisDatePipe),
         MockProvider(SortService),
         MockProvider(ArtemisNavigationUtilService),
+        MockProvider(ProfileService, { getProfileInfo: () => of({ activeProfiles: [] }) }, 'useValue'),
     ];
 
     beforeEach(() => {
@@ -318,9 +319,6 @@ describe('ExerciseAssessmentDashboardComponent', () => {
                 comp.submissionsWithComplaints = [submissionWithComplaintDTO];
 
                 accountService = TestBed.inject(AccountService);
-                const navigationUtilService = TestBed.inject(ArtemisNavigationUtilService);
-
-                routingStub = jest.spyOn(navigationUtilService, 'routeInNewTab');
 
                 translateService = TestBed.inject(TranslateService);
             });
@@ -717,48 +715,6 @@ describe('ExerciseAssessmentDashboardComponent', () => {
                 queryParams: { readOnly: true, toComplete: true },
             });
         });
-    });
-
-    describe('pie chart interaction', () => {
-        let event: any;
-
-        it('should not navigate if user is not instructor', () => {
-            jest.spyOn(accountService, 'hasAnyAuthorityDirect').mockReturnValue(false);
-            event = { value: 60 };
-
-            comp.navigateToExerciseSubmissionOverview(event);
-
-            expect(routingStub).not.toHaveBeenCalled();
-        });
-
-        it('should navigate if user is instructor but clicked the chart legend', () => {
-            event = 'test';
-
-            assertRoutingPerformed();
-        });
-
-        it('should navigate if user is instructor and clicked pie part', () => {
-            event = { name: 'test', value: 40 };
-
-            assertRoutingPerformed();
-        });
-        const assertRoutingPerformed = () => {
-            jest.spyOn(accountService, 'hasAnyAuthorityDirect').mockReturnValue(true);
-            const exercises = [programmingExercise, modelingExercise, textExercise, fileUploadExercise];
-            comp.assessments = [event];
-
-            exercises.forEach((preparedExercise) => {
-                comp.exercise = preparedExercise;
-                comp.exerciseId = preparedExercise.id!;
-                comp.courseId = 42;
-
-                comp.navigateToExerciseSubmissionOverview(event);
-
-                expect(routingStub).toHaveBeenCalledWith(['course-management', 42, preparedExercise.type + '-exercises', preparedExercise.id, 'submissions'], {
-                    queryParams: { filterOption: 0 },
-                });
-            });
-        };
     });
 
     it('should toggle second correction', () => {

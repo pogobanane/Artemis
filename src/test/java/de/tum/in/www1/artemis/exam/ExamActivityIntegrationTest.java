@@ -1,7 +1,6 @@
 package de.tum.in.www1.artemis.exam;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
 
 import java.time.ZonedDateTime;
@@ -130,7 +129,7 @@ class ExamActivityIntegrationTest extends AbstractSpringIntegrationBambooBitbuck
 
         var examActivity = examMonitoringScheduleService.getExamActivityFromCache(exam.getId(), studentExam.getId());
         assertThat(examActivity).isNotNull();
-        assertThat(examActivity.getExamActions().size()).isEqualTo(1);
+        assertThat(examActivity.getExamActions()).hasSize(1);
         assertThat(new ArrayList<>(examActivity.getExamActions()).get(0).getType()).isEqualTo(examActionType);
     }
 
@@ -162,7 +161,7 @@ class ExamActivityIntegrationTest extends AbstractSpringIntegrationBambooBitbuck
         var examActivity = examMonitoringScheduleService.getExamActivityFromCache(exam.getId(), studentExam.getId());
 
         assertThat(examActivity).isNotNull();
-        assertThat(examActivity.getExamActions().size()).isEqualTo(examActions.size());
+        assertThat(examActivity.getExamActions()).hasSameSizeAs(examActions);
 
         examMonitoringScheduleService.executeExamActivitySaveTask(exam.getId());
     }
@@ -183,7 +182,7 @@ class ExamActivityIntegrationTest extends AbstractSpringIntegrationBambooBitbuck
         // Currently, we don't apply any filtering - so there should be an activity and action in the cache
         var examActivity = examMonitoringScheduleService.getExamActivityFromCache(exam.getId(), studentExam.getId());
         assertThat(examActivity).isNotNull();
-        assertThat(examActivity.getExamActions().size()).isEqualTo(1);
+        assertThat(examActivity.getExamActions()).hasSize(1);
         assertThat(new ArrayList<>(examActivity.getExamActions()).get(0).getType()).isEqualTo(examActionType);
     }
 
@@ -199,14 +198,14 @@ class ExamActivityIntegrationTest extends AbstractSpringIntegrationBambooBitbuck
 
         List<ExamAction> examActions = request.getList("/api/exam-monitoring/" + exam.getId() + "/load-actions", HttpStatus.OK, ExamAction.class);
 
-        assertEquals(1, examActions.size());
+        assertThat(examActions).hasSize(1);
 
         var receivedAction = examActions.get(0);
         // We need to validate those values to be equal.
-        assertEquals(examAction.getExamActivityId(), receivedAction.getExamActivityId());
-        assertEquals(examAction.getStudentExamId(), receivedAction.getStudentExamId());
-        assertEquals(examAction.getId(), receivedAction.getId());
-        assertEquals(examAction.getType(), receivedAction.getType());
+        assertThat(receivedAction.getExamActivityId()).isEqualTo(examAction.getExamActivityId());
+        assertThat(receivedAction.getStudentExamId()).isEqualTo(examAction.getStudentExamId());
+        assertThat(receivedAction.getId()).isEqualTo(examAction.getId());
+        assertThat(receivedAction.getType()).isEqualTo(examAction.getType());
     }
 
     @ParameterizedTest(name = "{displayName} [{index}] {argumentsWithNames}")
@@ -216,9 +215,9 @@ class ExamActivityIntegrationTest extends AbstractSpringIntegrationBambooBitbuck
         exam.setMonitoring(!monitoring);
         exam = examRepository.save(exam);
 
-        var result = request.putWithResponseBody("/api/courses/" + course.getId() + "/exams/" + exam.getId() + "/statistics", monitoring, Boolean.class, HttpStatus.OK);
+        boolean result = request.putWithResponseBody("/api/courses/" + course.getId() + "/exams/" + exam.getId() + "/statistics", monitoring, Boolean.class, HttpStatus.OK);
 
-        assertEquals(result, monitoring);
-        assertEquals(examRepository.findByIdElseThrow(exam.getId()).isMonitoring(), monitoring);
+        assertThat(result).isEqualTo(monitoring);
+        assertThat(examRepository.findByIdElseThrow(exam.getId()).isMonitoring()).isEqualTo(monitoring);
     }
 }

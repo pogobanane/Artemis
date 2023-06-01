@@ -15,7 +15,9 @@ import { ButtonSize, ButtonType } from 'app/shared/components/button.component';
 import { AccountService } from 'app/core/auth/account.service';
 import { AlertService } from 'app/core/util/alert.service';
 import { EventManager } from 'app/core/util/event-manager.service';
-import { faInfoCircle, faPlus, faUpload, faUserSlash } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faInfoCircle, faPlus, faTimes, faUpload, faUserSlash, faUserTimes } from '@fortawesome/free-solid-svg-icons';
+import dayjs from 'dayjs/esm';
+import { StudentExamService } from 'app/exam/manage/student-exams/student-exam.service';
 
 const cssClasses = {
     alreadyRegistered: 'already-registered',
@@ -34,12 +36,10 @@ export class ExamStudentsComponent implements OnInit, OnDestroy {
     readonly ButtonType = ButtonType;
     readonly ButtonSize = ButtonSize;
     readonly ActionType = ActionType;
-    readonly SERVER_API_URL = SERVER_API_URL;
     readonly missingImage = '/content/images/missing_image.png';
 
     courseId: number;
     exam: Exam;
-    file: File;
     isTestExam: boolean;
     allRegisteredUsers: ExamUser[] = [];
     filteredUsersSize = 0;
@@ -49,6 +49,8 @@ export class ExamStudentsComponent implements OnInit, OnDestroy {
     dialogError$ = this.dialogErrorSource.asObservable();
 
     isLoading = false;
+    hasExamStarted = false;
+    hasExamEnded = false;
     isSearching = false;
     searchFailed = false;
     searchNoResults = false;
@@ -60,9 +62,11 @@ export class ExamStudentsComponent implements OnInit, OnDestroy {
     // Icons
     faPlus = faPlus;
     faUserSlash = faUserSlash;
+    faUserTimes = faUserTimes;
     faInfoCircle = faInfoCircle;
     faUpload = faUpload;
-
+    faCheck = faCheck;
+    faTimes = faTimes;
     constructor(
         private router: Router,
         private route: ActivatedRoute,
@@ -71,6 +75,7 @@ export class ExamStudentsComponent implements OnInit, OnDestroy {
         private examManagementService: ExamManagementService,
         private userService: UserService,
         private accountService: AccountService,
+        private studentExamService: StudentExamService,
     ) {}
 
     ngOnInit() {
@@ -78,7 +83,38 @@ export class ExamStudentsComponent implements OnInit, OnDestroy {
         this.courseId = Number(this.route.snapshot.paramMap.get('courseId'));
         this.isAdmin = this.accountService.isAdmin();
         this.route.data.subscribe(({ exam }: { exam: Exam }) => {
-            this.exam = exam;
+            this.setUpExamInformation(exam);
+        });
+    }
+
+    reloadExamWithRegisteredUsers() {
+        this.isLoading = true;
+        this.examManagementService.find(this.courseId, this.exam.id!, true).subscribe((examResponse: HttpResponse<Exam>) => {
+            this.setUpExamInformation(examResponse.body!);
+        });
+    }
+
+    private setUpExamInformation(exam: Exam) {
+        this.exam = exam;
+        this.hasExamStarted = exam.startDate?.isBefore(dayjs()) || false;
+        this.hasExamEnded = exam.endDate?.isBefore(dayjs()) || false;
+
+        if (this.hasExamEnded) {
+            this.studentExamService.findAllForExam(this.courseId, exam.id!).subscribe((res) => {
+                const studentExams = res.body;
+                if (studentExams!.length > 0) {
+                    this.allRegisteredUsers =
+                        exam.examUsers?.map((examUser) => {
+                            const studentExam = studentExams!.filter((studentExam) => studentExam.user?.id === examUser.user!.id).first();
+                            return {
+                                ...examUser.user!,
+                                ...examUser,
+                                didExamUserAttendExam: !!studentExam!.started,
+                            };
+                        }) || [];
+                }
+            });
+        } else {
             this.allRegisteredUsers =
                 exam.examUsers?.map((examUser) => {
                     return {
@@ -86,24 +122,9 @@ export class ExamStudentsComponent implements OnInit, OnDestroy {
                         ...examUser,
                     };
                 }) || [];
-            this.isTestExam = this.exam.testExam!;
-            this.isLoading = false;
-        });
-    }
-
-    reloadExamWithRegisteredUsers() {
-        this.isLoading = true;
-        this.examManagementService.find(this.courseId, this.exam.id!, true).subscribe((examResponse: HttpResponse<Exam>) => {
-            this.exam = examResponse.body!;
-            this.allRegisteredUsers =
-                this.exam.examUsers?.map((examUser) => {
-                    return {
-                        ...examUser.user!,
-                        ...examUser,
-                    };
-                }) || [];
-            this.isLoading = false;
-        });
+        }
+        this.isTestExam = this.exam.testExam!;
+        this.isLoading = false;
     }
 
     ngOnDestroy() {
@@ -169,16 +190,9 @@ export class ExamStudentsComponent implements OnInit, OnDestroy {
         if (!this.allRegisteredUsers.map((eu) => eu.user!.id).includes(user.id) && user.login) {
             this.isTransitioning = true;
             this.examManagementService.addStudentToExam(this.courseId, this.exam.id!, user.login).subscribe({
-                next: (student) => {
+                next: () => {
                     this.isTransitioning = false;
-
-                    // make sure the registration number is set in the user object
-                    user.visibleRegistrationNumber = student.body!.registrationNumber;
-
-                    // Add newly registered user to the list of all registered users for the exam
-                    this.allRegisteredUsers.push(user);
                     this.reloadExamWithRegisteredUsers();
-
                     // Flash green background color to signal to the user that this student was registered
                     this.flashRowClass(cssClasses.newlyRegistered);
                 },

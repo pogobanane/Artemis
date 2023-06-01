@@ -28,7 +28,7 @@ import de.tum.in.www1.artemis.domain.*;
 import de.tum.in.www1.artemis.domain.enumeration.NotificationType;
 import de.tum.in.www1.artemis.domain.metis.Post;
 import de.tum.in.www1.artemis.domain.notification.Notification;
-import de.tum.in.www1.artemis.domain.notification.NotificationTitleTypeConstants;
+import de.tum.in.www1.artemis.domain.notification.NotificationConstants;
 import de.tum.in.www1.artemis.domain.participation.StudentParticipation;
 import de.tum.in.www1.artemis.domain.plagiarism.PlagiarismCase;
 import de.tum.in.www1.artemis.exception.ArtemisMailException;
@@ -190,7 +190,7 @@ public class MailService {
      * @param notificationSubject that is used to provide further information (e.g. exercise, attachment, post, etc.)
      */
     public void sendNotificationEmail(Notification notification, User user, Object notificationSubject) {
-        NotificationType notificationType = NotificationTitleTypeConstants.findCorrespondingNotificationType(notification.getTitle());
+        NotificationType notificationType = NotificationConstants.findCorrespondingNotificationType(notification.getTitle());
         log.debug("Sending \"{}\" notification email to '{}'", notificationType.name(), user.getEmail());
 
         String localeKey = user.getLangKey();
@@ -207,14 +207,14 @@ public class MailService {
         context.setVariable(NOTIFICATION_SUBJECT, notificationSubject);
 
         context.setVariable(TIME_SERVICE, this.timeService);
-        String subject = notification.getTitle();
+        String subject = messageSource.getMessage(notification.getTitle(), null, context.getLocale());
 
         if (notificationSubject instanceof Exercise exercise) {
             context.setVariable(EXERCISE_TYPE, exercise.getExerciseType());
             checkAndPrepareExerciseSubmissionAssessedCase(notificationType, context, exercise, user);
         }
         if (notificationSubject instanceof PlagiarismCase plagiarismCase) {
-            context.setVariable(PLAGIARISM_VERDICT, plagiarismCase.getVerdict());
+            subject = setPlagiarismContextAndSubject(context, notificationType, notification, plagiarismCase);
         }
 
         if (notificationSubject instanceof SingleUserNotificationService.TutorialGroupNotificationSubject tutorialGroupNotificationSubject) {
@@ -234,6 +234,27 @@ public class MailService {
         String content = createContentForNotificationEmailByType(notificationType, context);
 
         sendEmail(user, subject, content, false, true);
+    }
+
+    /**
+     * Sets the context and subject for the case that the notificationSubject is a PlagiarismCase
+     *
+     * @param context          the context of the email template
+     * @param notificationType the notification type of which the email to be sent
+     * @param notification     the object which contains the notification title
+     * @param plagiarismCase   the plagiarism case for which the email to be sent
+     * @return the modified subject of the email
+     */
+    private String setPlagiarismContextAndSubject(Context context, NotificationType notificationType, Notification notification, PlagiarismCase plagiarismCase) {
+        if (notificationType == NotificationType.NEW_PLAGIARISM_CASE_STUDENT) {
+            Exercise exercise = plagiarismCase.getExercise();
+            Course course = exercise.getCourseViaExerciseGroupOrCourseMember();
+            return messageSource.getMessage("email.plagiarism.title", new Object[] { exercise.getTitle(), course.getTitle() }, context.getLocale());
+        }
+        else {
+            context.setVariable(PLAGIARISM_VERDICT, plagiarismCase.getVerdict());
+            return notification.getTitle();
+        }
     }
 
     private void setContextForTutorialGroupNotifications(Context context, NotificationType notificationType,

@@ -1,8 +1,10 @@
 import { Exam } from 'app/entities/exam.model';
 import { courseManagementRequest } from '../../artemis';
-import multipleChoiceTemplate from '../../../fixtures/quiz_exercise_fixtures/multipleChoiceQuiz_template.json';
+import multipleChoiceTemplate from '../../../fixtures/exercise/quiz/multiple_choice/template.json';
 import { BASE_API, EXERCISE_TYPE, PUT } from '../../constants';
 import { POST } from '../../constants';
+import { AdditionalData, Exercise } from './ExamParticipation';
+import { generateUUID } from '../../utils';
 
 /**
  * A class which encapsulates UI selectors and actions for the exam exercise group creation page.
@@ -28,7 +30,19 @@ export class ExamExerciseGroupCreationPage {
         cy.wait('@updateExerciseGroup');
     }
 
-    addGroupWithExercise(exam: Exam, title: string, exerciseType: EXERCISE_TYPE, processResponse: (data: any) => void) {
+    addGroupWithExercise(exam: Exam, exerciseType: EXERCISE_TYPE, additionalData: AdditionalData = {}): Promise<Exercise> {
+        return new Promise((resolve) => {
+            this.handleAddGroupWithExercise(exam, 'Exercise ' + generateUUID(), exerciseType, additionalData, (response) => {
+                if (exerciseType == EXERCISE_TYPE.Quiz) {
+                    additionalData!.quizExerciseID = response.body.quizQuestions![0].id;
+                }
+                const exercise = { ...response.body, additionalData };
+                resolve(exercise);
+            });
+        });
+    }
+
+    handleAddGroupWithExercise(exam: Exam, title: string, exerciseType: EXERCISE_TYPE, additionalData: AdditionalData, processResponse: (data: any) => void) {
         courseManagementRequest.addExerciseGroupForExam(exam).then((groupResponse) => {
             switch (exerciseType) {
                 case EXERCISE_TYPE.Text:
@@ -48,7 +62,18 @@ export class ExamExerciseGroupCreationPage {
                     break;
                 case EXERCISE_TYPE.Programming:
                     courseManagementRequest
-                        .createProgrammingExercise({ exerciseGroup: groupResponse.body }, undefined, false, undefined, undefined, title, undefined, 'de.test')
+                        .createProgrammingExercise(
+                            { exerciseGroup: groupResponse.body },
+                            undefined,
+                            false,
+                            undefined,
+                            undefined,
+                            title,
+                            undefined,
+                            'de.test',
+                            undefined,
+                            additionalData.progExerciseAssessmentType,
+                        )
                         .then((response) => {
                             processResponse(response);
                         });

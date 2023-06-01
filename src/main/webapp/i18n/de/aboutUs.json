@@ -50,6 +50,9 @@
             "learningAnalytics": {
                 "text": "<a href={{ learningAnalyticsUrl }}>Lernanalytik:</a> Statistiken, mit denen sich die Studierenden mit dem Kursdurchschnitt vergleichen können. Bewerten der durchschnittliche Leistung der Studierenden anhand von Aufgaben und Kompetenzen."
             },
+            "tutorialGroups": {
+                "text": "<a href={{ tutorialGroupsUrl }}>Übungsgruppen:</a> Verwaltung der Übungsgruppen eines Kurses. Planung der Sitzungen, Zuweisung der verantwortlichen Tutor:innen, Registrierung der Studierenden und Verfolgung der Anwesenheit."
+            },
             "scalable": {
                 "text": "<a href={{ scalingUrl }}>Skalierbar</a> auf mehrere Kurse mit Tausenden von Studierenden. Konfigurieren von zusätzlichen Build-Agenten in der kontinuierlichen Integrationsumgebung."
             },
@@ -64,8 +67,12 @@
             },
             "getInTouch": "Kontakt",
             "contributors": "Mitwirkende",
-            "projectManager": "Projekt Manager",
-            "website": "Webseite"
+            "website": "Webseite",
+            "roles": {
+                "projectManager": "Projektmanagement",
+                "administrator": "Systemadministration",
+                "exerciseManagement": "Übungsleitung"
+            }
         }
     }
 }

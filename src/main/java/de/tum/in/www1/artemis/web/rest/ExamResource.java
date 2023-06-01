@@ -41,6 +41,7 @@ import de.tum.in.www1.artemis.repository.*;
 import de.tum.in.www1.artemis.security.Role;
 import de.tum.in.www1.artemis.service.AssessmentDashboardService;
 import de.tum.in.www1.artemis.service.AuthorizationCheckService;
+import de.tum.in.www1.artemis.service.ProfileService;
 import de.tum.in.www1.artemis.service.SubmissionService;
 import de.tum.in.www1.artemis.service.dto.StudentDTO;
 import de.tum.in.www1.artemis.service.exam.*;
@@ -71,11 +72,15 @@ public class ExamResource {
     @Value("${artemis.course-archives-path}")
     private String examArchivesDirPath;
 
+    private final ProfileService profileService;
+
     private final UserRepository userRepository;
 
     private final CourseRepository courseRepository;
 
     private final ExamService examService;
+
+    private final ExamDeletionService examDeletionService;
 
     private final ExamDateService examDateService;
 
@@ -103,14 +108,17 @@ public class ExamResource {
 
     private final CustomAuditEventRepository auditEventRepository;
 
-    public ExamResource(UserRepository userRepository, CourseRepository courseRepository, ExamService examService, ExamAccessService examAccessService,
-            InstanceMessageSendService instanceMessageSendService, ExamRepository examRepository, SubmissionService submissionService, AuthorizationCheckService authCheckService,
-            ExamDateService examDateService, TutorParticipationRepository tutorParticipationRepository, AssessmentDashboardService assessmentDashboardService,
-            ExamRegistrationService examRegistrationService, StudentExamRepository studentExamRepository, ExamImportService examImportService,
-            ExamMonitoringScheduleService examMonitoringScheduleService, CustomAuditEventRepository auditEventRepository) {
+    public ExamResource(ProfileService profileService, UserRepository userRepository, CourseRepository courseRepository, ExamService examService,
+            ExamDeletionService examDeletionService, ExamAccessService examAccessService, InstanceMessageSendService instanceMessageSendService, ExamRepository examRepository,
+            SubmissionService submissionService, AuthorizationCheckService authCheckService, ExamDateService examDateService,
+            TutorParticipationRepository tutorParticipationRepository, AssessmentDashboardService assessmentDashboardService, ExamRegistrationService examRegistrationService,
+            StudentExamRepository studentExamRepository, ExamImportService examImportService, ExamMonitoringScheduleService examMonitoringScheduleService,
+            CustomAuditEventRepository auditEventRepository) {
+        this.profileService = profileService;
         this.userRepository = userRepository;
         this.courseRepository = courseRepository;
         this.examService = examService;
+        this.examDeletionService = examDeletionService;
         this.submissionService = submissionService;
         this.examDateService = examDateService;
         this.examRegistrationService = examRegistrationService;
@@ -648,7 +656,7 @@ public class ExamResource {
             instanceMessageSendService.sendExamMonitoringScheduleCancel(examId);
         }
 
-        examService.delete(examId);
+        examDeletionService.delete(examId);
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, exam.getTitle())).build();
     }
 
@@ -673,7 +681,7 @@ public class ExamResource {
             instanceMessageSendService.sendExamMonitoringScheduleCancel(examId);
         }
 
-        examService.reset(exam.getId());
+        examDeletionService.reset(exam.getId());
         Exam returnExam = examService.findByIdWithExerciseGroupsAndExercisesElseThrow(examId);
         examService.setExamProperties(returnExam);
 
@@ -740,7 +748,7 @@ public class ExamResource {
         final var exam = checkAccessForStudentExamGenerationAndLogAuditEvent(courseId, examId, Constants.GENERATE_STUDENT_EXAMS);
 
         // Reset existing student exams & participations in case they already exist
-        examService.deleteStudentExamsAndExistingParticipationsForExam(exam.getId());
+        examDeletionService.deleteStudentExamsAndExistingParticipationsForExam(exam.getId());
 
         List<StudentExam> studentExams = studentExamRepository.generateStudentExams(exam);
 
@@ -847,6 +855,12 @@ public class ExamResource {
     @PostMapping("courses/{courseId}/exams/{examId}/student-exams/unlock-all-repositories")
     @PreAuthorize("hasRole('INSTRUCTOR')")
     public ResponseEntity<Integer> unlockAllRepositories(@PathVariable Long courseId, @PathVariable Long examId) {
+        // Locking and unlocking repositories is not supported when using the local version control system. Repository access is checked in the LocalVCFetchFilter and
+        // LocalVCPushFilter.
+        if (profileService.isLocalVcsCi()) {
+            return ResponseEntity.badRequest().build();
+        }
+
         log.info("REST request to unlock all repositories of exam {}", examId);
 
         examAccessService.checkCourseAndExamAccessForInstructorElseThrow(courseId, examId);
@@ -868,6 +882,12 @@ public class ExamResource {
     @PostMapping("courses/{courseId}/exams/{examId}/student-exams/lock-all-repositories")
     @PreAuthorize("hasRole('INSTRUCTOR')")
     public ResponseEntity<Integer> lockAllRepositories(@PathVariable Long courseId, @PathVariable Long examId) {
+        // Locking and unlocking repositories is not supported when using the local version control system. Repository access is checked in the LocalVCFetchFilter and
+        // LocalVCPushFilter.
+        if (profileService.isLocalVcsCi()) {
+            return ResponseEntity.badRequest().build();
+        }
+
         log.info("REST request to lock all repositories of exam {}", examId);
 
         examAccessService.checkCourseAndExamAccessForInstructorElseThrow(courseId, examId);

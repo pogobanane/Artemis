@@ -27,13 +27,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import de.tum.in.www1.artemis.domain.*;
+import de.tum.in.www1.artemis.exception.ContinuousIntegrationException;
 import de.tum.in.www1.artemis.repository.ProgrammingExerciseRepository;
 import de.tum.in.www1.artemis.repository.UserRepository;
 import de.tum.in.www1.artemis.service.AuthorizationCheckService;
+import de.tum.in.www1.artemis.service.ProfileService;
+import de.tum.in.www1.artemis.service.RepositoryAccessService;
 import de.tum.in.www1.artemis.service.RepositoryService;
-import de.tum.in.www1.artemis.service.connectors.ContinuousIntegrationService;
 import de.tum.in.www1.artemis.service.connectors.GitService;
-import de.tum.in.www1.artemis.service.connectors.VersionControlService;
+import de.tum.in.www1.artemis.service.connectors.ci.ContinuousIntegrationService;
+import de.tum.in.www1.artemis.service.connectors.localci.LocalCIConnectorService;
+import de.tum.in.www1.artemis.service.connectors.vcs.VersionControlService;
 import de.tum.in.www1.artemis.web.rest.dto.FileMove;
 import de.tum.in.www1.artemis.web.rest.dto.RepositoryStatusDTO;
 import de.tum.in.www1.artemis.web.rest.dto.RepositoryStatusDTOType;
@@ -50,6 +54,8 @@ public abstract class RepositoryResource {
 
     protected final Logger log = LoggerFactory.getLogger(RepositoryResource.class);
 
+    private final ProfileService profileService;
+
     protected final AuthorizationCheckService authCheckService;
 
     protected final Optional<ContinuousIntegrationService> continuousIntegrationService;
@@ -64,16 +70,24 @@ public abstract class RepositoryResource {
 
     protected final Optional<VersionControlService> versionControlService;
 
-    public RepositoryResource(UserRepository userRepository, AuthorizationCheckService authCheckService, GitService gitService,
+    protected final RepositoryAccessService repositoryAccessService;
+
+    private final Optional<LocalCIConnectorService> localCIConnectorService;
+
+    public RepositoryResource(ProfileService profileService, UserRepository userRepository, AuthorizationCheckService authCheckService, GitService gitService,
             Optional<ContinuousIntegrationService> continuousIntegrationService, RepositoryService repositoryService, Optional<VersionControlService> versionControlService,
-            ProgrammingExerciseRepository programmingExerciseRepository) {
+            ProgrammingExerciseRepository programmingExerciseRepository, RepositoryAccessService repositoryAccessService,
+            Optional<LocalCIConnectorService> localCIConnectorService) {
+        this.profileService = profileService;
         this.userRepository = userRepository;
         this.authCheckService = authCheckService;
         this.gitService = gitService;
         this.continuousIntegrationService = continuousIntegrationService;
         this.repositoryService = repositoryService;
-        this.programmingExerciseRepository = programmingExerciseRepository;
         this.versionControlService = versionControlService;
+        this.programmingExerciseRepository = programmingExerciseRepository;
+        this.repositoryAccessService = repositoryAccessService;
+        this.localCIConnectorService = localCIConnectorService;
     }
 
     /**
@@ -81,12 +95,10 @@ public abstract class RepositoryResource {
      *
      * @param domainId that serves as an abstract identifier for retrieving the repository.
      * @return the repository if available.
-     * @throws IOException            if the repository folder can't be accessed.
-     * @throws IllegalAccessException if the user is not allowed to access the repository.
-     * @throws GitAPIException        if the repository can't be checked out.
+     * @throws IOException     if the repository folder can't be accessed.
+     * @throws GitAPIException if the repository can't be checked out.
      */
-    abstract Repository getRepository(Long domainId, RepositoryActionType repositoryAction, boolean pullOnCheckout)
-            throws IOException, IllegalAccessException, IllegalArgumentException, GitAPIException;
+    abstract Repository getRepository(Long domainId, RepositoryActionType repositoryAction, boolean pullOnCheckout) throws IOException, IllegalArgumentException, GitAPIException;
 
     /**
      * Get the url for a repository.
@@ -251,6 +263,12 @@ public abstract class RepositoryResource {
         return executeAndCheckForExceptions(() -> {
             Repository repository = getRepository(domainId, RepositoryActionType.WRITE, true);
             repositoryService.commitChanges(repository, user);
+            // Trigger a build, and process the result. Only implemented for local CI.
+            // For Bitbucket + Bamboo and GitLab + Jenkins, webhooks were added when creating the repository,
+            // that notify the CI system when the commit happens and thus trigger the build.
+            if (profileService.isLocalVcsCi()) {
+                localCIConnectorService.orElseThrow().processNewPush(null, repository);
+            }
             return new ResponseEntity<>(HttpStatus.OK);
         });
     }
@@ -320,16 +338,14 @@ public abstract class RepositoryResource {
         catch (IllegalArgumentException | FileAlreadyExistsException ex) {
             throw new BadRequestAlertException("Illegal argument during operation or file already exists", "Repository", "illegalArgumentFileAlreadyExists");
         }
-        catch (IllegalAccessException ex) {
-            throw new AccessForbiddenException();
-        }
         catch (CheckoutConflictException | WrongRepositoryStateException ex) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
         catch (FileNotFoundException ex) {
             throw new EntityNotFoundException("File not found");
         }
-        catch (GitAPIException | IOException ex) {
+        catch (GitAPIException | IOException | ContinuousIntegrationException ex) {
+            log.error("Exception during repository operation", ex);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return responseEntitySuccess;

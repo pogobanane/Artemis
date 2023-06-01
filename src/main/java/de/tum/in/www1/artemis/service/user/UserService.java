@@ -26,20 +26,25 @@ import org.springframework.util.StringUtils;
 import de.tum.in.www1.artemis.domain.Authority;
 import de.tum.in.www1.artemis.domain.GuidedTourSetting;
 import de.tum.in.www1.artemis.domain.User;
+import de.tum.in.www1.artemis.domain.metis.conversation.OneToOneChat;
 import de.tum.in.www1.artemis.exception.AccountRegistrationBlockedException;
 import de.tum.in.www1.artemis.exception.ArtemisAuthenticationException;
 import de.tum.in.www1.artemis.exception.UsernameAlreadyUsedException;
 import de.tum.in.www1.artemis.exception.VersionControlException;
 import de.tum.in.www1.artemis.repository.*;
 import de.tum.in.www1.artemis.repository.hestia.ExerciseHintActivationRepository;
+import de.tum.in.www1.artemis.repository.metis.ConversationParticipantRepository;
+import de.tum.in.www1.artemis.repository.metis.PostRepository;
+import de.tum.in.www1.artemis.repository.metis.conversation.ConversationRepository;
+import de.tum.in.www1.artemis.repository.metis.conversation.OneToOneChatRepository;
 import de.tum.in.www1.artemis.repository.tutorialgroups.TutorialGroupRegistrationRepository;
 import de.tum.in.www1.artemis.repository.tutorialgroups.TutorialGroupRepository;
 import de.tum.in.www1.artemis.security.ArtemisAuthenticationProvider;
 import de.tum.in.www1.artemis.security.Role;
 import de.tum.in.www1.artemis.security.SecurityUtils;
-import de.tum.in.www1.artemis.service.connectors.CIUserManagementService;
-import de.tum.in.www1.artemis.service.connectors.VcsUserManagementService;
+import de.tum.in.www1.artemis.service.connectors.ci.CIUserManagementService;
 import de.tum.in.www1.artemis.service.connectors.jira.JiraAuthenticationProvider;
+import de.tum.in.www1.artemis.service.connectors.vcs.VcsUserManagementService;
 import de.tum.in.www1.artemis.service.dto.UserDTO;
 import de.tum.in.www1.artemis.service.ldap.LdapUserDto;
 import de.tum.in.www1.artemis.service.ldap.LdapUserService;
@@ -67,6 +72,9 @@ public class UserService {
     @Value("${artemis.user-management.internal-admin.password:#{null}}")
     private Optional<String> artemisInternalAdminPassword;
 
+    @Value("${artemis.user-management.internal-admin.email:#{null}}")
+    private Optional<String> artemisInternalAdminEmail;
+
     private final UserCreationService userCreationService;
 
     private final UserRepository userRepository;
@@ -85,7 +93,7 @@ public class UserService {
 
     private final StudentScoreRepository studentScoreRepository;
 
-    private final LearningGoalProgressRepository learningGoalProgressRepository;
+    private final CompetencyProgressRepository competencyProgressRepository;
 
     private final CacheManager cacheManager;
 
@@ -105,13 +113,22 @@ public class UserService {
 
     private final NotificationRepository notificationRepository;
 
+    private final PostRepository postRepository;
+
+    private final ConversationRepository conversationRepository;
+
+    private final ConversationParticipantRepository conversationParticipantRepository;
+
+    private final OneToOneChatRepository oneToOneChatRepository;
+
     public UserService(UserCreationService userCreationService, UserRepository userRepository, AuthorityService authorityService, AuthorityRepository authorityRepository,
             CacheManager cacheManager, Optional<LdapUserService> ldapUserService, GuidedTourSettingsRepository guidedTourSettingsRepository, PasswordService passwordService,
             Optional<VcsUserManagementService> optionalVcsUserManagementService, Optional<CIUserManagementService> optionalCIUserManagementService,
-            ArtemisAuthenticationProvider artemisAuthenticationProvider, StudentScoreRepository studentScoreRepository,
-            LearningGoalProgressRepository learningGoalProgressRepository, InstanceMessageSendService instanceMessageSendService,
-            ExerciseHintActivationRepository exerciseHintActivationRepository, TutorialGroupRegistrationRepository tutorialGroupRegistrationRepository,
-            TutorialGroupRepository tutorialGroupRepository, SingleUserNotificationRepository singleUserNotificationRepository, NotificationRepository notificationRepository) {
+            ArtemisAuthenticationProvider artemisAuthenticationProvider, StudentScoreRepository studentScoreRepository, CompetencyProgressRepository competencyProgressRepository,
+            InstanceMessageSendService instanceMessageSendService, ExerciseHintActivationRepository exerciseHintActivationRepository,
+            TutorialGroupRegistrationRepository tutorialGroupRegistrationRepository, TutorialGroupRepository tutorialGroupRepository,
+            SingleUserNotificationRepository singleUserNotificationRepository, NotificationRepository notificationRepository, PostRepository postRepository,
+            ConversationRepository conversationRepository, ConversationParticipantRepository conversationParticipantRepository, OneToOneChatRepository oneToOneChatRepository) {
         this.userCreationService = userCreationService;
         this.userRepository = userRepository;
         this.authorityService = authorityService;
@@ -124,13 +141,17 @@ public class UserService {
         this.optionalCIUserManagementService = optionalCIUserManagementService;
         this.artemisAuthenticationProvider = artemisAuthenticationProvider;
         this.studentScoreRepository = studentScoreRepository;
-        this.learningGoalProgressRepository = learningGoalProgressRepository;
+        this.competencyProgressRepository = competencyProgressRepository;
         this.instanceMessageSendService = instanceMessageSendService;
         this.exerciseHintActivationRepository = exerciseHintActivationRepository;
         this.tutorialGroupRegistrationRepository = tutorialGroupRegistrationRepository;
         this.tutorialGroupRepository = tutorialGroupRepository;
         this.singleUserNotificationRepository = singleUserNotificationRepository;
         this.notificationRepository = notificationRepository;
+        this.postRepository = postRepository;
+        this.conversationRepository = conversationRepository;
+        this.conversationParticipantRepository = conversationParticipantRepository;
+        this.oneToOneChatRepository = oneToOneChatRepository;
     }
 
     /**
@@ -161,7 +182,7 @@ public class UserService {
                     userDto.setActivated(true);
                     userDto.setFirstName("Administrator");
                     userDto.setLastName("Administrator");
-                    userDto.setEmail("admin@localhost");
+                    userDto.setEmail(artemisInternalAdminEmail.orElse("admin@localhost"));
                     userDto.setLangKey("en");
                     userDto.setCreatedBy("system");
                     userDto.setLastModifiedBy("system");
@@ -468,9 +489,12 @@ public class UserService {
         singleUserNotificationRepository.deleteByRecipientId(user.getId());
         notificationRepository.removeAuthor(user.getId());
         studentScoreRepository.deleteAllByUserId(user.getId());
-        learningGoalProgressRepository.deleteAllByUserId(user.getId());
+        competencyProgressRepository.deleteAllByUserId(user.getId());
         exerciseHintActivationRepository.deleteAllByUser(user);
 
+        deletePostsAndConversationRelatedObjects(user);
+
+        // deleting tutorial group registrations
         tutorialGroupRegistrationRepository.deleteAllByStudent(user);
         var taughtTutorialGroups = tutorialGroupRepository.findAllByTeachingAssistant(user);
         for (var tutorialGroup : taughtTutorialGroups) {
@@ -481,6 +505,33 @@ public class UserService {
         userRepository.delete(user);
         clearUserCaches(user);
         userRepository.flush();
+    }
+
+    /**
+     * Deletes the following objects:
+     * <ul>
+     * <li>Posts - belonging to the user, to Conversations created by the user, to OneToOneChats where the user
+     * is a participant</li>
+     * <li>OneToOneChats - where the user is a participant</li>
+     * <li>Conversations - created by the user</li>
+     * <li>ConversationParticipants - created by the user</li>
+     * </ul>
+     *
+     * @param user the User instance for which the relevant objects should be deleted
+     */
+    private void deletePostsAndConversationRelatedObjects(User user) {
+        // deleting Posts belonging to the conversations created by the user and belonging to the user
+        postRepository.deleteAllByConversationCreator(user);
+        postRepository.deleteAllByAuthor(user);
+
+        // deleting OneToOneChats where the user is a participant and Posts belonging to them
+        final Set<OneToOneChat> oneToOneChats = oneToOneChatRepository.findAllByParticipatingUser(user);
+        postRepository.deleteAllByConversationIn(oneToOneChats);
+        oneToOneChatRepository.deleteAll(oneToOneChats);
+
+        // deleting Conversations and ConversationParticipants created by the user
+        conversationRepository.deleteAllByCreator(user);
+        conversationParticipantRepository.deleteAllByUser(user);
     }
 
     /**

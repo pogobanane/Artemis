@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation } from '@angular/core';
 import { ArtemisMarkdownService } from 'app/shared/markdown.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { HintCommand } from 'app/shared/markdown-editor/domainCommands/hint.command';
@@ -18,7 +18,8 @@ import { MAX_QUIZ_QUESTION_POINTS } from 'app/shared/constants/input.constants';
 @Component({
     selector: 'jhi-multiple-choice-question-edit',
     templateUrl: './multiple-choice-question-edit.component.html',
-    styleUrls: ['../../shared/quiz.scss'],
+    styleUrls: ['../quiz-exercise.scss', '../../shared/quiz.scss'],
+    encapsulation: ViewEncapsulation.None,
 })
 export class MultipleChoiceQuestionEditComponent implements OnInit, QuizQuestionEdit {
     @ViewChild('markdownEditor', { static: false })
@@ -45,6 +46,7 @@ export class MultipleChoiceQuestionEditComponent implements OnInit, QuizQuestion
         return this.markdownEditor && this.markdownEditor.previewMode;
     }
     showMultipleChoiceQuestionPreview = true;
+    showMultipleChoiceQuestionVisual = true;
 
     hintCommand = new HintCommand();
     correctCommand = new CorrectOptionCommand();
@@ -111,10 +113,24 @@ export class MultipleChoiceQuestionEditComponent implements OnInit, QuizQuestion
     }
 
     /**
+     * Detect of changes in the visual editor
+     * 1. Parse the text in the editor to get the newest values
+     * 2. Notify the parent component to check the validity of the text
+     */
+    changesInVisualMode(): void {
+        this.questionUpdated.emit();
+        this.changeDetector.detectChanges();
+    }
+
+    /**
      * Triggers the saving process by cleaning up the question and calling the markdown parse function
      * to get the newest values in the editor to update the question attributes
      */
     prepareForSave(): void {
+        if (this.markdownEditor.visualMode) {
+            this.markdownEditor.markdown = this.markdownEditor.visualChild.parseQuestion();
+        }
+
         this.cleanupQuestion();
         this.markdownEditor.parse();
     }
@@ -169,6 +185,7 @@ export class MultipleChoiceQuestionEditComponent implements OnInit, QuizQuestion
             }
         }
         this.resetMultipleChoicePreview();
+        this.resetMultipleChoiceVisual();
     }
 
     /**
@@ -181,6 +198,13 @@ export class MultipleChoiceQuestionEditComponent implements OnInit, QuizQuestion
         this.showMultipleChoiceQuestionPreview = false;
         this.changeDetector.detectChanges();
         this.showMultipleChoiceQuestionPreview = true;
+        this.changeDetector.detectChanges();
+    }
+
+    private resetMultipleChoiceVisual() {
+        this.showMultipleChoiceQuestionVisual = false;
+        this.changeDetector.detectChanges();
+        this.showMultipleChoiceQuestionVisual = true;
         this.changeDetector.detectChanges();
     }
 

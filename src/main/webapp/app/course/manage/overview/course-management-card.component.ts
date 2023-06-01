@@ -5,7 +5,7 @@ import dayjs from 'dayjs/esm';
 import { ExerciseRowType } from 'app/course/manage/overview/course-management-exercise-row.component';
 import { CourseManagementOverviewExerciseStatisticsDTO } from 'app/course/manage/overview/course-management-overview-exercise-statistics-dto.model';
 import { CourseManagementOverviewStatisticsDto } from 'app/course/manage/overview/course-management-overview-statistics-dto.model';
-import { Course } from 'app/entities/course.model';
+import { Course, isCommunicationEnabled } from 'app/entities/course.model';
 import { CachingStrategy } from 'app/shared/image/secured-image.component';
 import {
     faAngleDown,
@@ -76,6 +76,8 @@ export class CourseManagementCardComponent implements OnChanges {
 
     readonly FeatureToggle = FeatureToggle;
 
+    readonly isCommunicationEnabled = isCommunicationEnabled;
+
     ngOnChanges() {
         // Only sort one time once loaded
         if (!this.statisticsSorted && this.courseStatistics && this.courseStatistics.exerciseDTOS?.length > 0) {
@@ -141,5 +143,11 @@ export class CourseManagementCardComponent implements OnChanges {
 
         this.pastExerciseCount = allPastExercises.length;
         this.pastExercises = allPastExercises.slice(0, 5);
+    }
+
+    get hoverEffectForBackground(): Record<string, string> {
+        return {
+            '--background-color-for-hover': this.course.color || this.ARTEMIS_DEFAULT_COLOR,
+        };
     }
 }

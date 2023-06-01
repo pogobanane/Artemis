@@ -1,9 +1,7 @@
 package de.tum.in.www1.artemis.service;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import javax.validation.constraints.NotNull;
 
@@ -22,7 +20,7 @@ import de.tum.in.www1.artemis.domain.participation.Participation;
 import de.tum.in.www1.artemis.domain.participation.ProgrammingExerciseStudentParticipation;
 import de.tum.in.www1.artemis.domain.participation.StudentParticipation;
 import de.tum.in.www1.artemis.repository.*;
-import de.tum.in.www1.artemis.service.connectors.LtiNewResultService;
+import de.tum.in.www1.artemis.service.connectors.lti.LtiNewResultService;
 import de.tum.in.www1.artemis.web.rest.errors.EntityNotFoundException;
 
 @Service
@@ -56,10 +54,13 @@ public class ResultService {
 
     private final StudentExamRepository studentExamRepository;
 
+    private final FeedbackConflictRepository feedbackConflictRepository;
+
     public ResultService(UserRepository userRepository, ResultRepository resultRepository, LtiNewResultService ltiNewResultService, FeedbackRepository feedbackRepository,
             WebsocketMessagingService websocketMessagingService, ComplaintResponseRepository complaintResponseRepository, SubmissionRepository submissionRepository,
             ComplaintRepository complaintRepository, RatingRepository ratingRepository, ParticipantScoreRepository participantScoreRepository,
-            AuthorizationCheckService authCheckService, ExerciseDateService exerciseDateService, StudentExamRepository studentExamRepository) {
+            AuthorizationCheckService authCheckService, ExerciseDateService exerciseDateService, StudentExamRepository studentExamRepository,
+            FeedbackConflictRepository feedbackConflictRepository) {
         this.userRepository = userRepository;
         this.resultRepository = resultRepository;
         this.ltiNewResultService = ltiNewResultService;
@@ -73,6 +74,7 @@ public class ResultService {
         this.authCheckService = authCheckService;
         this.exerciseDateService = exerciseDateService;
         this.studentExamRepository = studentExamRepository;
+        this.feedbackConflictRepository = feedbackConflictRepository;
     }
 
     /**
@@ -147,6 +149,7 @@ public class ResultService {
         if (shouldClearParticipantScore) {
             participantScoreRepository.clearAllByResultId(resultId);
         }
+        feedbackConflictRepository.deleteAllByResultId(resultId);
     }
 
     /**
@@ -217,12 +220,10 @@ public class ResultService {
     public List<Feedback> getFeedbacksForResult(Result result) {
         this.filterSensitiveInformationIfNecessary(result.getParticipation(), result);
 
-        // remove unnecessary data to keep the json payload smaller
-        for (Feedback feedback : result.getFeedbacks()) {
-            feedback.setResult(null);
-        }
-
-        return result.getFeedbacks();
+        return result.getFeedbacks().stream() //
+                .map(feedback -> feedback.result(null)) // remove unnecessary data to keep the json payload smaller
+                .sorted(Comparator.comparing(feedback -> Objects.requireNonNullElse(feedback.getType(), FeedbackType.AUTOMATIC))) // sort according to FeedbackType enum order.
+                .toList();
     }
 
     /**

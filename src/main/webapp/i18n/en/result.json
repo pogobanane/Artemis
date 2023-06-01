@@ -3,8 +3,7 @@
         "result": {
             "home": {
                 "title": "Results",
-                "createLabel": "Create a new result",
-                "createOrEditLabel": "Create or edit a result"
+                "createLabel": "Create a new result"
             },
             "created": "Created new result with identifier {{ param }}",
             "updated": "Updated result with identifier {{ param }}",
@@ -86,6 +85,7 @@
             "preliminaryTooltip": "Your result is not final yet, because more tests will be executed after the due date",
             "preliminaryTooltipSemiAutomatic": "Your result is not final yet, because more tests will be executed after the due date or a manual assessment will be done.",
             "noResultDetails": "No result details available.",
+            "onlyCompilationTested": "Your code compiled successfully. There are currently no tests visible.",
             "chart": {
                 "points": "Points",
                 "deductions": "Deductions",

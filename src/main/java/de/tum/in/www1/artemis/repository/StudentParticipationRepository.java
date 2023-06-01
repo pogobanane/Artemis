@@ -38,8 +38,6 @@ public interface StudentParticipationRepository extends JpaRepository<StudentPar
 
     Set<StudentParticipation> findByExerciseId(@Param("exerciseId") Long exerciseId);
 
-    boolean existsByExerciseId(@Param("exerciseId") Long exerciseId);
-
     @Query("""
             SELECT DISTINCT p FROM StudentParticipation p LEFT JOIN FETCH p.results r
             WHERE p.exercise.course.id = :#{#courseId}
@@ -86,6 +84,8 @@ public interface StudentParticipationRepository extends JpaRepository<StudentPar
 
     List<StudentParticipation> findByTeamId(Long teamId);
 
+    Optional<StudentParticipation> findByExerciseIdAndStudentLoginAndTestRun(Long exerciseId, String username, boolean testRun);
+
     @EntityGraph(type = LOAD, attributePaths = "results")
     Optional<StudentParticipation> findWithEagerResultsByExerciseIdAndStudentLoginAndTestRun(Long exerciseId, String username, boolean testRun);
 
@@ -117,6 +117,16 @@ public interface StudentParticipationRepository extends JpaRepository<StudentPar
                 AND p.testRun = :#{#testRun}
             """)
     Optional<StudentParticipation> findWithEagerLegalSubmissionsByExerciseIdAndStudentLoginAndTestRun(@Param("exerciseId") Long exerciseId, @Param("username") String username,
+            @Param("testRun") boolean testRun);
+
+    @Query("""
+            SELECT p FROM StudentParticipation p
+            LEFT JOIN FETCH p.submissions
+            WHERE p.exercise.id = :#{#exerciseId}
+            AND p.student.login = :#{#username}
+            AND p.testRun = :#{#testRun}
+            """)
+    Optional<StudentParticipation> findWithEagerSubmissionsByExerciseIdAndStudentLoginAndTestRun(@Param("exerciseId") Long exerciseId, @Param("username") String username,
             @Param("testRun") boolean testRun);
 
     @Query("""
@@ -184,7 +194,7 @@ public interface StudentParticipationRepository extends JpaRepository<StudentPar
     }
 
     /**
-     * Get all participations for an exercise with each latest result (determined by id).
+     * Get all participations for an exercise with each manual and latest results (determined by id).
      * If there is no latest result (= no result at all), the participation will still be included in the returned ResultSet, but will have an empty Result array.
      *
      * @param exerciseId Exercise id.
@@ -194,11 +204,13 @@ public interface StudentParticipationRepository extends JpaRepository<StudentPar
             SELECT DISTINCT p FROM StudentParticipation p
             LEFT JOIN FETCH p.results r
             LEFT JOIN FETCH r.submission s
+            LEFT JOIN FETCH p.submissions
             WHERE p.exercise.id = :#{#exerciseId}
                 AND (r.id = (SELECT max(id) FROM p.results)
+                    OR r.assessmentType <> 'AUTOMATIC'
                     OR r IS NULL)
             """)
-    Set<StudentParticipation> findByExerciseIdWithLatestResult(@Param("exerciseId") Long exerciseId);
+    Set<StudentParticipation> findByExerciseIdWithLatestAndManualResults(@Param("exerciseId") Long exerciseId);
 
     @Query("""
             SELECT DISTINCT p FROM StudentParticipation p
@@ -207,6 +219,7 @@ public interface StudentParticipationRepository extends JpaRepository<StudentPar
             WHERE p.exercise.id = :#{#exerciseId}
                 AND p.testRun = :#{#testRun}
                 AND (s.type <> 'ILLEGAL' OR s.type IS NULL)
+                AND r.assessmentType <> 'AUTOMATIC'
                 AND r.id = (
                     SELECT max(id)
                     FROM p.results
@@ -273,22 +286,24 @@ public interface StudentParticipationRepository extends JpaRepository<StudentPar
     }
 
     @Query("""
-            select distinct p from StudentParticipation p
-            left join fetch p.results r
-            left join fetch r.feedbacks
-            left join fetch r.submission s
-            where p.id = :#{#participationId}
-                 and (s.type <> 'ILLEGAL' or s.type is null)
-                 and (r.assessmentType = 'MANUAL' or r.assessmentType = 'SEMI_AUTOMATIC')
+            SELECT DISTINCT p
+            FROM StudentParticipation p
+                LEFT JOIN FETCH p.results r
+                LEFT JOIN FETCH r.feedbacks
+                LEFT JOIN FETCH r.submission s
+            WHERE p.id = :#{#participationId}
+                 AND (s.type <> 'ILLEGAL' or s.type is null)
+                 AND (r.assessmentType = 'MANUAL' or r.assessmentType = 'SEMI_AUTOMATIC')
             """)
     Optional<StudentParticipation> findByIdWithManualResultAndFeedbacks(@Param("participationId") Long participationId);
 
     @Query("""
-            select distinct p from StudentParticipation p
-            left join fetch p.submissions s
-            where p.exercise.id = :#{#exerciseId}
-                and p.student.id = :#{#studentId}
-                and (s.type <> 'ILLEGAL' or s.type is null)
+            SELECT DISTINCT p
+            FROM StudentParticipation p
+                LEFT JOIN FETCH p.submissions s
+            WHERE p.exercise.id = :#{#exerciseId}
+                AND p.student.id = :#{#studentId}
+                AND (s.type <> 'ILLEGAL' or s.type is null)
             """)
     List<StudentParticipation> findByExerciseIdAndStudentIdWithEagerLegalSubmissions(@Param("exerciseId") Long exerciseId, @Param("studentId") Long studentId);
 
@@ -574,6 +589,17 @@ public interface StudentParticipationRepository extends JpaRepository<StudentPar
             SELECT DISTINCT p FROM StudentParticipation p
             LEFT JOIN FETCH p.submissions s
             LEFT JOIN FETCH s.results r
+            WHERE p.student.id = :studentId
+                AND p.exercise in :exercises
+                AND (p.testRun = FALSE OR :includeTestRuns = TRUE)
+            """)
+    List<StudentParticipation> findByStudentIdAndIndividualExercisesWithEagerSubmissionsResult(@Param("studentId") Long studentId, @Param("exercises") List<Exercise> exercises,
+            @Param("includeTestRuns") boolean includeTestRuns);
+
+    @Query("""
+            SELECT DISTINCT p FROM StudentParticipation p
+            LEFT JOIN FETCH p.submissions s
+            LEFT JOIN FETCH s.results r
             WHERE p.testRun = FALSE
                 AND p.student.id = :#{#studentId}
                 AND p.exercise in :#{#exercises}
@@ -725,6 +751,18 @@ public interface StudentParticipationRepository extends JpaRepository<StudentPar
         // filter out the participations of test runs which can only be made by instructors
         participations = participations.stream().filter(studentParticipation -> !studentParticipation.isTestRun()).toList();
         return filterParticipationsWithRelevantResults(participations, true);
+    }
+
+    /**
+     * Get all participations belonging to a student in a course with relevant results.
+     *
+     * @param courseId  the id of the course
+     * @param studentId the id of the student
+     * @return an unmodifiable list of participations belonging to the given student in the given course
+     */
+    default List<StudentParticipation> findByCourseIdAndStudentIdWithRelevantResult(Long courseId, Long studentId) {
+        List<StudentParticipation> participations = findByCourseIdAndStudentIdWithEagerRatedResults(courseId, studentId);
+        return filterParticipationsWithRelevantResults(participations, false);
     }
 
     /**
@@ -886,11 +924,12 @@ public interface StudentParticipationRepository extends JpaRepository<StudentPar
     /**
      * Gets all the participations of the user in the given exercises
      *
-     * @param user      the user to get the participations for
-     * @param exercises the exercise to get the participations for
+     * @param user            the user to get the participations for
+     * @param exercises       the exercise to get the participations for
+     * @param includeTestRuns flag that indicates whether test run participations should be included
      * @return an unmodifiable list of participations of the user in the exercises
      */
-    default List<StudentParticipation> getAllParticipationsOfUserInExercises(User user, Set<Exercise> exercises) {
+    default List<StudentParticipation> getAllParticipationsOfUserInExercises(User user, Set<Exercise> exercises, boolean includeTestRuns) {
         Map<ExerciseMode, List<Exercise>> exercisesGroupedByExerciseMode = exercises.stream().collect(Collectors.groupingBy(Exercise::getMode));
         List<Exercise> individualExercises = Objects.requireNonNullElse(exercisesGroupedByExerciseMode.get(ExerciseMode.INDIVIDUAL), List.of());
         List<Exercise> teamExercises = Objects.requireNonNullElse(exercisesGroupedByExerciseMode.get(ExerciseMode.TEAM), List.of());
@@ -903,7 +942,7 @@ public interface StudentParticipationRepository extends JpaRepository<StudentPar
         // would lead to a SQL statement that cannot be optimized
 
         // 1st: fetch participations, submissions and results for individual exercises
-        var individualParticipations = findByStudentIdAndIndividualExercisesWithEagerSubmissionsResultIgnoreTestRuns(user.getId(), individualExercises);
+        var individualParticipations = findByStudentIdAndIndividualExercisesWithEagerSubmissionsResult(user.getId(), individualExercises, includeTestRuns);
 
         // 2nd: fetch participations, submissions and results for team exercises
         var teamParticipations = findByStudentIdAndTeamExercisesWithEagerLegalSubmissionsResult(user.getId(), teamExercises);

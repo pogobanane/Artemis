@@ -6,16 +6,20 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import de.tum.in.www1.artemis.domain.Course;
 import de.tum.in.www1.artemis.domain.User;
+import de.tum.in.www1.artemis.domain.enumeration.DefaultChannelType;
 import de.tum.in.www1.artemis.domain.metis.ConversationParticipant;
 import de.tum.in.www1.artemis.domain.metis.conversation.Channel;
-import de.tum.in.www1.artemis.repository.UserRepository;
+import de.tum.in.www1.artemis.repository.CourseRepository;
 import de.tum.in.www1.artemis.repository.metis.ConversationParticipantRepository;
 import de.tum.in.www1.artemis.repository.metis.conversation.ChannelRepository;
+import de.tum.in.www1.artemis.security.Role;
+import de.tum.in.www1.artemis.security.SecurityUtils;
 import de.tum.in.www1.artemis.service.metis.conversation.errors.ChannelNameDuplicateException;
 import de.tum.in.www1.artemis.web.rest.errors.BadRequestAlertException;
 import de.tum.in.www1.artemis.web.rest.metis.conversation.dtos.ChannelDTO;
@@ -26,26 +30,26 @@ public class ChannelService {
 
     public static final String CHANNEL_ENTITY_NAME = "messages.channel";
 
-    private static final String CHANNEL_NAME_REGEX = "^[a-z0-9-]{1}[a-z0-9-]{0,20}$";
+    private static final String CHANNEL_NAME_REGEX = "^[a-z0-9$]{1}[a-z0-9-]{0,20}$";
 
     private final ConversationParticipantRepository conversationParticipantRepository;
 
     private final ChannelRepository channelRepository;
 
-    private final UserRepository userRepository;
-
     private final ConversationService conversationService;
 
-    public ChannelService(ConversationParticipantRepository conversationParticipantRepository, ChannelRepository channelRepository, UserRepository userRepository,
-            ConversationService conversationService) {
+    private final CourseRepository courseRepository;
+
+    public ChannelService(ConversationParticipantRepository conversationParticipantRepository, ChannelRepository channelRepository, ConversationService conversationService,
+            CourseRepository courseRepository) {
         this.conversationParticipantRepository = conversationParticipantRepository;
         this.channelRepository = channelRepository;
-        this.userRepository = userRepository;
         this.conversationService = conversationService;
+        this.courseRepository = courseRepository;
     }
 
     /**
-     * Grans the channel moderator role to the given user for the given channel
+     * Grants the channel moderator role to the given user for the given channel
      *
      * @param channel      the channel
      * @param usersToGrant the users to grant the channel moderator role
@@ -107,31 +111,81 @@ public class ChannelService {
      *
      * @param course  the course to create the channel for
      * @param channel the channel to create
+     * @param creator the creator of the channel, if set a participant will be created for the creator
      * @return the created channel
      */
-    public Channel createChannel(Course course, Channel channel) {
+    public Channel createChannel(Course course, Channel channel, Optional<User> creator) {
         if (StringUtils.hasText(channel.getName())) {
             channel.setName(StringUtils.trimAllWhitespace(channel.getName().toLowerCase()));
         }
-        final User user = this.userRepository.getUserWithGroupsAndAuthorities();
-        channel.setCreator(user);
+        channel.setCreator(creator.orElse(null));
         channel.setCourse(course);
         channel.setIsArchived(false);
         this.channelIsValidOrThrow(course.getId(), channel);
         var savedChannel = channelRepository.save(channel);
-        var conversationParticipantOfRequestingUser = new ConversationParticipant();
-        // set the last reading time of a participant in the past when creating conversation for the first time!
-        conversationParticipantOfRequestingUser.setLastRead(ZonedDateTime.now().minusYears(2));
-        conversationParticipantOfRequestingUser.setUnreadMessagesCount(0L);
-        conversationParticipantOfRequestingUser.setUser(user);
-        conversationParticipantOfRequestingUser.setConversation(savedChannel);
-        // Creator is a moderator. Special case, because creator is the only moderator that can not be revoked the role
-        conversationParticipantOfRequestingUser.setIsModerator(true);
-        conversationParticipantOfRequestingUser = conversationParticipantRepository.save(conversationParticipantOfRequestingUser);
-        savedChannel.getConversationParticipants().add(conversationParticipantOfRequestingUser);
-        savedChannel = channelRepository.save(savedChannel);
-        conversationService.broadcastOnConversationMembershipChannel(course, MetisCrudAction.CREATE, savedChannel, Set.of(user));
+
+        if (creator.isPresent()) {
+            var conversationParticipantOfRequestingUser = new ConversationParticipant();
+            // set the last reading time of a participant in the past when creating conversation for the first time!
+            conversationParticipantOfRequestingUser.setLastRead(ZonedDateTime.now().minusYears(2));
+            conversationParticipantOfRequestingUser.setUnreadMessagesCount(0L);
+            conversationParticipantOfRequestingUser.setUser(creator.get());
+            conversationParticipantOfRequestingUser.setConversation(savedChannel);
+            // Creator is a moderator. Special case, because creator is the only moderator that can not be revoked the role
+            conversationParticipantOfRequestingUser.setIsModerator(true);
+            conversationParticipantOfRequestingUser = conversationParticipantRepository.save(conversationParticipantOfRequestingUser);
+            savedChannel.getConversationParticipants().add(conversationParticipantOfRequestingUser);
+            savedChannel = channelRepository.save(savedChannel);
+            conversationService.broadcastOnConversationMembershipChannel(course, MetisCrudAction.CREATE, savedChannel, Set.of(creator.get()));
+        }
         return savedChannel;
+    }
+
+    /**
+     * Register users to the newly created channel
+     *
+     * @param addAllStudents        if true, all students of the course will be added to the channel
+     * @param addAllTutors          if true, all tutors of the course will be added to the channel
+     * @param addAllInstructors     if true, all instructors of the course will be added to the channel
+     * @param usersLoginsToRegister the logins of the users to register to the channel
+     * @param course                the course to create the channel for
+     * @param channel               the channel to create
+     * @return all users that were registered to the channel
+     */
+    public Set<User> registerUsersToChannel(boolean addAllStudents, boolean addAllTutors, boolean addAllInstructors, List<String> usersLoginsToRegister, Course course,
+            Channel channel) {
+        Set<User> usersToRegister = new HashSet<>();
+        usersToRegister.addAll(conversationService.findUsersInDatabase(course, addAllStudents, addAllTutors, addAllInstructors));
+        usersToRegister.addAll(conversationService.findUsersInDatabase(usersLoginsToRegister));
+        conversationService.registerUsersToConversation(course, usersToRegister, channel, Optional.empty());
+        return usersToRegister;
+    }
+
+    /**
+     * Add user to default channels of courses with the same group asynchronously. This is used when a user is added to a group.
+     *
+     * @param userToAddToGroup the user to be added
+     * @param group            the group of the user
+     * @param role             the role of the user
+     */
+    @Async
+    public void registerUserToDefaultChannels(User userToAddToGroup, String group, Role role) {
+        final Set<String> channelNames = Arrays.stream(DefaultChannelType.values()).map(DefaultChannelType::getName).collect(Collectors.toSet());
+
+        List<Course> courses = switch (role) {
+            case STUDENT -> courseRepository.findCoursesByStudentGroupName(group);
+            case TEACHING_ASSISTANT -> courseRepository.findCoursesByTeachingAssistantGroupName(group);
+            case INSTRUCTOR -> courseRepository.findCoursesByInstructorGroupName(group);
+            default -> List.of();
+        };
+
+        for (Course c : courses) {
+            // set the security context because the async methods use multiple threads
+            SecurityUtils.setAuthorizationObject();
+            channelRepository.findChannelsByCourseId(c.getId()).stream().filter(channel -> channelNames.contains(channel.getName())).forEach(channel -> {
+                conversationService.registerUsersToConversation(c, Set.of(userToAddToGroup), channel, Optional.empty());
+            });
+        }
     }
 
     /**

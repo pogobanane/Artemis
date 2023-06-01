@@ -239,12 +239,41 @@ class ProgrammingSubmissionAndResultBitbucketBambooIntegrationTest extends Abstr
         submission = submissionRepository.findWithEagerResultsById(submission.getId()).get();
         assertThat(createdResult.getParticipation().getId()).isEqualTo(updatedParticipation.getId());
         assertThat(submission.getLatestResult().getId()).isEqualTo(createdResult.getId());
-        assertThat(updatedParticipation.getSubmissions()).hasSize(1);
-        assertThat(updatedParticipation.getSubmissions().stream().anyMatch(s -> s.getId().equals(submissionId))).isTrue();
+        assertThat(updatedParticipation.getSubmissions()).hasSize(1).anyMatch(s -> s.getId().equals(submissionId));
 
         // Do a call to new-result again and assert that no new submission is created.
         postResult(participation.getBuildPlanId(), HttpStatus.OK, false);
         assertNoNewSubmissionsAndIsSubmission(participation.getId(), submission);
+    }
+
+    @Test
+    @WithMockUser(username = TEST_PREFIX + "student1", roles = "USER")
+    void shouldHandleNewBuildResultCreatedByCommitForSolutionParticipation() throws Exception {
+        var course = database.addCourseWithOneProgrammingExerciseAndSpecificTestCases();
+        exercise = programmingExerciseRepository.findAllProgrammingExercisesInCourseOrInExamsOfCourse(course).get(0);
+        exercise = programmingExerciseRepository.findWithEagerStudentParticipationsById(exercise.getId()).get();
+
+        exercise.setBranch(null);
+        programmingExerciseRepository.save(exercise);
+
+        bitbucketRequestMockProvider.mockGetDefaultBranch(defaultBranch, exercise.getProjectKey());
+        bitbucketRequestMockProvider.mockGetPushDate(exercise.getProjectKey(), "9b3a9bd71a0d80e5bbc42204c319ed3d1d4f0d6d", ZonedDateTime.now());
+        bitbucketRequestMockProvider.mockPutDefaultBranch(exercise.getProjectKey());
+        exercise = database.addTemplateParticipationForProgrammingExercise(exercise);
+        exercise = database.addSolutionParticipationForProgrammingExercise(exercise);
+
+        var participation = solutionProgrammingExerciseParticipationRepository.findByProgrammingExerciseId(exercise.getId()).get();
+        postSubmission(participation.getId(), HttpStatus.OK);
+
+        final var commit = new BambooBuildResultNotificationDTO.BambooCommitDTO("First commit", "asdf");
+        var vcsDTO = new BambooBuildResultNotificationDTO.BambooVCSDTO(commit.id(), ASSIGNMENT_REPO_NAME, defaultBranch, List.of(commit));
+        var notificationCommit = ModelFactory.generateBambooBuildResultWithLogs(participation.getBuildPlanId().toUpperCase(), ASSIGNMENT_REPO_NAME, List.of(), List.of(),
+                ZonedDateTime.now(), List.of(vcsDTO));
+
+        postResult(notificationCommit, HttpStatus.OK, false);
+
+        List<Result> results = resultRepository.findByParticipationIdOrderByCompletionDateDesc(participation.getId());
+        assertThat(results).hasSize(1);
     }
 
     /**
@@ -280,8 +309,7 @@ class ProgrammingSubmissionAndResultBitbucketBambooIntegrationTest extends Abstr
         submission = submissionRepository.findWithEagerResultsById(submission.getId()).get();
         assertThat(createdResult.getParticipation().getId()).isEqualTo(participation.getId());
         assertThat(submission.getLatestResult().getId()).isEqualTo(createdResult.getId());
-        assertThat(participation.getSubmissions()).hasSize(1);
-        assertThat(participation.getSubmissions().stream().anyMatch(s -> s.getId().equals(submissionId))).isTrue();
+        assertThat(participation.getSubmissions()).hasSize(1).anyMatch(s -> s.getId().equals(submissionId));
 
         // Do a call to new-result again and assert that no new submission is created.
         postResult(participationType, 0, HttpStatus.OK, additionalCommit);
@@ -530,7 +558,7 @@ class ProgrammingSubmissionAndResultBitbucketBambooIntegrationTest extends Abstr
         for (Participation participation : participations) {
             assertThat(submissions.stream().filter(s -> s.getParticipation().getId().equals(participation.getId())).toList()).hasSize(1);
         }
-        assertThat(submissions.stream().allMatch(s -> s.isSubmitted() && s.getCommitHash().equals(TEST_COMMIT) && s.getType().equals(SubmissionType.TEST))).isTrue();
+        assertThat(submissions).allMatch(s -> s.isSubmitted() && s.getCommitHash().equals(TEST_COMMIT) && s.getType().equals(SubmissionType.TEST));
 
         // Phase 2: Now the CI informs Artemis about the participation build results.
         postResult(IntegrationTestParticipationType.SOLUTION, 0, HttpStatus.OK, false);
@@ -588,7 +616,6 @@ class ProgrammingSubmissionAndResultBitbucketBambooIntegrationTest extends Abstr
         var secondCommitDate = ZonedDateTime.parse(pushJSON.get("date").toString(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
         var firstCommitDate = secondCommitDate.minusSeconds(30);
 
-        bitbucketRequestMockProvider.mockGetDefaultBranch(defaultBranch, testService.programmingExercise.getProjectKey());
         doReturn(defaultBranch).when(versionControlService).getOrRetrieveBranchOfExercise(testService.programmingExercise);
         bitbucketRequestMockProvider.mockGetPushDate(testService.programmingExercise.getProjectKey(), firstCommitHash, firstCommitDate);
 

@@ -1,7 +1,7 @@
 import { Interception } from 'cypress/types/net-stubbing';
 import { ProgrammingExercise } from 'app/entities/programming-exercise.model';
 import { Course } from 'app/entities/course.model';
-import { CypressAssessmentType, convertCourseAfterMultiPart } from '../../../support/requests/CourseManagementRequests';
+import { ProgrammingExerciseAssessmentType, convertCourseAfterMultiPart } from '../../../support/requests/CourseManagementRequests';
 import dayjs from 'dayjs/esm';
 import {
     courseAssessment,
@@ -79,7 +79,7 @@ describe('Programming exercise assessment', () => {
 
     function acceptComplaintAsInstructor() {
         cy.login(instructor, `/course-management/${course.id}/complaints`);
-        programmingExerciseAssessment.acceptComplaint('Makes sense').then((request: Interception) => {
+        programmingExerciseAssessment.acceptComplaint('Makes sense', false).then((request: Interception) => {
             expect(request.response!.statusCode).to.equal(200);
         });
     }
@@ -94,7 +94,18 @@ describe('Programming exercise assessment', () => {
             dueDate = dayjs().add(25, 'seconds');
             assessmentDueDate = dueDate.add(30, 'seconds');
             courseManagementRequest
-                .createProgrammingExercise({ course }, undefined, false, dayjs(), dueDate, undefined, undefined, undefined, assessmentDueDate, CypressAssessmentType.SEMI_AUTOMATIC)
+                .createProgrammingExercise(
+                    { course },
+                    undefined,
+                    false,
+                    dayjs(),
+                    dueDate,
+                    undefined,
+                    undefined,
+                    undefined,
+                    assessmentDueDate,
+                    ProgrammingExerciseAssessmentType.SEMI_AUTOMATIC,
+                )
                 .then((programmingResponse) => {
                     exercise = programmingResponse.body;
                 });

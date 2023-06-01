@@ -20,6 +20,8 @@ export const courseOverview = pageObjects.course.overview;
 export const courseManagement = pageObjects.course.management;
 export const courseManagementExercises = pageObjects.course.managementExercises;
 export const courseExercise = pageObjects.course.exercise;
+export const courseCommunication = pageObjects.course.communication;
+export const courseMessages = pageObjects.course.messages;
 export const courseAssessment = pageObjects.assessment.course;
 
 export const lectureCreation = pageObjects.lecture.creation;
@@ -36,7 +38,10 @@ export const examStartEnd = pageObjects.exam.startEnd;
 export const examExerciseGroupCreation = pageObjects.exam.exerciseGroupCreation;
 export const examExerciseGroups = pageObjects.exam.exerciseGroups;
 export const examParticipation = pageObjects.exam.participation;
+export const examTestRun = pageObjects.exam.testRun;
 export const studentExamManagement = pageObjects.exam.studentExamManagement;
+
+export const studentAssessment = pageObjects.assessment.student;
 
 export const exerciseAssessment = pageObjects.assessment.exercise;
 export const exerciseResult = pageObjects.exercise.result;

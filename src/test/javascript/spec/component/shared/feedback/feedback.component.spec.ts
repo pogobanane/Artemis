@@ -1,30 +1,31 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { DebugElement } from '@angular/core';
-import { ArtemisTestModule } from '../../../test.module';
-import { BehaviorSubject, of, throwError } from 'rxjs';
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
-import { Feedback, FeedbackType, STATIC_CODE_ANALYSIS_FEEDBACK_IDENTIFIER } from 'app/entities/feedback.model';
-import { ResultService } from 'app/exercises/shared/result/result.service';
-import { FeedbackComponent } from 'app/exercises/shared/feedback/feedback.component';
-import { ExerciseType } from 'app/entities/exercise.model';
-import { Result } from 'app/entities/result.model';
-import { BuildLogService } from 'app/exercises/programming/shared/service/build-log.service';
-import { ProgrammingSubmission } from 'app/entities/programming-submission.model';
-import { SubmissionType } from 'app/entities/submission.model';
-import { ModelingSubmission } from 'app/entities/modeling-submission.model';
-import { TranslatePipeMock } from '../../../helpers/mocks/service/mock-translate.service';
-import { ProgrammingExercise } from 'app/entities/programming-exercise.model';
-import { ProfileService } from 'app/shared/layouts/profiles/profile.service';
-import { ProfileInfo } from 'app/shared/layouts/profiles/profile-info.model';
-import { ParticipationType } from 'app/entities/participation/participation.model';
-import { MockComponent, MockModule, MockPipe, MockProvider } from 'ng-mocks';
-import { FeedbackCollapseComponent } from 'app/exercises/shared/feedback/collapse/feedback-collapse.component';
+import { DebugElement } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { ArtemisDatePipe } from 'app/shared/pipes/artemis-date.pipe';
 import { BarChartModule } from '@swimlane/ngx-charts';
 import { Course } from 'app/entities/course.model';
+import { ExerciseType } from 'app/entities/exercise.model';
+import { Feedback, FeedbackType, STATIC_CODE_ANALYSIS_FEEDBACK_IDENTIFIER } from 'app/entities/feedback.model';
+import { ModelingSubmission } from 'app/entities/modeling-submission.model';
+import { ParticipationType } from 'app/entities/participation/participation.model';
+import { ProgrammingExercise } from 'app/entities/programming-exercise.model';
+import { ProgrammingSubmission } from 'app/entities/programming-submission.model';
+import { Result } from 'app/entities/result.model';
+import { SubmissionType } from 'app/entities/submission.model';
+import { BuildLogService } from 'app/exercises/programming/shared/service/build-log.service';
+import { FeedbackCollapseComponent } from 'app/exercises/shared/feedback/collapse/feedback-collapse.component';
+import { FeedbackComponent } from 'app/exercises/shared/feedback/feedback.component';
 import { FeedbackItem } from 'app/exercises/shared/feedback/item/feedback-item';
+import { ProgrammingFeedbackItemService } from 'app/exercises/shared/feedback/item/programming-feedback-item.service';
 import { FeedbackNode } from 'app/exercises/shared/feedback/node/feedback-node';
+import { ResultService } from 'app/exercises/shared/result/result.service';
+import { ProfileInfo } from 'app/shared/layouts/profiles/profile-info.model';
+import { ProfileService } from 'app/shared/layouts/profiles/profile.service';
+import { ArtemisDatePipe } from 'app/shared/pipes/artemis-date.pipe';
+import { MockComponent, MockModule, MockPipe, MockProvider } from 'ng-mocks';
+import { BehaviorSubject, of, throwError } from 'rxjs';
+import { TranslatePipeMock } from '../../../helpers/mocks/service/mock-translate.service';
+import { ArtemisTestModule } from '../../../test.module';
 
 describe('FeedbackComponent', () => {
     let comp: FeedbackComponent;
@@ -35,11 +36,19 @@ describe('FeedbackComponent', () => {
     let buildLogService: BuildLogService;
     let resultService: ResultService;
     let profileService: ProfileService;
+    let feedbackItemService: ProgrammingFeedbackItemService;
+
     let buildlogsStub: jest.SpyInstance;
     let getFeedbackDetailsForResultStub: jest.SpyInstance;
 
     // Template for Bitbucket commit hash url
     const commitHashURLTemplate = 'https://bitbucket.ase.in.tum.de/projects/{projectKey}/repos/{repoSlug}/commits/{commitHash}';
+
+    const feedbackReference = {
+        id: 1,
+        result: { id: 2 } as Result,
+        hasLongFeedback: false,
+    } as Feedback;
 
     const makeFeedback = (fb: Feedback) => {
         return Object.assign({ type: FeedbackType.AUTOMATIC, text: '', detailText: '', credits: 0 } as Feedback, fb);
@@ -77,6 +86,7 @@ describe('FeedbackComponent', () => {
                 text: showDetails ? 'Rule: This is a code issue' : 'This is a code issue',
                 credits,
                 positive: false,
+                feedbackReference,
             }),
         };
     };
@@ -96,6 +106,7 @@ describe('FeedbackComponent', () => {
                 credits,
                 positive: credits > 0,
                 title: showDetails ? (credits > 0 ? 'artemisApp.result.detail.test.passed' : 'artemisApp.result.detail.test.failed') : undefined,
+                feedbackReference,
             }),
         };
     };
@@ -116,6 +127,7 @@ describe('FeedbackComponent', () => {
                 text,
                 credits,
                 positive: credits > 0,
+                feedbackReference,
             }),
         };
     };
@@ -146,6 +158,7 @@ describe('FeedbackComponent', () => {
                     title: 'artemisApp.result.detail.test.passedTest',
                     positive: true,
                     credits: 3,
+                    feedbackReference,
                 }),
             );
         }
@@ -200,6 +213,7 @@ describe('FeedbackComponent', () => {
                 buildLogService = debugElement.injector.get(BuildLogService);
                 resultService = debugElement.injector.get(ResultService);
                 profileService = debugElement.injector.get(ProfileService);
+                feedbackItemService = debugElement.injector.get(ProgrammingFeedbackItemService);
 
                 buildlogsStub = jest.spyOn(buildLogService, 'getBuildLogs').mockReturnValue(of([]));
                 getFeedbackDetailsForResultStub = jest
@@ -354,5 +368,44 @@ describe('FeedbackComponent', () => {
         expect(buildlogsStub).toHaveBeenCalledWith(comp.result.participation!.id, comp.result.id);
         expect(comp.loadingFailed).toBeTrue();
         expect(comp.isLoading).toBeFalse();
+    });
+
+    it('should not show test details to students', () => {
+        const createSpy = jest.spyOn(feedbackItemService, 'create');
+        const { feedbacks } = generateFeedbacksAndExpectedItems();
+        comp.exerciseType = ExerciseType.PROGRAMMING;
+        comp.result.feedbacks = feedbacks;
+
+        comp.ngOnInit();
+
+        expect(createSpy).toHaveBeenCalledWith(feedbacks, false);
+    });
+
+    it('should show test details to tutors', () => {
+        const createSpy = jest.spyOn(feedbackItemService, 'create');
+        const { feedbacks } = generateFeedbacksAndExpectedItems();
+        comp.exerciseType = ExerciseType.PROGRAMMING;
+        comp.result.feedbacks = feedbacks;
+
+        exercise.isAtLeastTutor = true;
+        comp.exercise = exercise;
+
+        comp.ngOnInit();
+
+        expect(createSpy).toHaveBeenCalledWith(feedbacks, true);
+    });
+
+    it('should show test details to students for programming exercises with show test names on', () => {
+        const createSpy = jest.spyOn(feedbackItemService, 'create');
+        const { feedbacks } = generateFeedbacksAndExpectedItems();
+        comp.exerciseType = ExerciseType.PROGRAMMING;
+        comp.result.feedbacks = feedbacks;
+
+        exercise.showTestNamesToStudents = true;
+        comp.exercise = exercise;
+
+        comp.ngOnInit();
+
+        expect(createSpy).toHaveBeenCalledWith(feedbacks, true);
     });
 });

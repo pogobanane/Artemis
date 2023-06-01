@@ -14,6 +14,8 @@ import { finalize } from 'rxjs/operators';
 import { AlertService } from 'app/core/util/alert.service';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { LectureUnitService } from 'app/lecture/lecture-unit/lecture-unit-management/lectureUnit.service';
+import { Router } from '@angular/router';
+import { isCommunicationEnabled } from 'app/entities/course.model';
 
 export interface LectureUnitCompletionEvent {
     lectureUnit: LectureUnit;
@@ -35,6 +37,7 @@ export class CourseLectureDetailsComponent implements OnInit {
     hasPdfLectureUnit: boolean;
 
     readonly LectureUnitType = LectureUnitType;
+    readonly isCommunicationEnabled = isCommunicationEnabled;
 
     // Icons
     faSpinner = faSpinner;
@@ -45,6 +48,7 @@ export class CourseLectureDetailsComponent implements OnInit {
         private lectureUnitService: LectureUnitService,
         private activatedRoute: ActivatedRoute,
         private fileService: FileService,
+        private router: Router,
     ) {}
 
     ngOnInit(): void {
@@ -84,6 +88,10 @@ export class CourseLectureDetailsComponent implements OnInit {
                 },
                 error: (errorResponse: HttpErrorResponse) => onError(this.alertService, errorResponse),
             });
+    }
+
+    redirectToLectureManagement(): void {
+        this.router.navigate(['course-management', this.lecture?.course?.id, 'lectures', this.lecture?.id]);
     }
 
     attachmentNotReleased(attachment: Attachment): boolean {

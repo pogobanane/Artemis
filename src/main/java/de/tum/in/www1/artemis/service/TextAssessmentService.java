@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import de.tum.in.www1.artemis.domain.*;
 import de.tum.in.www1.artemis.domain.participation.Participation;
 import de.tum.in.www1.artemis.repository.*;
-import de.tum.in.www1.artemis.service.connectors.LtiNewResultService;
+import de.tum.in.www1.artemis.service.connectors.lti.LtiNewResultService;
 import de.tum.in.www1.artemis.service.exam.ExamDateService;
 
 @Service
@@ -56,7 +56,7 @@ public class TextAssessmentService extends AssessmentService {
 
         if (result != null) {
             // Load Feedback already created for this assessment
-            final List<Feedback> assessments = exercise.isAutomaticAssessmentEnabled() ? getAssessmentsForResultWithConflicts(result) : feedbackRepository.findByResult(result);
+            final List<Feedback> assessments = feedbackRepository.findByResult(result);
             result.setFeedbacks(assessments);
             if (assessments.isEmpty() && computeFeedbackSuggestions) {
                 automaticTextFeedbackService.get().suggestFeedback(result);
@@ -100,16 +100,5 @@ public class TextAssessmentService extends AssessmentService {
             textBlockService.setNumberOfAffectedSubmissionsPerBlock(result);
             result.setSubmission(textSubmission);
         }
-    }
-
-    private List<Feedback> getAssessmentsForResultWithConflicts(Result result) {
-        List<Feedback> feedbackList = this.feedbackRepository.findByResult(result);
-        final List<FeedbackConflict> allConflictsByFeedbackList = this.feedbackConflictRepository
-                .findAllConflictsByFeedbackList(feedbackList.stream().map(Feedback::getId).toList());
-        feedbackList.forEach(feedback -> {
-            feedback.setFirstConflicts(allConflictsByFeedbackList.stream().filter(conflict -> conflict.getFirstFeedback().getId().equals(feedback.getId())).toList());
-            feedback.setSecondConflicts(allConflictsByFeedbackList.stream().filter(conflict -> conflict.getSecondFeedback().getId().equals(feedback.getId())).toList());
-        });
-        return feedbackList;
     }
 }

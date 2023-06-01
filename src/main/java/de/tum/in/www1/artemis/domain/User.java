@@ -118,6 +118,7 @@ public class User extends AbstractAuditingEntity implements Participant {
      * It will e.g. be included in the repository clone URL.
      */
     @Nullable
+    @JsonIgnore
     @Column(name = "vcs_access_token")
     private String vcsAccessToken = null;
 
@@ -158,7 +159,7 @@ public class User extends AbstractAuditingEntity implements Participant {
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JsonIgnore
-    private Set<LearningGoalProgress> learningGoalProgress = new HashSet<>();
+    private Set<CompetencyProgress> competencyProgresses = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
@@ -338,12 +339,12 @@ public class User extends AbstractAuditingEntity implements Participant {
         this.completedLectureUnits = completedLectureUnits;
     }
 
-    public Set<LearningGoalProgress> getLearningGoalProgress() {
-        return learningGoalProgress;
+    public Set<CompetencyProgress> getCompetencyProgresses() {
+        return competencyProgresses;
     }
 
-    public void setLearningGoalProgress(Set<LearningGoalProgress> learningGoalProgress) {
-        this.learningGoalProgress = learningGoalProgress;
+    public void setCompetencyProgresses(Set<CompetencyProgress> competencyProgresses) {
+        this.competencyProgresses = competencyProgresses;
     }
 
     public Set<ExamUser> getExamUsers() {

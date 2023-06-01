@@ -62,9 +62,6 @@ class InternalAuthenticationIntegrationTest extends AbstractSpringIntegrationJen
     private UserRepository userRepository;
 
     @Autowired
-    private LtiUserIdRepository ltiUserIdRepository;
-
-    @Autowired
     private LtiOutcomeUrlRepository ltiOutcomeUrlRepository;
 
     @Autowired
@@ -87,8 +84,6 @@ class InternalAuthenticationIntegrationTest extends AbstractSpringIntegrationJen
 
     private User student;
 
-    private Course course;
-
     private static final String USERNAME = TEST_PREFIX + "student1";
 
     private ProgrammingExercise programmingExercise;
@@ -100,7 +95,7 @@ class InternalAuthenticationIntegrationTest extends AbstractSpringIntegrationJen
         jenkinsRequestMockProvider.enableMockingOfRequests(jenkinsServer);
 
         database.addUsers(TEST_PREFIX, 1, 0, 0, 0);
-        course = database.addCourseWithOneProgrammingExercise();
+        Course course = database.addCourseWithOneProgrammingExercise();
         database.addOnlineCourseConfigurationToCourse(course);
         programmingExercise = database.getFirstExerciseWithType(course, ProgrammingExercise.class);
         programmingExercise = programmingExerciseRepository.findWithEagerStudentParticipationsById(programmingExercise.getId()).get();
@@ -141,10 +136,8 @@ class InternalAuthenticationIntegrationTest extends AbstractSpringIntegrationJen
         request.postForm("/api/lti/launch/" + programmingExercise.getId(), ltiLaunchRequest, HttpStatus.FOUND);
 
         final var user = database.getUserByLogin(USERNAME);
-        final var ltiUser = ltiUserIdRepository.findByUser(user).get();
         final var ltiOutcome = ltiOutcomeUrlRepository.findByUserAndExercise(user, programmingExercise).get();
-        assertThat(ltiUser.getUser()).isEqualTo(user);
-        assertThat(ltiUser.getLtiUserId()).isEqualTo(ltiLaunchRequest.getUser_id());
+
         assertThat(ltiOutcome.getUser()).isEqualTo(user);
         assertThat(ltiOutcome.getExercise()).isEqualTo(programmingExercise);
         assertThat(ltiOutcome.getUrl()).isEqualTo(ltiLaunchRequest.getLis_outcome_service_url());
@@ -175,11 +168,11 @@ class InternalAuthenticationIntegrationTest extends AbstractSpringIntegrationJen
         final var pastTimestamp = ZonedDateTime.now().minusDays(5);
         final var futureTimestamp = ZonedDateTime.now().plusDays(5);
         var course1 = ModelFactory.generateCourse(null, pastTimestamp, futureTimestamp, new HashSet<>(), "testcourse1", "tutor", "editor", "instructor");
-        course1.setRegistrationEnabled(true);
+        course1.setEnrollmentEnabled(true);
         course1 = courseRepository.save(course1);
 
         jenkinsRequestMockProvider.mockUpdateUserAndGroups(student.getLogin(), student, student.getGroups(), Set.of(), false);
-        final var updatedStudent = request.postWithResponseBody("/api/courses/" + course1.getId() + "/register", null, User.class, HttpStatus.OK);
+        final var updatedStudent = request.postWithResponseBody("/api/courses/" + course1.getId() + "/enroll", null, User.class, HttpStatus.OK);
         assertThat(updatedStudent.getGroups()).as("User is registered for course").contains(course1.getStudentGroupName());
     }
 

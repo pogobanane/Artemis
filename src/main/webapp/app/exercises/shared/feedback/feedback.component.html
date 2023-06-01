@@ -4,7 +4,7 @@
         <ng-template #noTaskDescription>{{ 'artemisApp.result.detail.feedback' | artemisTranslate }}</ng-template>
     </h3>
 
-    <button type="button" class="feedback-header__close" data-dismiss="modal" aria-hidden="true" (click)="activeModal.close()">
+    <button *ngIf="activeModal" type="button" class="feedback-header__close" data-dismiss="modal" aria-hidden="true" (click)="activeModal.close()">
         <fa-icon [icon]="faXmark" size="xl"></fa-icon>
     </button>
 </div>
@@ -123,9 +123,12 @@
 
     <!-- No content fallback -->
     <ng-template #noFeedbacksContainer>
-        <pre jhiTranslate="artemisApp.result.noResultDetails">No result details available</pre>
+        <h4 jhiTranslate="artemisApp.result.noResultDetails">No result details available</h4>
+        <p *ngIf="isOnlyCompilationTested" class="mb-0" jhiTranslate="artemisApp.result.onlyCompilationTested">
+            Your code compiled successfully. There are currently no tests visible.
+        </p>
     </ng-template>
 </div>
 <div class="modal-footer">
-    <button id="feedback-close" type="button" class="btn btn-outline-dark" (click)="activeModal.close('Close click')">Close</button>
+    <button *ngIf="activeModal" id="feedback-close" type="button" class="btn btn-outline-dark" (click)="activeModal.close('Close click')">Close</button>
 </div>

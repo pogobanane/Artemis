@@ -1,11 +1,14 @@
 package de.tum.in.www1.artemis.service.hestia;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import de.tum.in.www1.artemis.domain.ProgrammingExercise;
+import de.tum.in.www1.artemis.domain.ProgrammingExerciseTestCase;
 import de.tum.in.www1.artemis.domain.hestia.ProgrammingExerciseTask;
 import de.tum.in.www1.artemis.repository.ProgrammingExerciseTestCaseRepository;
 import de.tum.in.www1.artemis.repository.hestia.ExerciseHintRepository;
@@ -119,6 +122,44 @@ public class ProgrammingExerciseTaskService {
     }
 
     /**
+     * Gets all tasks of an exercise excluding inactive test cases
+     *
+     * @param exerciseId of the programming exercise
+     * @return Set of all tasks and its test cases
+     */
+    public Set<ProgrammingExerciseTask> getTasksWithoutInactiveTestCases(long exerciseId) {
+        return programmingExerciseTaskRepository.findByExerciseIdWithTestCaseAndSolutionEntriesElseThrow(exerciseId).stream()
+                .peek(task -> task.getTestCases().removeIf(Predicate.not(ProgrammingExerciseTestCase::isActive))).collect(Collectors.toSet());
+    }
+
+    /**
+     * Gets all tasks of an exercise including the test cases assigned to those tasks.
+     * Additionally, adds a new task for all test cases with no manually assigned task and adds all tests to that task
+     *
+     * @param exerciseId of the programming exercise
+     * @return Set of all tasks including one for not manually assigned tests
+     */
+    public Set<ProgrammingExerciseTask> getTasksWithUnassignedTestCases(long exerciseId) {
+        Set<ProgrammingExerciseTask> tasks = programmingExerciseTaskRepository.findByExerciseIdWithTestCaseAndSolutionEntriesElseThrow(exerciseId);
+
+        Set<ProgrammingExerciseTestCase> testsWithTasks = tasks.stream().flatMap(task -> task.getTestCases().stream()).collect(Collectors.toSet());
+
+        // Additionally add all tests that are not manually assigned to a task
+        Set<ProgrammingExerciseTestCase> testsWithoutTasks = programmingExerciseTestCaseRepository.findByExerciseId(exerciseId).stream()
+                .filter(test -> !testsWithTasks.contains(test)).collect(Collectors.toSet());
+
+        if (!testsWithoutTasks.isEmpty()) {
+            ProgrammingExerciseTask unassignedTask = new ProgrammingExerciseTask();
+            unassignedTask.setTaskName("Not assigned to task");
+            unassignedTask.setTestCases(testsWithoutTasks);
+
+            tasks.add(unassignedTask);
+        }
+
+        return tasks;
+    }
+
+    /**
      * Returns the extracted tasks and test cases from the problem statement markdown and
      * maps the tasks to the corresponding test cases for a programming exercise
      *
@@ -132,7 +173,7 @@ public class ProgrammingExerciseTaskService {
             return tasks;
         }
         var matcher = taskPatternForProblemStatementMarkdown.matcher(problemStatement);
-        var testCases = programmingExerciseTestCaseRepository.findByExerciseIdAndActive(exercise.getId(), true);
+        var testCases = programmingExerciseTestCaseRepository.findByExerciseId(exercise.getId());
         while (matcher.find()) {
             var taskName = matcher.group("name");
             var capturedTestCaseNames = matcher.group("tests");

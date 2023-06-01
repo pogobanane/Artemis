@@ -11,7 +11,7 @@ import { ParticipationWebsocketService } from 'app/overview/participation-websoc
 import { AccountService } from 'app/core/auth/account.service';
 import { ProfileService } from 'app/shared/layouts/profiles/profile.service';
 import { LoginService } from 'app/core/login/login.service';
-import { ActivatedRoute, NavigationEnd, Router, RouterEvent } from '@angular/router';
+import { ActivatedRoute, Event, NavigationEnd, Router } from '@angular/router';
 import { ExamParticipationService } from 'app/exam/participate/exam-participation.service';
 import { ArtemisServerDateService } from 'app/shared/server-date.service';
 import { LocaleConversionService } from 'app/shared/service/locale-conversion.service';
@@ -61,8 +61,6 @@ import { StudentExam } from 'app/entities/student-exam.model';
     styleUrls: ['navbar.scss'],
 })
 export class NavbarComponent implements OnInit, OnDestroy {
-    readonly SERVER_API_URL = SERVER_API_URL;
-
     inProduction: boolean;
     testServer: boolean;
     isNavbarCollapsed: boolean;
@@ -113,7 +111,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     private studentExam?: StudentExam;
     private examId?: number;
     private routeExamId = 0;
-    private lastRouteUrlSegment: string;
+    private lastRouteUrlSegment?: string;
 
     constructor(
         private loginService: LoginService,
@@ -229,6 +227,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     breadcrumbTranslation = {
         new: 'global.generic.create',
         process: 'artemisApp.attachmentUnit.createAttachmentUnits.pageTitle',
+        verify_attendance: 'artemisApp.examManagement.examStudents.verifyChecks',
         create: 'global.generic.create',
         start: 'global.generic.start',
         edit: 'global.generic.edit',
@@ -267,7 +266,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
         teams: 'artemisApp.team.home.title',
         exercise_hints: 'artemisApp.exerciseHint.home.title',
         ratings: 'artemisApp.ratingList.pageTitle',
-        goal_management: 'artemisApp.learningGoal.manageLearningGoals.title',
+        competency_management: 'artemisApp.learningGoal.manageLearningGoals.title',
         assessment_locks: 'artemisApp.assessment.locks.home.title',
         apollon_diagrams: 'artemisApp.apollonDiagram.home.title',
         communication: 'artemisApp.metis.communication.label',
@@ -280,6 +279,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
         quiz_statistic: 'artemisApp.quizExercise.statistics',
         quiz_point_statistic: 'artemisApp.quizExercise.statistics',
         import: 'artemisApp.exercise.import.table.doImport',
+        import_from_file: 'artemisApp.programmingExercise.importFromFile.title',
         plagiarism: 'artemisApp.plagiarism.plagiarismDetection',
         example_solution: 'artemisApp.modelingExercise.exampleSolution',
         example_submissions: 'artemisApp.exampleSubmission.home.title',
@@ -310,6 +310,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
         participant_scores: 'artemisApp.participantScores.pageTitle',
         course_statistics: 'statistics.course_statistics_title',
         grading_system: 'artemisApp.gradingSystem.title',
+        grading_key: 'artemisApp.gradingSystem.title',
         exercise_statistics: 'exercise-statistics.title',
         tutor_effort_statistics: 'artemisApp.textExercise.tutorEffortStatistics.title',
         text_cluster_statistics: 'artemisApp.textExercise.clusterStatistics.title',
@@ -325,6 +326,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
         tutorial_free_days: 'artemisApp.pages.tutorialFreePeriodsManagement.title',
         tutorial_groups_checklist: 'artemisApp.pages.checklist.title',
         create_tutorial_groups_configuration: 'artemisApp.pages.createTutorialGroupsConfiguration.title',
+        privacy_statement: 'artemisApp.privacyStatement.title',
     };
 
     studentPathBreadcrumbTranslations = {
@@ -332,7 +334,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
         test_exam: 'artemisApp.courseOverview.menu.testExam',
         exercises: 'artemisApp.courseOverview.menu.exercises',
         lectures: 'artemisApp.courseOverview.menu.lectures',
-        learning_goals: 'artemisApp.courseOverview.menu.learningGoals',
+        competencies: 'artemisApp.courseOverview.menu.learningGoals',
         statistics: 'artemisApp.courseOverview.menu.statistics',
         discussion: 'artemisApp.metis.communication.label',
         messages: 'artemisApp.conversationsLayout.breadCrumbLabel',
@@ -454,7 +456,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
             case 'lectures':
                 this.addResolvedTitleAsCrumb(EntityType.LECTURE, [Number(segment)], currentPath, segment);
                 break;
-            case 'learning-goals':
+            case 'competencies':
                 this.addResolvedTitleAsCrumb(EntityType.LEARNING_GOAL, [Number(segment)], currentPath, segment);
                 break;
             case 'exams':
@@ -472,6 +474,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
                 // This has to go in the future
                 this.addTranslationAsCrumb(currentPath, 'import');
                 break;
+            case 'import-from-file':
+                this.addTranslationAsCrumb(currentPath, 'import-from-file');
+                break;
             case 'example-submissions':
                 // Special case: Don't display the ID here but the name directly (clicking the ID wouldn't work)
                 this.addTranslationAsCrumb(currentPath, 'example-submission-editor');
@@ -481,7 +486,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
                 this.addTranslationAsCrumb(currentPath, 'text-feedback-conflict');
                 break;
             // No breadcrumbs for those segments
-            case 'goal-management':
+            case 'competency-management':
             case 'unit-management':
             case 'exercise-groups':
             case 'student-exams':
@@ -531,6 +536,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
             case 'sa-question-statistic':
             case 'test-exam':
             case 'participate':
+            case 'overview':
                 break;
             case 'example-submissions':
                 // Hide example submission dashboard for non instructor users
@@ -555,7 +561,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
                 } else if (this.lastRouteUrlSegment === 'code-editor' && segment === 'new') {
                     // - This route is bogus and needs to be replaced in the future, display no crumb
                     break;
-                } else if (this.lastRouteUrlSegment === 'programming-exercises' && segment === 'import') {
+                } else if (this.lastRouteUrlSegment?.endsWith('-exercises') && segment === 'import') {
                     // - This route is bogus and needs to be replaced in the future, display no crumb
                     break;
                 } else if (this.lastRouteUrlSegment === 'exercise-groups') {
@@ -738,7 +744,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
      * Subscribes to navigation end events to look for an exam id in the URL which indicates that we're in the student view of an exam.
      */
     subscribeToNavigationEventsForExamId() {
-        this.routerEventSubscription = this.router.events.pipe(filter((event: RouterEvent) => event instanceof NavigationEnd)).subscribe((event: NavigationEnd) => {
+        this.routerEventSubscription = this.router.events.pipe(filter((event: Event) => event instanceof NavigationEnd)).subscribe((event: NavigationEnd) => {
             if (event.url.includes('management')) {
                 this.examId = undefined;
                 return;

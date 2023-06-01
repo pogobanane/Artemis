@@ -11,10 +11,9 @@ node_modules/
 out/
 repos/
 repos-download/
-src/main/docker/
+docker/
 src/main/generated/
 src/main/resources/
 uploads/
-webpack/
 target/
 node/

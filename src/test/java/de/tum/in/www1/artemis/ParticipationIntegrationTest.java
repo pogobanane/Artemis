@@ -6,13 +6,17 @@ import static org.mockito.Mockito.*;
 import java.net.URI;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -32,6 +36,7 @@ import de.tum.in.www1.artemis.domain.quiz.*;
 import de.tum.in.www1.artemis.programmingexercise.ProgrammingExerciseTestService;
 import de.tum.in.www1.artemis.repository.*;
 import de.tum.in.www1.artemis.security.SecurityUtils;
+import de.tum.in.www1.artemis.service.GradingScaleService;
 import de.tum.in.www1.artemis.service.ParticipationService;
 import de.tum.in.www1.artemis.service.feature.Feature;
 import de.tum.in.www1.artemis.service.feature.FeatureToggleService;
@@ -77,6 +82,9 @@ class ParticipationIntegrationTest extends AbstractSpringIntegrationBambooBitbuc
     @Autowired
     private ProgrammingExerciseTestService programmingExerciseTestService;
 
+    @Autowired
+    private GradingScaleService gradingScaleService;
+
     @Value("${artemis.version-control.default-branch:main}")
     private String defaultBranch;
 
@@ -90,7 +98,7 @@ class ParticipationIntegrationTest extends AbstractSpringIntegrationBambooBitbuc
 
     @BeforeEach
     void initTestCase() throws Exception {
-        database.addUsers(TEST_PREFIX, 2, 2, 0, 2);
+        database.addUsers(TEST_PREFIX, 4, 2, 0, 2);
 
         // Add users that are not in the course/exercise
         database.createAndSaveUser(TEST_PREFIX + "student3");
@@ -119,7 +127,7 @@ class ParticipationIntegrationTest extends AbstractSpringIntegrationBambooBitbuc
         doNothing().when(continuousIntegrationService).configureBuildPlan(any(), any());
         doNothing().when(continuousIntegrationService).performEmptySetupCommit(any());
 
-        programmingExerciseTestService.setup(this, versionControlService, continuousIntegrationService, programmingExerciseStudentParticipationRepository);
+        programmingExerciseTestService.setup(this, versionControlService, continuousIntegrationService);
     }
 
     @AfterEach
@@ -282,7 +290,7 @@ class ParticipationIntegrationTest extends AbstractSpringIntegrationBambooBitbuc
         var repo = new LocalRepository(defaultBranch);
         repo.configureRepos("studentRepo", "studentOriginRepo");
         programmingExerciseTestService.setupRepositoryMocksParticipant(programmingExercise, user.getLogin(), repo, true);
-        mockConnectorRequestsForStartPractice(programmingExercise, TEST_PREFIX + "student1", Set.of(user), true, HttpStatus.CREATED);
+        mockConnectorRequestsForStartPractice(programmingExercise, TEST_PREFIX + "student1", Set.of(user), true);
 
         StudentParticipation participation = request.postWithResponseBody("/api/exercises/" + programmingExercise.getId() + "/participations/practice", null,
                 StudentParticipation.class, HttpStatus.CREATED);
@@ -303,7 +311,7 @@ class ParticipationIntegrationTest extends AbstractSpringIntegrationBambooBitbuc
         var repo = new LocalRepository(defaultBranch);
         repo.configureRepos("studentRepo", "studentOriginRepo");
         programmingExerciseTestService.setupRepositoryMocksParticipant(programmingExercise, user.getLogin(), repo);
-        mockConnectorRequestsForStartParticipation(programmingExercise, TEST_PREFIX + "student1", Set.of(user), true, HttpStatus.CREATED);
+        mockConnectorRequestsForStartParticipation(programmingExercise, TEST_PREFIX + "student1", Set.of(user), true);
 
         StudentParticipation participation = request.postWithResponseBody("/api/exercises/" + programmingExercise.getId() + "/participations", null, StudentParticipation.class,
                 HttpStatus.CREATED);
@@ -546,23 +554,73 @@ class ParticipationIntegrationTest extends AbstractSpringIntegrationBambooBitbuc
 
     @Test
     @WithMockUser(username = TEST_PREFIX + "tutor1", roles = "TA")
-    void getAllParticipationsForExercise_withLatestResult() throws Exception {
+    void getAllParticipationsForExercise_withLatestResults() throws Exception {
+        List<User> students = IntStream.range(1, 5).mapToObj(i -> database.getUserByLogin(TEST_PREFIX + "student" + i)).toList();
         database.createAndSaveParticipationForExercise(textExercise, TEST_PREFIX + "student1");
-        var participation = database.createAndSaveParticipationForExercise(textExercise, TEST_PREFIX + "student2");
-        database.addResultToParticipation(null, null, participation);
-        var result = ModelFactory.generateResult(true, 70D).participation(participation);
-        resultRepository.save(result);
-        StudentParticipation testParticipation = database.createAndSaveParticipationForExercise(textExercise, TEST_PREFIX + "student3");
+
+        StudentParticipation participation = database.createAndSaveParticipationForExercise(textExercise, TEST_PREFIX + "student2");
+        Result result1 = database.createSubmissionAndResult(participation, 42, true);
+        Result result2 = database.addResultToParticipation(participation, result1.getSubmission());
+        result2.setAssessmentType(AssessmentType.MANUAL);
+        resultRepository.save(result2);
+        Result result3 = database.addResultToParticipation(participation, result1.getSubmission());
+
+        Submission onlySubmissioin = database.createSubmissionForTextExercise(textExercise, students.get(2), "asdf");
+
+        StudentParticipation testParticipation = database.createAndSaveParticipationForExercise(textExercise, TEST_PREFIX + "student4");
         testParticipation.setTestRun(true);
         participationRepo.save(testParticipation);
+
         final var params = new LinkedMultiValueMap<String, String>();
-        params.add("withLatestResult", "true");
+        params.add("withLatestResults", "true");
+        var participations = request.getList("/api/exercises/" + textExercise.getId() + "/participations", HttpStatus.OK, StudentParticipation.class, params);
+        assertThat(participations).as("Exactly 3 participations are returned").hasSize(4).as("Only participation that has student are returned")
+                .allMatch(p -> p.getStudent().isPresent());
+        StudentParticipation receivedOnlyParticipation = participations.stream().filter(p -> p.getParticipant().equals(students.get(0))).findFirst().get();
+        StudentParticipation receivedParticipationWithResult = participations.stream().filter(p -> p.getParticipant().equals(students.get(1))).findFirst().get();
+        StudentParticipation receivedParticipationWithOnlySubmission = participations.stream().filter(p -> p.getParticipant().equals(students.get(2))).findFirst().get();
+        StudentParticipation receivedTestParticipation = participations.stream().filter(p -> p.getParticipant().equals(students.get(3))).findFirst().get();
+        assertThat(receivedOnlyParticipation.getResults()).isEmpty();
+        assertThat(receivedOnlyParticipation.getSubmissions()).isEmpty();
+        assertThat(receivedOnlyParticipation.getSubmissionCount()).isEqualTo(0);
+
+        assertThat(receivedParticipationWithResult.getResults()).containsExactlyInAnyOrder(result2, result3);
+        assertThat(receivedParticipationWithResult.getSubmissions()).isEmpty();
+        assertThat(receivedParticipationWithResult.getSubmissionCount()).isEqualTo(1);
+
+        assertThat(receivedParticipationWithOnlySubmission.getResults()).isEmpty();
+        assertThat(receivedParticipationWithOnlySubmission.getSubmissions()).containsExactlyInAnyOrder(onlySubmissioin);
+        assertThat(receivedParticipationWithOnlySubmission.getSubmissionCount()).isEqualTo(1);
+
+        assertThat(receivedTestParticipation.getResults()).isEmpty();
+        assertThat(receivedTestParticipation.getSubmissions()).isEmpty();
+        assertThat(receivedTestParticipation.getSubmissionCount()).isEqualTo(0);
+    }
+
+    @Test
+    @WithMockUser(username = TEST_PREFIX + "tutor1", roles = "TA")
+    void getAllParticipationsForExercise_withLatestResults_multipleAssessments() throws Exception {
+        var participation1 = database.createAndSaveParticipationForExercise(textExercise, TEST_PREFIX + "student1");
+        var participation2 = database.createAndSaveParticipationForExercise(textExercise, TEST_PREFIX + "student2");
+        var participation3 = database.createAndSaveParticipationForExercise(textExercise, TEST_PREFIX + "student3");
+        database.addResultToParticipation(AssessmentType.AUTOMATIC, null, participation1);
+        database.addResultToParticipation(AssessmentType.MANUAL, null, participation1);
+        database.addResultToParticipation(AssessmentType.MANUAL, null, participation2);
+        database.addResultToParticipation(AssessmentType.MANUAL, null, participation2);
+        database.addResultToParticipation(AssessmentType.MANUAL, null, participation3);
+        database.addResultToParticipation(AssessmentType.AUTOMATIC, null, participation3);
+        final var params = new LinkedMultiValueMap<String, String>();
+        params.add("withLatestResults", "true");
         var participations = request.getList("/api/exercises/" + textExercise.getId() + "/participations", HttpStatus.OK, StudentParticipation.class, params);
         assertThat(participations).as("Exactly 3 participations are returned").hasSize(3).as("Only participation that has student are returned")
                 .allMatch(p -> p.getStudent().isPresent()).as("No submissions should exist for participations")
                 .allMatch(p -> p.getSubmissionCount() == null || p.getSubmissionCount() == 0);
-        var participationWithResult = participations.stream().filter(p -> p.getParticipant().equals(database.getUserByLogin(TEST_PREFIX + "student2"))).findFirst().get();
-        assertThat(participationWithResult.getResults()).hasSize(1).contains(result);
+        var recievedParticipation1 = participations.stream().filter(participation -> participation.getParticipant().equals(participation1.getParticipant())).findAny();
+        var recievedParticipation2 = participations.stream().filter(participation -> participation.getParticipant().equals(participation2.getParticipant())).findAny();
+        var recievedParticipation3 = participations.stream().filter(participation -> participation.getParticipant().equals(participation3.getParticipant())).findAny();
+        assertThat(recievedParticipation1).hasValueSatisfying(participation -> assertThat(participation.getResults()).hasSize(1));
+        assertThat(recievedParticipation2).hasValueSatisfying(participation -> assertThat(participation.getResults()).hasSize(2));
+        assertThat(recievedParticipation3).hasValueSatisfying(participation -> assertThat(participation.getResults()).hasSize(2));
     }
 
     @Test
@@ -629,13 +687,13 @@ class ParticipationIntegrationTest extends AbstractSpringIntegrationBambooBitbuc
     @WithMockUser(username = TEST_PREFIX + "tutor1", roles = "TA")
     void updateParticipation() throws Exception {
         var participation = ModelFactory.generateStudentParticipation(InitializationState.INITIALIZED, textExercise, database.getUserByLogin(TEST_PREFIX + "student1"));
-        participation.setPresentationScore(1);
+        participation.setPresentationScore(1.);
         participation = participationRepo.save(participation);
         participation.setPresentationScore(null);
         var actualParticipation = request.putWithResponseBody("/api/exercises/" + textExercise.getId() + "/participations", participation, StudentParticipation.class,
                 HttpStatus.OK);
         assertThat(actualParticipation).as("The participation was updated").isNotNull();
-        assertThat(actualParticipation.getPresentationScore()).as("Presentation score was set to 0").isZero();
+        assertThat(actualParticipation.getPresentationScore()).as("Presentation score was set to null").isNull();
     }
 
     @Test
@@ -650,11 +708,40 @@ class ParticipationIntegrationTest extends AbstractSpringIntegrationBambooBitbuc
     void updateParticipation_presentationScoreMoreThan0() throws Exception {
         var participation = ModelFactory.generateStudentParticipation(InitializationState.INITIALIZED, textExercise, database.getUserByLogin(TEST_PREFIX + "student1"));
         participation = participationRepo.save(participation);
-        participation.setPresentationScore(2);
+        participation.setPresentationScore(2.);
         var actualParticipation = request.putWithResponseBody("/api/exercises/" + textExercise.getId() + "/participations", participation, StudentParticipation.class,
                 HttpStatus.OK);
         assertThat(actualParticipation).as("The participation was updated").isNotNull();
-        assertThat(actualParticipation.getPresentationScore()).as("Presentation score was set to 1").isEqualTo(1);
+        assertThat(actualParticipation.getPresentationScore()).as("Presentation score was set to 1").isEqualTo(1.);
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "-42,true", "42,false", "420,true" })
+    @WithMockUser(username = TEST_PREFIX + "tutor1", roles = "TA")
+    void updateParticipation_gradedPresentation(double input, boolean isBadRequest) throws Exception {
+        Course course = textExercise.getCourseViaExerciseGroupOrCourseMember();
+        course.setPresentationScore(0);
+
+        GradingScale gradingScale = database.generateGradingScale(2, new double[] { 0, 50, 100 }, true, 1, Optional.empty(), course, 2, 20.);
+        gradingScaleService.saveGradingScale(gradingScale);
+
+        StudentParticipation participation = ModelFactory.generateStudentParticipation(InitializationState.INITIALIZED, textExercise,
+                database.getUserByLogin(TEST_PREFIX + "student1"));
+        participation = participationRepo.save(participation);
+
+        participation.setPresentationScore(input);
+
+        if (isBadRequest) {
+            StudentParticipation actualParticipation = request.putWithResponseBody("/api/exercises/" + textExercise.getId() + "/participations", participation,
+                    StudentParticipation.class, HttpStatus.BAD_REQUEST);
+            assertThat(actualParticipation).as("The participation was not updated").isNull();
+        }
+        else {
+            StudentParticipation actualParticipation = request.putWithResponseBody("/api/exercises/" + textExercise.getId() + "/participations", participation,
+                    StudentParticipation.class, HttpStatus.OK);
+            assertThat(actualParticipation).as("The participation was updated").isNotNull();
+            assertThat(actualParticipation.getPresentationScore()).as("Presentation score was set to " + input).isEqualTo(input);
+        }
     }
 
     @Test
@@ -1027,7 +1114,7 @@ class ParticipationIntegrationTest extends AbstractSpringIntegrationBambooBitbuc
 
     private Team createTeamForExercise(User student, Exercise exercise) {
         var team = new Team();
-        team.setShortName("t" + UUID.randomUUID().toString().substring(0, 3));
+        team.setShortName(TEST_PREFIX + "createTeamForExercise");
         team.addStudents(student);
         team.setExercise(exercise);
         return teamRepository.save(team);
@@ -1109,10 +1196,11 @@ class ParticipationIntegrationTest extends AbstractSpringIntegrationBambooBitbuc
         request.get("/api/exercises/" + textExercise.getId() + "/participation", HttpStatus.FORBIDDEN, StudentParticipation.class);
     }
 
-    @Test
+    @ParameterizedTest
     @WithMockUser(username = TEST_PREFIX + "student1", roles = "USER")
-    void getParticipation_submittedNotEndedQuizBatch() throws Exception {
-        QuizExercise quizExercise = ModelFactory.generateQuizExercise(ZonedDateTime.now().minusMinutes(10), ZonedDateTime.now().plusMinutes(10), QuizMode.BATCHED, course);
+    @MethodSource("getGetParticipationsubmittedNotEndedQuizParameters")
+    void getParticipation_submittedNotEndedQuiz(QuizMode quizMode, boolean isSubmissionAllowed) throws Exception {
+        QuizExercise quizExercise = ModelFactory.generateQuizExercise(ZonedDateTime.now().minusMinutes(10), ZonedDateTime.now().plusMinutes(10), quizMode, course);
         quizExercise.addQuestions(database.createShortAnswerQuestion());
         quizExercise.setDuration(600);
         quizExercise.setQuizPointStatistic(new QuizPointStatistic());
@@ -1137,6 +1225,12 @@ class ParticipationIntegrationTest extends AbstractSpringIntegrationBambooBitbuc
 
         quizScheduleService.processCachedQuizSubmissions();
 
+        if (!isSubmissionAllowed) {
+            // Duration is set to 0 so that QuizBatch.isSubmissionAllowed() will be false
+            quizExercise.setDuration(0);
+            quizExercise = exerciseRepo.save(quizExercise);
+        }
+
         var actualParticipation = request.get("/api/exercises/" + quizExercise.getId() + "/participation", HttpStatus.OK, StudentParticipation.class);
         assertThat(actualParticipation.getInitializationState()).isEqualTo(InitializationState.FINISHED);
 
@@ -1157,5 +1251,10 @@ class ParticipationIntegrationTest extends AbstractSpringIntegrationBambooBitbuc
         var actualSubmittedAnswerText = (ShortAnswerSubmittedText) actualSubmittedAnswer.getSubmittedTexts().stream().findFirst().get();
         assertThat(actualSubmittedAnswerText.getText()).isEqualTo("test");
         assertThat(actualSubmittedAnswerText.isIsCorrect()).isFalse();
+    }
+
+    private static Stream<Arguments> getGetParticipationsubmittedNotEndedQuizParameters() {
+        return Stream.of(Arguments.of(QuizMode.SYNCHRONIZED, true), Arguments.of(QuizMode.SYNCHRONIZED, false), Arguments.of(QuizMode.BATCHED, true),
+                Arguments.of(QuizMode.BATCHED, false), Arguments.of(QuizMode.INDIVIDUAL, true), Arguments.of(QuizMode.INDIVIDUAL, false));
     }
 }

@@ -18,14 +18,22 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 
 import de.tum.in.www1.artemis.domain.Course;
-import de.tum.in.www1.artemis.domain.LtiUserId;
 import de.tum.in.www1.artemis.domain.User;
+import de.tum.in.www1.artemis.domain.metis.ConversationParticipant;
+import de.tum.in.www1.artemis.domain.metis.Post;
+import de.tum.in.www1.artemis.domain.metis.conversation.GroupChat;
+import de.tum.in.www1.artemis.domain.metis.conversation.OneToOneChat;
 import de.tum.in.www1.artemis.domain.notification.SingleUserNotification;
 import de.tum.in.www1.artemis.programmingexercise.MockDelegate;
 import de.tum.in.www1.artemis.repository.*;
+import de.tum.in.www1.artemis.repository.metis.ConversationParticipantRepository;
+import de.tum.in.www1.artemis.repository.metis.PostRepository;
+import de.tum.in.www1.artemis.repository.metis.conversation.ConversationRepository;
+import de.tum.in.www1.artemis.repository.metis.conversation.OneToOneChatRepository;
 import de.tum.in.www1.artemis.security.Role;
-import de.tum.in.www1.artemis.service.connectors.CIUserManagementService;
-import de.tum.in.www1.artemis.service.connectors.VcsUserManagementService;
+import de.tum.in.www1.artemis.service.connectors.ci.CIUserManagementService;
+import de.tum.in.www1.artemis.service.connectors.lti.LtiService;
+import de.tum.in.www1.artemis.service.connectors.vcs.VcsUserManagementService;
 import de.tum.in.www1.artemis.service.dto.UserDTO;
 import de.tum.in.www1.artemis.service.dto.UserInitializationDTO;
 import de.tum.in.www1.artemis.service.user.PasswordService;
@@ -62,9 +70,6 @@ public class UserTestService {
     protected RequestUtilService request;
 
     @Autowired
-    private LtiUserIdRepository ltiUserIdRepository;
-
-    @Autowired
     private Optional<VcsUserManagementService> optionalVcsUserManagementService;
 
     @Autowired
@@ -72,6 +77,18 @@ public class UserTestService {
 
     @Autowired
     private SingleUserNotificationRepository singleUserNotificationRepository;
+
+    @Autowired
+    private PostRepository postRepository;
+
+    @Autowired
+    private ConversationRepository conversationRepository;
+
+    @Autowired
+    private ConversationParticipantRepository conversationParticipantRepository;
+
+    @Autowired
+    private OneToOneChatRepository oneToOneChatRepository;
 
     private String TEST_PREFIX;
 
@@ -113,13 +130,63 @@ public class UserTestService {
         student.setInternal(true);
         userRepository.save(student);
         mockDelegate.mockDeleteUserInUserManagement(student, true, false, false);
-        var notification = singleUserNotificationRepository.save(new SingleUserNotification(student, "title", "text"));
+        var notification = singleUserNotificationRepository.save(new SingleUserNotification(student, "title", "text", false, null));
 
+        // Creating conversation-related objects
+        var post = new Post();
+        var post2 = new Post();
+        var oneToOneChatPost = new Post();
+        var conversationParticipant = new ConversationParticipant();
+        var conversationParticipant2 = new ConversationParticipant();
+        var conversationParticipant3 = new ConversationParticipant();
+        var conversation = new GroupChat();
+        var oneToOneChat = new OneToOneChat();
+
+        User student2 = userRepository.getUserByLoginElseThrow(TEST_PREFIX + "student2");
+
+        conversationParticipant.setUser(student);
+        conversationParticipant2.setUser(student2);
+        conversationParticipant3.setUser(student);
+
+        conversation.setConversationParticipants(Collections.singleton(conversationParticipant));
+        conversation.setCreator(student);
+        oneToOneChat.setConversationParticipants(Set.of(conversationParticipant2, conversationParticipant3));
+        oneToOneChat.setCreator(student2);
+
+        conversationParticipant.setConversation(conversation);
+        conversationParticipant2.setConversation(oneToOneChat);
+        conversationParticipant3.setConversation(oneToOneChat);
+
+        post.setAuthor(student);
+        post.setConversation(conversation);
+        post2.setAuthor(student2);
+        post2.setConversation(conversation);
+        oneToOneChatPost.setAuthor(student2);
+        oneToOneChatPost.setConversation(oneToOneChat);
+
+        conversationRepository.save(conversation);
+        oneToOneChatRepository.save(oneToOneChat);
+        postRepository.save(post);
+        postRepository.save(post2);
+        postRepository.save(oneToOneChatPost);
+        conversationParticipantRepository.save(conversationParticipant);
+        conversationParticipantRepository.save(conversationParticipant2);
+        conversationParticipantRepository.save(conversationParticipant3);
+
+        // Sending delete request
         request.delete("/api/admin/users/" + student.getLogin(), HttpStatus.OK);
 
+        // Assertions
         var deletedUser = userRepository.findById(student.getId());
         assertThat(deletedUser).isEmpty();
         assertThat(singleUserNotificationRepository.findById(notification.getId())).isEmpty();
+        assertThat(postRepository.findById(post.getId())).isEmpty();
+        assertThat(postRepository.findById(post2.getId())).isEmpty();
+        assertThat(conversationParticipantRepository.findById(conversationParticipant.getId())).isEmpty();
+        assertThat(conversationParticipantRepository.findById(conversationParticipant3.getId())).isEmpty();
+        assertThat(postRepository.findById(post.getId())).isEmpty();
+        assertThat(conversationRepository.findById(conversation.getId())).isEmpty();
+        assertThat(oneToOneChatRepository.findById(oneToOneChat.getId())).isEmpty();
     }
 
     // Test
@@ -471,7 +538,7 @@ public class UserTestService {
         student.setPassword("foobar");
         student.setEmail("batman@secret.invalid");
 
-        mockDelegate.mockFailToCreateUserInExernalUserManagement(student, false, true, false);
+        mockDelegate.mockFailToCreateUserInExternalUserManagement(student, false, true, false);
 
         final var response = request.postWithResponseBody("/api/admin/users", new ManagedUserVM(student), User.class, HttpStatus.INTERNAL_SERVER_ERROR);
         assertThat(response).isNull();
@@ -484,7 +551,7 @@ public class UserTestService {
         student.setPassword("foobar");
         student.setEmail("batman@secret.invalid");
 
-        mockDelegate.mockFailToCreateUserInExernalUserManagement(student, false, false, true);
+        mockDelegate.mockFailToCreateUserInExternalUserManagement(student, false, false, true);
 
         final var response = request.postWithResponseBody("/api/admin/users", new ManagedUserVM(student), User.class, HttpStatus.INTERNAL_SERVER_ERROR);
         assertThat(response).isNull();
@@ -499,7 +566,7 @@ public class UserTestService {
         student.setPassword("foobar");
         student.setEmail("batman@secret.invalid");
 
-        mockDelegate.mockFailToCreateUserInExernalUserManagement(student, true, false, false);
+        mockDelegate.mockFailToCreateUserInExternalUserManagement(student, true, false, false);
 
         final var response = request.postWithResponseBody("/api/admin/users", new ManagedUserVM(student), User.class, HttpStatus.INTERNAL_SERVER_ERROR);
         assertThat(response).isNull();
@@ -692,12 +759,8 @@ public class UserTestService {
         repoUser.setPassword(password);
         repoUser.setInternal(true);
         repoUser.setActivated(false);
-        repoUser.setGroups(new HashSet<>());
+        repoUser.setGroups(Set.of(LtiService.LTI_GROUP_NAME));
         final User user = userRepository.save(repoUser);
-        LtiUserId ltiUserId = new LtiUserId();
-        ltiUserId.setLtiUserId("1234");
-        ltiUserId.setUser(repoUser);
-        ltiUserIdRepository.save(ltiUserId);
 
         if (mock) {
             // Mock user creation and update calls to prevent issues in GitLab/Jenkins tests
@@ -727,11 +790,8 @@ public class UserTestService {
         user.setPassword(password);
         user.setInternal(true);
         user.setActivated(true);
-        user = userRepository.save(user);
-        LtiUserId ltiUserId = new LtiUserId();
-        ltiUserId.setLtiUserId("1234");
-        ltiUserId.setUser(user);
-        ltiUserIdRepository.save(ltiUserId);
+        user.setGroups(Set.of(LtiService.LTI_GROUP_NAME));
+        userRepository.save(user);
 
         UserInitializationDTO dto = request.putWithResponseBody("/api/users/initialize", false, UserInitializationDTO.class, HttpStatus.OK);
 
@@ -753,8 +813,6 @@ public class UserTestService {
         user.setActivated(false);
         userRepository.save(user);
 
-        ltiUserIdRepository.findByUser(user).ifPresent(ltiUserIdRepository::delete);
-
         UserInitializationDTO dto = request.putWithResponseBody("/api/users/initialize", false, UserInitializationDTO.class, HttpStatus.OK);
         assertThat(dto.getPassword()).isNull();
 
@@ -772,10 +830,6 @@ public class UserTestService {
         user.setInternal(false);
         user.setActivated(false);
         user = userRepository.save(user);
-        LtiUserId ltiUserId = new LtiUserId();
-        ltiUserId.setLtiUserId("1234");
-        ltiUserId.setUser(user);
-        ltiUserIdRepository.save(ltiUserId);
 
         UserInitializationDTO dto = request.putWithResponseBody("/api/users/initialize", false, UserInitializationDTO.class, HttpStatus.OK);
 

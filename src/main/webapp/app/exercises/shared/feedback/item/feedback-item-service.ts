@@ -32,9 +32,15 @@ export class FeedbackItemServiceImpl implements FeedbackItemService {
     }
 
     group(feedbackItems: FeedbackItem[]): FeedbackNode[] {
-        return getAllFeedbackGroups() //
+        const feedbackGroups = getAllFeedbackGroups() //
             .map((group: FeedbackGroup) => group.addAllItems(feedbackItems.filter(group.shouldContain)))
             .filter((group: FeedbackGroup) => !group.isEmpty());
+
+        if (feedbackGroups.length === 1) {
+            feedbackGroups[0].open = true;
+        }
+
+        return feedbackGroups;
     }
 
     private createFeedbackItem(feedback: Feedback, showTestDetails: boolean): FeedbackItem {
@@ -49,6 +55,7 @@ export class FeedbackItemServiceImpl implements FeedbackItemService {
             text: feedback.detailText,
             positive: feedback.positive,
             credits: feedback.credits,
+            feedbackReference: feedback,
         };
     }
 
@@ -62,11 +69,12 @@ export class FeedbackItemServiceImpl implements FeedbackItemService {
 
         return {
             type: feedback.isSubsequent ? 'Subsequent' : 'Reviewer',
-            name: showTestDetails ? this.translateService.instant('artemisApp.course.tutor') : this.translateService.instant('artemisApp.result.detail.feedback'),
+            name: showTestDetails ? this.translateService.instant('artemisApp.course.reviewer') : this.translateService.instant('artemisApp.result.detail.feedback'),
             title: feedback.text,
             text: gradingInstruction.feedback + (feedback.detailText ? `\n${feedback.detailText}` : ''),
             positive: feedback.positive,
             credits: feedback.credits,
+            feedbackReference: feedback,
         };
     }
 }

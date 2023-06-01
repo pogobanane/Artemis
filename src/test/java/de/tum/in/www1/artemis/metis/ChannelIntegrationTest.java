@@ -5,22 +5,35 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.util.LinkedMultiValueMap;
 
 import de.tum.in.www1.artemis.domain.User;
+import de.tum.in.www1.artemis.domain.enumeration.CourseInformationSharingConfiguration;
+import de.tum.in.www1.artemis.domain.enumeration.Language;
+import de.tum.in.www1.artemis.repository.tutorialgroups.TutorialGroupRepository;
+import de.tum.in.www1.artemis.service.tutorialgroups.TutorialGroupChannelManagementService;
 import de.tum.in.www1.artemis.util.ModelFactory;
 import de.tum.in.www1.artemis.web.rest.metis.conversation.dtos.ChannelDTO;
 import de.tum.in.www1.artemis.web.websocket.dto.metis.MetisCrudAction;
 
 class ChannelIntegrationTest extends AbstractConversationTest {
+
+    @Autowired
+    TutorialGroupRepository tutorialGroupRepository;
+
+    @Autowired
+    TutorialGroupChannelManagementService tutorialGroupChannelManagementService;
 
     private static final String TEST_PREFIX = "chtest";
 
@@ -73,7 +86,7 @@ class ChannelIntegrationTest extends AbstractConversationTest {
     private void isAllowedToCreateChannelTest(boolean isPublicChannel, String loginNameWithoutPrefix) throws Exception {
         // given
         var channelDTO = new ChannelDTO();
-        channelDTO.setName(RandomConversationNameGenerator.generateRandomConversationName());
+        channelDTO.setName(TEST_PREFIX);
         channelDTO.setIsPublic(isPublicChannel);
         channelDTO.setIsAnnouncementChannel(false);
         channelDTO.setDescription("general channel");
@@ -93,37 +106,65 @@ class ChannelIntegrationTest extends AbstractConversationTest {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = { true, false })
+    @EnumSource(value = CourseInformationSharingConfiguration.class, names = { "COMMUNICATION_ONLY", "DISABLED" })
     @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
-    void createChannel_nameInvalid_shouldReturnBadRequest(boolean isPublicChannel) throws Exception {
-        // given
-        var channel = createChannel(isPublicChannel);
+    void createChannel_messagingFeatureDeactivated_shouldReturnForbidden(CourseInformationSharingConfiguration courseInformationSharingConfiguration) throws Exception {
+        createTest_messagingDeactivated(courseInformationSharingConfiguration);
+    }
 
+    void createTest_messagingDeactivated(CourseInformationSharingConfiguration courseInformationSharingConfiguration) throws Exception {
+        setCourseInformationSharingConfiguration(courseInformationSharingConfiguration);
+
+        // given
         var channelDTO = new ChannelDTO();
-        channelDTO.setIsPublic(isPublicChannel);
+        channelDTO.setIsPublic(true);
         channelDTO.setIsAnnouncementChannel(false);
-        channelDTO.setName(RandomConversationNameGenerator.generateRandomConversationName());
+        channelDTO.setName(TEST_PREFIX);
         channelDTO.setDescription("general channel");
 
-        // when
-        // duplicated name
-        channelDTO.setName(channel.getName());
-        expectCreateBadRequest(channelDTO);
-        // empty name
-        channelDTO.setName("");
-        expectCreateBadRequest(channelDTO);
-        // null name
-        channelDTO.setName(null);
-        expectCreateBadRequest(channelDTO);
-        // regex not matching
-        channelDTO.setName("general%%%%wow");
-        expectCreateBadRequest(channelDTO);
+        expectCreateForbidden(channelDTO);
 
-        // then
-        verifyNoParticipantTopicWebsocketSent();
+        // active messaging again
+        setCourseInformationSharingConfiguration(CourseInformationSharingConfiguration.COMMUNICATION_AND_MESSAGING);
+    }
 
-        // cleanup
-        conversationRepository.deleteById(channel.getId());
+    @ParameterizedTest
+    @EnumSource(value = CourseInformationSharingConfiguration.class, names = { "COMMUNICATION_ONLY", "DISABLED" })
+    @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
+    void update_messagingFeatureDeactivated_shouldReturnForbidden(CourseInformationSharingConfiguration courseInformationSharingConfiguration) throws Exception {
+        update_messagingDeactivated(courseInformationSharingConfiguration);
+    }
+
+    void update_messagingDeactivated(CourseInformationSharingConfiguration courseInformationSharingConfiguration) throws Exception {
+        setCourseInformationSharingConfiguration(courseInformationSharingConfiguration);
+
+        // given
+        var channelDTO = new ChannelDTO();
+        channelDTO.setIsPublic(true);
+        channelDTO.setIsAnnouncementChannel(false);
+        channelDTO.setName(TEST_PREFIX);
+        channelDTO.setDescription("general channel");
+
+        expectUpdateForbidden(1L, channelDTO);
+
+        // active messaging again
+        setCourseInformationSharingConfiguration(CourseInformationSharingConfiguration.COMMUNICATION_AND_MESSAGING);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = CourseInformationSharingConfiguration.class, names = { "COMMUNICATION_ONLY", "DISABLED" })
+    @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
+    void delete_messagingFeatureDeactivated_shouldReturnForbidden(CourseInformationSharingConfiguration courseInformationSharingConfiguration) throws Exception {
+        deleteTest_messagingDeactivated(courseInformationSharingConfiguration);
+    }
+
+    void deleteTest_messagingDeactivated(CourseInformationSharingConfiguration courseInformationSharingConfiguration) throws Exception {
+        setCourseInformationSharingConfiguration(courseInformationSharingConfiguration);
+
+        expectDeleteForbidden(1L);
+
+        // active messaging again
+        setCourseInformationSharingConfiguration(CourseInformationSharingConfiguration.COMMUNICATION_AND_MESSAGING);
     }
 
     @ParameterizedTest
@@ -131,16 +172,11 @@ class ChannelIntegrationTest extends AbstractConversationTest {
     @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
     void createChannel_descriptionInvalid_shouldReturnBadRequest(boolean isPublicChannel) throws Exception {
         // given
-        var channel = createChannel(isPublicChannel);
-
-        var channelDTO = new ChannelDTO();
-        channelDTO.setIsPublic(isPublicChannel);
-        channelDTO.setIsAnnouncementChannel(false);
-        channelDTO.setName(RandomConversationNameGenerator.generateRandomConversationName());
-        channelDTO.setDescription("a".repeat(251));
+        var channel = createChannel(isPublicChannel, TEST_PREFIX);
+        channel.setDescription("a".repeat(251));
 
         // when
-        expectCreateBadRequest(channelDTO);
+        expectCreateBadRequest(channel);
         // then
         verifyNoParticipantTopicWebsocketSent();
 
@@ -154,7 +190,7 @@ class ChannelIntegrationTest extends AbstractConversationTest {
     void createChannel_asNonCourseInstructorOrTutorOrEditor_shouldReturnForbidden(boolean isPublicChannel) throws Exception {
         // given
         var channelDTO = new ChannelDTO();
-        channelDTO.setName(RandomConversationNameGenerator.generateRandomConversationName());
+        channelDTO.setName(TEST_PREFIX);
         channelDTO.setIsPublic(isPublicChannel);
         channelDTO.setIsAnnouncementChannel(false);
         channelDTO.setDescription("general channel");
@@ -176,7 +212,7 @@ class ChannelIntegrationTest extends AbstractConversationTest {
     @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
     void deleteChannel_asInstructor_shouldDeleteChannel(boolean isPublicChannel) throws Exception {
         // given
-        var channel = createChannel(isPublicChannel);
+        var channel = createChannel(isPublicChannel, TEST_PREFIX);
         // when
         database.changeUser(testPrefix + "instructor2");
         request.delete("/api/courses/" + exampleCourseId + "/channels/" + channel.getId(), HttpStatus.OK);
@@ -188,10 +224,35 @@ class ChannelIntegrationTest extends AbstractConversationTest {
 
     @ParameterizedTest
     @ValueSource(booleans = { true, false })
+    @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
+    void deleteTutorialGroupChannel_asInstructor_shouldReturnBadRequest(boolean isPublicChannel) throws Exception {
+        // given
+        var channel = createChannel(isPublicChannel, TEST_PREFIX);
+        var tutorialGroup = database.createTutorialGroup(exampleCourseId, "tg-channel-test", "LoremIpsum", 10, false, "Garching", Language.ENGLISH.name(),
+                userRepository.findOneByLogin(testPrefix + "tutor1").get(), Set.of());
+        var channelFromDatabase = channelRepository.findById(channel.getId()).get();
+
+        tutorialGroup.setTutorialGroupChannel(channelFromDatabase);
+        tutorialGroup = tutorialGroupRepository.save(tutorialGroup);
+
+        // when
+        database.changeUser(testPrefix + "instructor2");
+        request.delete("/api/courses/" + exampleCourseId + "/channels/" + channel.getId(), HttpStatus.BAD_REQUEST);
+        // then
+        assertThat(channelRepository.findById(channel.getId())).isNotEmpty();
+        verifyNoParticipantTopicWebsocketSent();
+
+        // cleanup
+        tutorialGroupChannelManagementService.deleteTutorialGroupChannel(tutorialGroup);
+        tutorialGroupRepository.deleteById(tutorialGroup.getId());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
     @WithMockUser(username = TEST_PREFIX + "tutor1", roles = "TA")
     void deleteChannel_asCreator_shouldDeleteChannel(boolean isPublicChannel) throws Exception {
         // given
-        var channel = createChannel(isPublicChannel);
+        var channel = createChannel(isPublicChannel, TEST_PREFIX);
         // when
         request.delete("/api/courses/" + exampleCourseId + "/channels/" + channel.getId(), HttpStatus.OK);
         // then
@@ -205,7 +266,7 @@ class ChannelIntegrationTest extends AbstractConversationTest {
     @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
     void deleteChannel_asNonCourseInstructor_shouldReturnForbidden(boolean isPublicChannel) throws Exception {
         // given
-        var channel = createChannel(isPublicChannel);
+        var channel = createChannel(isPublicChannel, TEST_PREFIX);
         addUserAsChannelModerators(channel, "tutor2");
 
         // then
@@ -231,9 +292,9 @@ class ChannelIntegrationTest extends AbstractConversationTest {
     @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
     void updateChannel_asUserWithChannelModerationRights_shouldUpdateChannel(boolean isPublicChannel) throws Exception {
         // given
-        var channel = createChannel(isPublicChannel);
+        var channel = createChannel(isPublicChannel, TEST_PREFIX + "1");
         var updateDTO = new ChannelDTO();
-        updateDTO.setName(RandomConversationNameGenerator.generateRandomConversationName());
+        updateDTO.setName(TEST_PREFIX + "2");
         updateDTO.setDescription("new description");
         updateDTO.setTopic("new topic");
         addUserAsChannelModerators(channel, "tutor1");
@@ -248,7 +309,7 @@ class ChannelIntegrationTest extends AbstractConversationTest {
         resetWebsocketMock();
 
         // channel moderators can also update the channel
-        updateDTO.setName(RandomConversationNameGenerator.generateRandomConversationName());
+        updateDTO.setName(TEST_PREFIX + "3");
         updateDTO.setDescription("new description2");
         updateDTO.setTopic("new topic2");
         database.changeUser(testPrefix + "tutor1");
@@ -266,11 +327,11 @@ class ChannelIntegrationTest extends AbstractConversationTest {
     @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
     void updateChannel_onArchivedChannel_shouldReturnOk(boolean isPublicChannel) throws Exception {
         // given
-        var channel = createChannel(isPublicChannel);
+        var channel = createChannel(isPublicChannel, TEST_PREFIX + "1");
         archiveChannel(channel.getId());
 
         var updateDTO = new ChannelDTO();
-        updateDTO.setName(RandomConversationNameGenerator.generateRandomConversationName());
+        updateDTO.setName(TEST_PREFIX + "2");
         updateDTO.setDescription("new description");
         updateDTO.setTopic("new topic");
         addUserAsChannelModerators(channel, "tutor1");
@@ -291,9 +352,9 @@ class ChannelIntegrationTest extends AbstractConversationTest {
     @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
     void updateChannel_asUserWithoutChannelModerationRights_shouldReturnForbidden(boolean isPublicChannel) throws Exception {
         // given
-        var channel = createChannel(isPublicChannel);
+        var channel = createChannel(isPublicChannel, TEST_PREFIX + "1");
         var updateDTO = new ChannelDTO();
-        updateDTO.setName(RandomConversationNameGenerator.generateRandomConversationName());
+        updateDTO.setName(TEST_PREFIX + "2");
         updateDTO.setDescription("new description");
         updateDTO.setTopic("new topic");
 
@@ -318,7 +379,7 @@ class ChannelIntegrationTest extends AbstractConversationTest {
     @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
     void archiveAndUnarchiveChannel_asUserWithoutChannelModerationRights_shouldReturnForbidden(boolean isPublicChannel) throws Exception {
         // given
-        var channel = createChannel(isPublicChannel);
+        var channel = createChannel(isPublicChannel, TEST_PREFIX);
 
         // then
         database.changeUser(testPrefix + "student1");
@@ -341,11 +402,27 @@ class ChannelIntegrationTest extends AbstractConversationTest {
     }
 
     @ParameterizedTest
+    @EnumSource(value = CourseInformationSharingConfiguration.class, names = { "COMMUNICATION_ONLY", "DISABLED" })
+    @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
+    void archiveAndUnarchiveChannel_messagingFeatureDeactivated_shouldReturnForbidden(CourseInformationSharingConfiguration courseInformationSharingConfiguration)
+            throws Exception {
+        var channel = createChannel(true, TEST_PREFIX);
+        setCourseInformationSharingConfiguration(courseInformationSharingConfiguration);
+
+        // given
+        expectArchivalChangeForbidden(channel, true, true);
+        expectArchivalChangeForbidden(channel, true, false);
+
+        // active messaging again
+        setCourseInformationSharingConfiguration(CourseInformationSharingConfiguration.COMMUNICATION_AND_MESSAGING);
+    }
+
+    @ParameterizedTest
     @ValueSource(booleans = { true, false })
     @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
     void archiveAndUnarchiveChannel_asUserWithChannelModerationRights_shouldArchiveChannel(boolean isPublicChannel) throws Exception {
         // given
-        var channel = createChannel(isPublicChannel);
+        var channel = createChannel(isPublicChannel, TEST_PREFIX);
         addUserAsChannelModerators(channel, "tutor1");
 
         // then
@@ -364,11 +441,28 @@ class ChannelIntegrationTest extends AbstractConversationTest {
     }
 
     @ParameterizedTest
+    @EnumSource(value = CourseInformationSharingConfiguration.class, names = { "COMMUNICATION_ONLY", "DISABLED" })
+    @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
+    void grantRevokeChannelModeratorRole_messagingFeatureDeactivated_shouldReturnForbidden(CourseInformationSharingConfiguration courseInformationSharingConfiguration)
+            throws Exception {
+        var channel = createChannel(true, TEST_PREFIX);
+
+        setCourseInformationSharingConfiguration(courseInformationSharingConfiguration);
+
+        // given
+        expectGrantRevokeChannelModeratorRoleForbidden(channel, true);
+        expectGrantRevokeChannelModeratorRoleForbidden(channel, false);
+
+        // active messaging again
+        setCourseInformationSharingConfiguration(CourseInformationSharingConfiguration.COMMUNICATION_AND_MESSAGING);
+    }
+
+    @ParameterizedTest
     @ValueSource(booleans = { true, false })
     @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
     void grantRevokeChannelModeratorRole_asUserWithChannelModerationRights_shouldGrantRevokeChannelModeratorRole(boolean isPublicChannel) throws Exception {
         // given
-        var channel = createChannel(isPublicChannel);
+        var channel = createChannel(isPublicChannel, TEST_PREFIX);
         addUserAsChannelModerators(channel, "tutor1");
         addUsersToConversation(channel.getId(), "student1");
         addUsersToConversation(channel.getId(), "student2");
@@ -398,7 +492,7 @@ class ChannelIntegrationTest extends AbstractConversationTest {
     @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
     void grantRevokeChannelModeratorRole_asUserWithoutChannelModerationRights_shouldReturnForbidden(boolean isPublicChannel) throws Exception {
         // given
-        var channel = createChannel(isPublicChannel);
+        var channel = createChannel(isPublicChannel, TEST_PREFIX);
 
         // then
         database.changeUser(testPrefix + "student1");
@@ -420,11 +514,31 @@ class ChannelIntegrationTest extends AbstractConversationTest {
     }
 
     @ParameterizedTest
+    @EnumSource(value = CourseInformationSharingConfiguration.class, names = { "COMMUNICATION_ONLY", "DISABLED" })
+    @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
+    void registerDeregisterUsersToChannel_messagingFeatureDeactivated_shouldReturnForbidden(CourseInformationSharingConfiguration courseInformationSharingConfiguration)
+            throws Exception {
+        registerUsersToChannel_messagingDeactivated(courseInformationSharingConfiguration);
+
+    }
+
+    void registerUsersToChannel_messagingDeactivated(CourseInformationSharingConfiguration courseInformationSharingConfiguration) throws Exception {
+        var channel = createChannel(true, TEST_PREFIX);
+        setCourseInformationSharingConfiguration(courseInformationSharingConfiguration);
+        // given
+        expectRegisterDeregisterForbidden(channel, true);
+        expectRegisterDeregisterForbidden(channel, false);
+
+        // active messaging again
+        setCourseInformationSharingConfiguration(CourseInformationSharingConfiguration.COMMUNICATION_AND_MESSAGING);
+    }
+
+    @ParameterizedTest
     @ValueSource(booleans = { true, false })
     @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
     void registerUsersToChannel_asUserWithChannelModerationRights_shouldRegisterUsersToChannel(boolean isPublicChannel) throws Exception {
         // given
-        var channel = createChannel(isPublicChannel);
+        var channel = createChannel(isPublicChannel, TEST_PREFIX);
         addUserAsChannelModerators(channel, "tutor1");
 
         // then
@@ -471,7 +585,7 @@ class ChannelIntegrationTest extends AbstractConversationTest {
     @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
     void registerUsersToChannel_asUserWithoutChannelModerationRights_shouldReturnForbidden(boolean isPublicChannel) throws Exception {
         // given
-        var channel = createChannel(isPublicChannel);
+        var channel = createChannel(isPublicChannel, TEST_PREFIX);
 
         // then
         database.changeUser(testPrefix + "student1");
@@ -497,7 +611,7 @@ class ChannelIntegrationTest extends AbstractConversationTest {
     @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
     void leaveChannel_asNormalUser_canLeaveChannel(boolean isPublicChannel) throws Exception {
         // given
-        var channel = createChannel(isPublicChannel);
+        var channel = createChannel(isPublicChannel, TEST_PREFIX);
         addUsersToConversation(channel.getId(), "student1");
 
         // then
@@ -517,7 +631,7 @@ class ChannelIntegrationTest extends AbstractConversationTest {
     @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
     void leaveChannel_asCreator_shouldReturnBadRequest(boolean isPublicChannel) throws Exception {
         // given
-        var channel = createChannel(isPublicChannel);
+        var channel = createChannel(isPublicChannel, TEST_PREFIX);
         // then
         request.postWithoutResponseBody("/api/courses/" + exampleCourseId + "/channels/" + channel.getId() + "/deregister", List.of(testPrefix + "instructor1"),
                 HttpStatus.BAD_REQUEST);
@@ -532,7 +646,7 @@ class ChannelIntegrationTest extends AbstractConversationTest {
     @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
     void joinPublicChannel_asNormalUser_canJoinPublicChannel() throws Exception {
         // given
-        var channel = createChannel(true);
+        var channel = createChannel(true, TEST_PREFIX);
 
         // then
         database.changeUser(testPrefix + "student1");
@@ -550,7 +664,7 @@ class ChannelIntegrationTest extends AbstractConversationTest {
     @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
     void joinPrivateChannel_asNormalUser_canNotJoinPrivateChannel() throws Exception {
         // given
-        var channel = createChannel(false);
+        var channel = createChannel(false, TEST_PREFIX);
 
         // then
         database.changeUser(testPrefix + "student1");
@@ -565,7 +679,7 @@ class ChannelIntegrationTest extends AbstractConversationTest {
     @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
     void joinPrivateChannel_asInstructor_canJoinPrivateChannel() throws Exception {
         // given
-        var channel = createChannel(false);
+        var channel = createChannel(false, TEST_PREFIX);
 
         // then
         database.changeUser(testPrefix + "instructor2");
@@ -580,12 +694,12 @@ class ChannelIntegrationTest extends AbstractConversationTest {
     @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
     void getCourseChannelsOverview_asNormalUser_canSeeAllPublicChannelsAndPrivateChannelsWhereMember() throws Exception {
         // given
-        var publicChannelWhereMember = createChannel(true, RandomConversationNameGenerator.generateRandomConversationName());
+        var publicChannelWhereMember = createChannel(true, TEST_PREFIX + "1");
         addUsersToConversation(publicChannelWhereMember.getId(), "student1");
-        var publicChannelWhereNotMember = createChannel(true, RandomConversationNameGenerator.generateRandomConversationName());
-        var privateChannelWhereMember = createChannel(false, RandomConversationNameGenerator.generateRandomConversationName());
+        var publicChannelWhereNotMember = createChannel(true, TEST_PREFIX + "2");
+        var privateChannelWhereMember = createChannel(false, TEST_PREFIX + "3");
         addUsersToConversation(privateChannelWhereMember.getId(), "student1");
-        var privateChannelWhereNotMember = createChannel(false, RandomConversationNameGenerator.generateRandomConversationName());
+        var privateChannelWhereNotMember = createChannel(false, TEST_PREFIX + "4");
 
         // then
         database.changeUser(testPrefix + "student1");
@@ -604,12 +718,12 @@ class ChannelIntegrationTest extends AbstractConversationTest {
     @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
     void getCourseChannelsOverview_asCourseInstructor_canSeeAllPublicChannelsAndAllPrivateChannels() throws Exception {
         // given
-        var publicChannelWhereMember = createChannel(true, RandomConversationNameGenerator.generateRandomConversationName());
+        var publicChannelWhereMember = createChannel(true, TEST_PREFIX + "1");
         addUsersToConversation(publicChannelWhereMember.getId(), "student1");
-        var publicChannelWhereNotMember = createChannel(true, RandomConversationNameGenerator.generateRandomConversationName());
-        var privateChannelWhereMember = createChannel(false, RandomConversationNameGenerator.generateRandomConversationName());
+        var publicChannelWhereNotMember = createChannel(true, TEST_PREFIX + "2");
+        var privateChannelWhereMember = createChannel(false, TEST_PREFIX + "3");
         addUsersToConversation(privateChannelWhereMember.getId(), "student1");
-        var privateChannelWhereNotMember = createChannel(false, RandomConversationNameGenerator.generateRandomConversationName());
+        var privateChannelWhereNotMember = createChannel(false, TEST_PREFIX + "4");
 
         // then
         database.changeUser(testPrefix + "instructor2");

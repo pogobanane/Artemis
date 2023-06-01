@@ -4,10 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Set;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +15,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 
 import de.tum.in.www1.artemis.AbstractSpringIntegrationBambooBitbucketJiraTest;
+import de.tum.in.www1.artemis.domain.Course;
 import de.tum.in.www1.artemis.domain.User;
+import de.tum.in.www1.artemis.domain.enumeration.CourseInformationSharingConfiguration;
 import de.tum.in.www1.artemis.domain.enumeration.DisplayPriority;
 import de.tum.in.www1.artemis.domain.metis.ConversationParticipant;
 import de.tum.in.www1.artemis.domain.metis.Post;
@@ -124,8 +126,8 @@ abstract class AbstractConversationTest extends AbstractSpringIntegrationBambooB
         var receivingUser = database.getUserByLogin(testPrefix + userLoginsWithoutPrefix);
         var topic = ConversationService.getConversationParticipantTopicName(exampleCourseId) + receivingUser.getId();
         verify(messagingTemplate, times(1)).convertAndSendToUser(eq(testPrefix + userLoginsWithoutPrefix), eq(topic),
-                argThat((argument) -> argument instanceof ConversationWebsocketDTO && ((ConversationWebsocketDTO) argument).getCrudAction().equals(crudAction)
-                        && ((ConversationWebsocketDTO) argument).getConversation().getId().equals(conversationId)));
+                argThat((argument) -> argument instanceof ConversationWebsocketDTO && ((ConversationWebsocketDTO) argument).metisCrudAction().equals(crudAction)
+                        && ((ConversationWebsocketDTO) argument).conversation().getId().equals(conversationId)));
 
     }
 
@@ -135,7 +137,7 @@ abstract class AbstractConversationTest extends AbstractSpringIntegrationBambooB
 
     void verifyNoParticipantTopicWebsocketSentExceptAction(MetisCrudAction... actions) {
         verify(this.messagingTemplate, never()).convertAndSendToUser(anyString(), anyString(),
-                argThat((argument) -> argument instanceof ConversationWebsocketDTO && !Arrays.asList(actions).contains(((ConversationWebsocketDTO) argument).getCrudAction())));
+                argThat((argument) -> argument instanceof ConversationWebsocketDTO && !Arrays.asList(actions).contains(((ConversationWebsocketDTO) argument).metisCrudAction())));
     }
 
     void assertUsersAreConversationMembers(Long channelId, String... userLoginsWithoutPrefix) {
@@ -158,8 +160,13 @@ abstract class AbstractConversationTest extends AbstractSpringIntegrationBambooB
         }
     }
 
-    ChannelDTO createChannel(boolean isPublicChannel) throws Exception {
-        return createChannel(isPublicChannel, RandomConversationNameGenerator.generateRandomConversationName());
+    @NotNull
+    Course setCourseInformationSharingConfiguration(CourseInformationSharingConfiguration courseInformationSharingConfiguration) {
+        var persistedCourse = courseRepository.findByIdElseThrow(exampleCourseId);
+        persistedCourse.setCourseInformationSharingConfiguration(courseInformationSharingConfiguration);
+        persistedCourse = courseRepository.saveAndFlush(persistedCourse);
+        assertThat(persistedCourse.getCourseInformationSharingConfiguration()).isEqualTo(courseInformationSharingConfiguration);
+        return persistedCourse;
     }
 
     ChannelDTO createChannel(boolean isPublicChannel, String name) throws Exception {
@@ -264,25 +271,6 @@ abstract class AbstractConversationTest extends AbstractSpringIntegrationBambooB
 
     void resetWebsocketMock() {
         reset(this.messagingTemplate);
-    }
-
-    public static class RandomConversationNameGenerator {
-
-        private static final String LOWERCASE_LETTERS = "abcdefghijklmnopqrstuvwxyz";
-
-        private static final String NUMBERS = "0123456789";
-
-        private static final String ALL_CHARS = LOWERCASE_LETTERS + NUMBERS;
-
-        private static final SecureRandom RANDOM = new SecureRandom();
-
-        public static String generateRandomConversationName() {
-            var stringBuilder = new StringBuilder();
-            for (int i = 0; i < 10; i++) {
-                stringBuilder.append(ALL_CHARS.charAt(RANDOM.nextInt(ALL_CHARS.length())));
-            }
-            return stringBuilder.toString();
-        }
     }
 
 }
