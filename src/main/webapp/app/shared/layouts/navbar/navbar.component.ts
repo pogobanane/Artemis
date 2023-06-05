@@ -37,6 +37,7 @@ import {
     faHeart,
     faList,
     faLock,
+    faShieldHalved,
     faSignOutAlt,
     faTachometerAlt,
     faTasks,
@@ -85,6 +86,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     examActiveCheckFuture?: ReturnType<typeof setTimeout>;
 
     // Icons
+    faShieldHalved = faShieldHalved;
     faBars = faBars;
     faThLarge = faThLarge;
     faThList = faThList;
@@ -242,6 +244,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
         user_management: 'artemisApp.userManagement.home.title',
         system_notification_management: 'artemisApp.systemNotification.systemNotifications',
         upcoming_exams_and_exercises: 'artemisApp.upcomingExamsAndExercises.upcomingExamsAndExercises',
+        artemis_security_center: 'artemisApp.artemisSecurityCenter.title',
         account: 'global.menu.account.main',
         activate: 'activate.title',
         password: 'global.menu.account.password',

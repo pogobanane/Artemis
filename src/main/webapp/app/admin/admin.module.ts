@@ -31,6 +31,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { ArtemisSharedComponentModule } from 'app/shared/components/shared-component.module';
 import { ReactiveFormsModule } from '@angular/forms';
+import { ArtemisSecurityCenterComponent } from 'app/admin/artemis-security-center/artemis-security-center.component';
 
 const ENTITY_STATES = [...adminState];
 
@@ -66,6 +67,7 @@ const ENTITY_STATES = [...adminState];
         StatisticsComponent,
         AdminFeatureToggleComponent,
         UpcomingExamsAndExercisesComponent,
+        ArtemisSecurityCenterComponent,
         OrganizationManagementComponent,
         OrganizationManagementDetailComponent,
         OrganizationManagementUpdateComponent,

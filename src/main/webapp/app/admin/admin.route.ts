@@ -4,6 +4,7 @@ import { userManagementRoute } from 'app/admin/user-management/user-management.r
 import { systemNotificationManagementRoute } from 'app/admin/system-notification-management/system-notification-management.route';
 import { Authority } from 'app/shared/constants/authority.constants';
 import { upcomingExamsAndExercisesRoute } from 'app/admin/upcoming-exams-and-exercises/upcoming-exams-and-exercises.route';
+import { artemisSecurityCenterRoute } from 'app/admin/artemis-security-center/artemis-security-center.route';
 import { AuditsComponent } from 'app/admin/audits/audits.component';
 import { ConfigurationComponent } from 'app/admin/configuration/configuration.component';
 import { AdminFeatureToggleComponent } from 'app/admin/features/admin-feature-toggle.component';
@@ -86,6 +87,7 @@ export const adminState: Routes = [
             ...organizationMgmtRoute,
             ...userManagementRoute,
             ...systemNotificationManagementRoute,
+            artemisSecurityCenterRoute,
             upcomingExamsAndExercisesRoute,
         ],
     },

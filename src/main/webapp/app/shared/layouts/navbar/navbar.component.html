@@ -151,8 +151,14 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-index" ngbDropdownMenu>
                     <li>
-                        <a class="dropdown-item" routerLink="/admin/upcoming-exams-and-exercises" routerLinkActive="active" (click)="collapseNavbar()">
-                            <fa-icon [icon]="faBookOpen" [fixedWidth]="true"></fa-icon>
+                        <a (click)="collapseNavbar()" class="dropdown-item" routerLink="/admin/artemis-security-center" routerLinkActive="active">
+                            <fa-icon [fixedWidth]="true" [icon]="faShieldHalved"></fa-icon>
+                            <span jhiTranslate="global.menu.admin.artemisSecurityCenter">Artemis Security Center</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a (click)="collapseNavbar()" class="dropdown-item" routerLink="/admin/upcoming-exams-and-exercises" routerLinkActive="active">
+                            <fa-icon [fixedWidth]="true" [icon]="faBookOpen"></fa-icon>
                             <span jhiTranslate="global.menu.admin.upcomingExamsAndExercises">Upcoming Exams & Exercises</span>
                         </a>
                     </li>

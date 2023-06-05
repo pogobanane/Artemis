@@ -95,6 +95,7 @@
             },
             "admin": {
                 "main": "Server-Administration",
+                "artemisSecurityCenter": "Artemis Sicherheitszentrale",
                 "upcomingExamsAndExercises": "Kommende Prüfungen & Übungen",
                 "userManagement": "Verwaltung von Nutzer:innen",
                 "organizationManagement": "Organisationsverwaltung",
