@@ -368,6 +368,9 @@ public class CourseService {
         deleteExamsOfCourse(course);
         deleteGradingScaleOfCourse(course);
         deleteTutorialGroupsOfCourse(course);
+
+        deleteCourseGroups(course);
+
         courseRepository.deleteById(course.getId());
     }
 
@@ -928,6 +931,26 @@ public class CourseService {
         catch (ArtemisAuthenticationException ex) {
             // a specified group does not exist, notify the client
             throw new BadRequestAlertException(ex.getMessage(), Course.ENTITY_NAME, "groupNotFound", true);
+        }
+    }
+
+    /**
+     * only delete default groups, not custom groups in the external user management, in case it is used
+     *
+     * @param course the course for which the groups should be deleted
+     */
+    private void deleteCourseGroups(Course course) {
+        if (Objects.equals(course.getStudentGroupName(), course.getDefaultStudentGroupName())) {
+            artemisAuthenticationProvider.deleteGroup(course.getInstructorGroupName());
+        }
+        if (Objects.equals(course.getTeachingAssistantGroupName(), course.getDefaultTeachingAssistantGroupName())) {
+            artemisAuthenticationProvider.deleteGroup(course.getInstructorGroupName());
+        }
+        if (Objects.equals(course.getEditorGroupName(), course.getDefaultEditorGroupName())) {
+            artemisAuthenticationProvider.deleteGroup(course.getInstructorGroupName());
+        }
+        if (Objects.equals(course.getInstructorGroupName(), course.getDefaultInstructorGroupName())) {
+            artemisAuthenticationProvider.deleteGroup(course.getInstructorGroupName());
         }
     }
 
