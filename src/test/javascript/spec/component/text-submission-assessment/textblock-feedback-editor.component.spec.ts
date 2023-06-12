@@ -275,7 +275,6 @@ describe('TextblockFeedbackEditorComponent', () => {
                 text: 'First text.',
                 feedback: 'text',
                 credits: 1.5,
-                reusedCount: 3,
                 type: 'MANUAL',
             },
         ]);
@@ -311,15 +310,6 @@ describe('TextblockFeedbackEditorComponent', () => {
         component.dismiss();
         fixture.detectChanges();
         expect(sendAssessmentEvent).toHaveBeenCalledWith(TextAssessmentEventType.DELETE_FEEDBACK, FeedbackType.MANUAL, TextBlockType.MANUAL);
-    });
-
-    it('should send assessment event on hovering over warning', () => {
-        component.feedback.type = FeedbackType.MANUAL;
-        component.textBlock.type = TextBlockType.AUTOMATIC;
-        const sendAssessmentEvent = jest.spyOn<any, any>(component.textAssessmentAnalytics, 'sendAssessmentEvent');
-        component.mouseEnteredWarningLabel();
-        fixture.detectChanges();
-        expect(sendAssessmentEvent).toHaveBeenCalledWith(TextAssessmentEventType.HOVER_OVER_IMPACT_WARNING, FeedbackType.MANUAL, TextBlockType.AUTOMATIC);
     });
 
     it('should set correctionStatus of the feedback to undefined on score click', () => {

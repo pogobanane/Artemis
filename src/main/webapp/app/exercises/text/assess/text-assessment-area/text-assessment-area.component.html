@@ -1,4 +1,4 @@
-<ng-container *ngIf="autoTextBlockAssessment; else manualTextBlockSelection">
+<ng-container *ngIf="manualTextBlockSelection; else manualTextBlockSelection">
     <jhi-textblock-assessment-card
         *ngFor="let ref of textBlockRefs; let i = index"
         id="text-feedback-block-{{ i }}"

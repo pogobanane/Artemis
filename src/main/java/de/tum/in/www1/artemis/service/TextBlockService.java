@@ -1,17 +1,13 @@
 package de.tum.in.www1.artemis.service;
 
-import static java.lang.Integer.compare;
-
 import java.text.BreakIterator;
-import java.util.*;
-
-import javax.validation.constraints.NotNull;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
-import de.tum.in.www1.artemis.domain.Result;
 import de.tum.in.www1.artemis.domain.TextBlock;
-import de.tum.in.www1.artemis.domain.TextCluster;
 import de.tum.in.www1.artemis.domain.TextSubmission;
 import de.tum.in.www1.artemis.repository.TextBlockRepository;
 
@@ -25,8 +21,6 @@ public class TextBlockService {
 
     private static final int LINE_SEPARATOR_LENGTH = LINE_SEPARATOR.length();
 
-    public static final Comparator<TextBlock> compareByStartIndexReversed = (TextBlock first, TextBlock second) -> compare(second.getStartIndex(), first.getStartIndex());
-
     private final TextBlockRepository textBlockRepository;
 
     TextBlockService(TextBlockRepository textBlockRepository) {
@@ -37,10 +31,9 @@ public class TextBlockService {
         return this.textBlockRepository.findAllBySubmissionId(id);
     }
 
-    public Set<TextBlock> computeTextBlocksForSubmissionBasedOnSyntax(TextSubmission textSubmission) {
+    public void computeTextBlocksForSubmissionBasedOnSyntax(TextSubmission textSubmission) {
         final var blocks = splitSubmissionIntoBlocks(textSubmission);
         textSubmission.setBlocks(blocks);
-        return blocks;
     }
 
     /**
@@ -48,7 +41,7 @@ public class TextBlockService {
      * A Text Block is defined (for now) as a Sentence. Delimitation is defined by java.text.BreakIterator or Linebreaks.
      *
      * @param submission TextSubmission to split
-     * @return List of TextBlocks
+     * @return Set of TextBlocks
      */
     public Set<TextBlock> splitSubmissionIntoBlocks(TextSubmission submission) {
 
@@ -100,34 +93,6 @@ public class TextBlockService {
 
     public void deleteForSubmission(TextSubmission textSubmission) {
         textBlockRepository.deleteAllBySubmission_Id(textSubmission.getId());
-    }
-
-    /**
-     * Sets number of potential automatic Feedback's for each block belonging to the `Result`'s submission.
-     * This number determines how many other submissions would be affected if the user were to submit a certain block feedback.
-     * For each TextBlock of the submission, this method finds how many other TextBlocks exist in the same cluster.
-     * This number is represented with the `numberOfAffectedSubmissions` field which is set here for each
-     * TextBlock of this submission
-     *
-     * @param result Result for the Submission acting as a reference for the text submission to be searched.
-     */
-    public void setNumberOfAffectedSubmissionsPerBlock(@NotNull Result result) {
-        final TextSubmission textSubmission = (TextSubmission) result.getSubmission();
-        final long sumbissionId = textSubmission.getId();
-        final var blocks = textBlockRepository.findAllWithEagerClusterBySubmissionId(sumbissionId);
-        textSubmission.setBlocks(blocks);
-        final var otherBlocksInCluster = textBlockRepository.countOtherBlocksInClusterBySubmissionId(sumbissionId);
-
-        // iterate over blocks of the referenced submission
-        blocks.forEach(block -> {
-            final TextCluster cluster = block.getCluster();
-            final String blockID = block.getId();
-            // if TextBlock is part of a cluster, we find how many other submissions of that cluster it will affect
-            if (cluster != null) {
-                final int numberOfAffectedSubmissions = otherBlocksInCluster.get(blockID);
-                block.setNumberOfAffectedSubmissions(numberOfAffectedSubmissions);
-            }
-        });
     }
 
 }

@@ -192,17 +192,6 @@ describe('TextAssessment Service', () => {
         httpMock.verify();
     });
 
-    it('should not send feedback', () => {
-        service.trackAssessment();
-        httpMock.expectNone({ method: 'POST' });
-    });
-
-    it('should send feedback', async () => {
-        textSubmission.atheneTextAssessmentTrackingToken = '12345';
-        service.trackAssessment(textSubmission);
-        httpMock.expectOne({ url: 'athene-tracking/text-exercise-assessment', method: 'POST' });
-    });
-
     it('should send assessment event to analytics', fakeAsync(() => {
         const assessmentEvent: TextAssessmentEvent = new TextAssessmentEvent();
         service.addTextAssessmentEvent(assessmentEvent).subscribe((response) => {

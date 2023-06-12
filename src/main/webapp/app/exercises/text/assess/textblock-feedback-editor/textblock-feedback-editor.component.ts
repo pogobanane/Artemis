@@ -236,18 +236,10 @@ export class TextblockFeedbackEditorComponent implements AfterViewInit {
                         text: block.text,
                         feedback: blockFeedback && blockFeedback.detailText,
                         credits: blockFeedback ? blockFeedback.credits : 0,
-                        reusedCount: blockFeedback && block.numberOfAffectedSubmissions,
                         type: this.feedback.suggestedFeedbackReference === block.id ? 'AUTOMATIC' : 'MANUAL',
                     };
                 })
                 .filter((item) => item.text);
         }
-    }
-
-    /**
-     * Triggers an assessment event call to the analytics service when user enters the impact warning label.
-     */
-    mouseEnteredWarningLabel() {
-        this.textAssessmentAnalytics.sendAssessmentEvent(TextAssessmentEventType.HOVER_OVER_IMPACT_WARNING, this.feedback.type, this.textBlock.type);
     }
 }

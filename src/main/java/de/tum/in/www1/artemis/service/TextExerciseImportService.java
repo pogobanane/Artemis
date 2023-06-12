@@ -39,7 +39,7 @@ public class TextExerciseImportService extends ExerciseImportService {
     /**
      * Imports a text exercise creating a new entity, copying all basic values and saving it in the database.
      * All basic include everything except Student-, Tutor participations, and student questions. <br>
-     * This method calls {@link #copyTextExerciseBasis(TextExercise)} to set up the basis of the exercise
+     * This method sets up the basis of the exercise
      * {@link #copyExampleSubmission(Exercise, Exercise, Map)} for a hard copy of the example submissions.
      *
      * @param templateExercise The template exercise which should get imported
@@ -86,8 +86,6 @@ public class TextExerciseImportService extends ExerciseImportService {
         var newTextBlocks = new HashSet<TextBlock>();
         for (TextBlock originalTextBlock : originalTextBlocks) {
             TextBlock newTextBlock = new TextBlock();
-            Optional.ofNullable(originalTextBlock.getAddedDistance()).ifPresent(newTextBlock::setAddedDistance);
-            Optional.ofNullable(originalTextBlock.getCluster()).ifPresent(newTextBlock::setCluster);
             newTextBlock.setEndIndex(originalTextBlock.getEndIndex());
             newTextBlock.setStartIndex(originalTextBlock.getStartIndex());
             newTextBlock.setSubmission(newSubmission);
