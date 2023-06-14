@@ -427,7 +427,6 @@ class TextAssessmentIntegrationTest extends AbstractSpringIntegrationBambooBitbu
     void getResult_studentHidden() throws Exception {
         int submissionCount = 5;
         int submissionSize = 4;
-        int[] clusterSizes = new int[] { 4, 5, 10, 1 };
         var textBlocks = textExerciseUtilService.generateTextBlocks(submissionCount * submissionSize);
         TextExercise textExercise = textExerciseUtilService.createSampleTextExerciseWithSubmissions(course, new ArrayList<>(textBlocks), submissionCount, submissionSize);
         textBlocks.forEach(TextBlock::computeId);
