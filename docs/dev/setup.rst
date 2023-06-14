@@ -218,7 +218,7 @@ You can override the following configuration options in this file.
        git:
            name: Artemis
            email: artemis@in.tum.de
-       athene:
+       athena:
            url: http://localhost
            base64-secret: YWVuaXF1YWRpNWNlaXJpNmFlbTZkb283dXphaVF1b29oM3J1MWNoYWlyNHRoZWUzb2huZ2FpM211bGVlM0VpcAo=
            token-validity-in-seconds: 10800
@@ -408,8 +408,8 @@ Other run / debug configurations
   `http://localhost:8080/ <http://localhost:8080/>`__ with hot module replacement disabled.
 * **Artemis (Server, Jenkins & GitLab):** The server will be started separated from the client with the profiles
   ``dev,jenkins,gitlab,artemis`` instead of ``dev,bamboo,bitbucket,jira,artemis``.
-* **Artemis (Server, Athene):** The server will be started separated from the client with ``athene`` profile enabled
-  (see `Athene Service <#athene-service>`__).
+* **Artemis (Server, Athena):** The server will be started separated from the client with ``athena`` profile enabled
+  (see `Athena Service <#athena-service>`__).
 
 Run the server with Spring Boot and Spring profiles
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -593,23 +593,23 @@ instead of the TUM defaults:
 ------------------------------------------------------------------------------------------------------------------------
 
 
-Athene Service
+Athena Service
 --------------
 
-The semi-automatic text assessment relies on the Athene_ service.
+The semi-automatic text assessment relies on the Athena_ service.
 To enable automatic text assessments, special configuration is required:
 
-Enable the ``athene`` Spring profile:
+Enable the ``athena`` Spring profile:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
-   --spring.profiles.active=dev,bamboo,bitbucket,jira,artemis,scheduling,athene
+   --spring.profiles.active=dev,bamboo,bitbucket,jira,artemis,scheduling,athena
 
 Configure API Endpoints:
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-The Athene service is running on a dedicated machine and is addressed via
+The Athena service is running on a dedicated machine and is addressed via
 HTTP. We need to extend the configuration in the file
 ``src/main/resources/config/application-artemis.yml`` like so:
 
@@ -617,12 +617,12 @@ HTTP. We need to extend the configuration in the file
 
    artemis:
      # ...
-     athene:
+     athena:
        url: http://localhost
        base64-secret: YWVuaXF1YWRpNWNlaXJpNmFlbTZkb283dXphaVF1b29oM3J1MWNoYWlyNHRoZWUzb2huZ2FpM211bGVlM0VpcAo=
        token-validity-in-seconds: 10800
 
-.. _Athene: https://github.com/ls1intum/Athene
+.. _Athena: https://github.com/ls1intum/Athena
 
 ------------------------------------------------------------------------------------------------------------------------
 

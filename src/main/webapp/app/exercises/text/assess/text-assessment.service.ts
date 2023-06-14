@@ -156,7 +156,6 @@ export class TextAssessmentService {
                         result = getSubmissionResultByCorrectionRound(submission, correctionRound)!;
                     }
                     TextAssessmentService.reconnectResultsParticipation(participation, submission, result!);
-                    (submission as TextSubmission).atheneTextAssessmentTrackingToken = response.headers.get('x-athene-tracking-authorization') || undefined;
                 }),
                 map<HttpResponse<StudentParticipation>, StudentParticipation>((response: HttpResponse<StudentParticipation>) => response.body!),
             );

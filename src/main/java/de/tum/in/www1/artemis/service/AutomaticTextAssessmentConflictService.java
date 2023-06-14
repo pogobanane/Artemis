@@ -15,12 +15,12 @@ import de.tum.in.www1.artemis.domain.*;
 import de.tum.in.www1.artemis.repository.FeedbackConflictRepository;
 import de.tum.in.www1.artemis.repository.FeedbackRepository;
 import de.tum.in.www1.artemis.repository.TextBlockRepository;
-import de.tum.in.www1.artemis.service.connectors.athene.TextAssessmentConflictService;
+import de.tum.in.www1.artemis.service.connectors.athena.TextAssessmentConflictService;
 import de.tum.in.www1.artemis.service.dto.FeedbackConflictResponseDTO;
 import de.tum.in.www1.artemis.service.dto.TextFeedbackConflictRequestDTO;
 
 @Service
-@Profile("athene")
+@Profile("athena")
 public class AutomaticTextAssessmentConflictService {
 
     private final Logger log = LoggerFactory.getLogger(AutomaticTextAssessmentConflictService.class);
@@ -42,7 +42,7 @@ public class AutomaticTextAssessmentConflictService {
     }
 
     /**
-     * This function asynchronously calls remote Athene service to check feedback consistency for the assessed submission.
+     * This function asynchronously calls remote Athena service to check feedback consistency for the assessed submission.
      * The call is made if the automatic assessments are enabled and the passed text blocks belong to any cluster.
      *
      * @param textBlocks   - all text blocks in the text assessment
@@ -51,7 +51,6 @@ public class AutomaticTextAssessmentConflictService {
      */
     @Async
     public void asyncCheckFeedbackConsistency(Set<TextBlock> textBlocks, List<Feedback> feedbackList, long exerciseId) {
-        return;
         // TODO: think about what to do with this
         /*
          * // Null blocks are passed in some test cases
@@ -75,7 +74,7 @@ public class AutomaticTextAssessmentConflictService {
          * if (textFeedbackConflictRequestDTOS.isEmpty()) {
          * return;
          * }
-         * // remote service call to athene
+         * // remote service call to athena
          * final List<FeedbackConflictResponseDTO> feedbackConflictResponseDTOS;
          * try {
          * feedbackConflictResponseDTOS = textAssessmentConflictService.checkFeedbackConsistencies(textFeedbackConflictRequestDTOS, exerciseId, 0);
@@ -87,8 +86,8 @@ public class AutomaticTextAssessmentConflictService {
          * // create an array to store conflicts
          * List<FeedbackConflict> feedbackConflicts = new ArrayList<>();
          * // look for new conflicts
-         * // Athene may find conflicts with feedback ids that are not in the feedback repository anymore. So check for them. (May happen if the feedback is deleted in Artemis but
-         * // already stored in Athene)
+         * // Athena may find conflicts with feedback ids that are not in the feedback repository anymore. So check for them. (May happen if the feedback is deleted in Artemis but
+         * // already stored in Athena)
          * feedbackConflictResponseDTOS.forEach(conflict -> {
          * Optional<Feedback> firstFeedback = feedbackRepository.findById(conflict.getFirstFeedbackId());
          * Optional<Feedback> secondFeedback = feedbackRepository.findById(conflict.getSecondFeedbackId());
@@ -156,10 +155,10 @@ public class AutomaticTextAssessmentConflictService {
     }
 
     /**
-     * Searches if the feedback that are sent to Athene already have conflicts in the database(storedConflicts),
-     * If the stored conflicts are not returned from Athene after the consistency check, it means that they are solved and set as solved.
+     * Searches if the feedback that are sent to Athena already have conflicts in the database(storedConflicts),
+     * If the stored conflicts are not returned from Athena after the consistency check, it means that they are solved and set as solved.
      *
-     * @param textFeedbackConflictRequestDTOS the list sent to Athene for check
+     * @param textFeedbackConflictRequestDTOS the list sent to Athena for check
      * @param feedbackConflictResponseDTOS    returned list with found conflicts.
      * @return solved conflicts
      */

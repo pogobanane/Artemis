@@ -202,26 +202,6 @@ describe('TextAssessment Service', () => {
         tick();
     }));
 
-    it('should not parse jwt from header', fakeAsync(() => {
-        service.getFeedbackDataForExerciseSubmission(1, 1).subscribe((studentParticipation) => {
-            expect((studentParticipation.submissions![0] as TextSubmission).atheneTextAssessmentTrackingToken).toBeUndefined();
-        });
-
-        const mockRequest = httpMock.expectOne({ method: 'GET' });
-        mockRequest.flush(mockResponse);
-        tick();
-    }));
-
-    it('should parse jwt from header', fakeAsync(() => {
-        service.getFeedbackDataForExerciseSubmission(1, 1).subscribe((studentParticipation) => {
-            expect((studentParticipation.submissions![0] as TextSubmission).atheneTextAssessmentTrackingToken).toBe('12345');
-        });
-
-        const mockRequest = httpMock.expectOne({ method: 'GET' });
-        mockRequest.flush(mockResponse, { headers: { 'x-athene-tracking-authorization': '12345' } });
-        tick();
-    }));
-
     it('should get feedback data for submission', fakeAsync(() => {
         const submissionId = 42;
         const participationId = 42;

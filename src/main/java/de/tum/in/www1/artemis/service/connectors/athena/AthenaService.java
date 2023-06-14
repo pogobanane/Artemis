@@ -1,6 +1,4 @@
-package de.tum.in.www1.artemis.service.connectors.athene;
-
-import static de.tum.in.www1.artemis.config.Constants.ATHENE_RESULT_API_PATH;
+package de.tum.in.www1.artemis.service.connectors.athena;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,16 +23,13 @@ import de.tum.in.www1.artemis.repository.TextSubmissionRepository;
 import de.tum.in.www1.artemis.service.TextAssessmentQueueService;
 
 @Service
-@Profile("athene")
-public class AtheneService {
+@Profile("athena")
+public class AthenaService {
 
-    private final Logger log = LoggerFactory.getLogger(AtheneService.class);
+    private final Logger log = LoggerFactory.getLogger(AthenaService.class);
 
-    @Value("${server.url}")
-    private String artemisServerUrl;
-
-    @Value("${artemis.athene.url}")
-    private String atheneUrl;
+    @Value("${artemis.athena.url}")
+    private String athenaUrl;
 
     private final TextAssessmentQueueService textAssessmentQueueService;
 
@@ -44,18 +39,18 @@ public class AtheneService {
 
     private final TextSubmissionRepository textSubmissionRepository;
 
-    private final AtheneConnector<RequestDTO, ResponseDTO> connector;
+    private final AthenaConnector<RequestDTO, ResponseDTO> connector;
 
-    // Contains tasks submitted to Athene and currently processing
-    private final List<Long> runningAtheneTasks = new ArrayList<>();
+    // Contains tasks submitted to Athena and currently processing
+    private final List<Long> runningAthenaTasks = new ArrayList<>();
 
-    public AtheneService(TextSubmissionRepository textSubmissionRepository, TextBlockRepository textBlockRepository, TextExerciseRepository textExerciseRepository,
-            TextAssessmentQueueService textAssessmentQueueService, @Qualifier("atheneRestTemplate") RestTemplate atheneRestTemplate) {
+    public AthenaService(TextSubmissionRepository textSubmissionRepository, TextBlockRepository textBlockRepository, TextExerciseRepository textExerciseRepository,
+            TextAssessmentQueueService textAssessmentQueueService, @Qualifier("athenaRestTemplate") RestTemplate athenaRestTemplate) {
         this.textSubmissionRepository = textSubmissionRepository;
         this.textBlockRepository = textBlockRepository;
         this.textExerciseRepository = textExerciseRepository;
         this.textAssessmentQueueService = textAssessmentQueueService;
-        connector = new AtheneConnector<>(log, atheneRestTemplate, ResponseDTO.class);
+        connector = new AthenaConnector<>(log, athenaRestTemplate, ResponseDTO.class);
     }
 
     // region Request/Response DTOs
@@ -63,18 +58,15 @@ public class AtheneService {
 
         public long courseId;
 
-        public String callbackUrl;
-
         public List<TextSubmission> submissions;
 
-        RequestDTO(@NotNull long courseId, @NotNull List<TextSubmission> submissions, @NotNull String callbackUrl) {
+        RequestDTO(@NotNull long courseId, @NotNull List<TextSubmission> submissions) {
             this.courseId = courseId;
-            this.callbackUrl = callbackUrl;
             this.submissions = createSubmissionDTOs(submissions);
         }
 
         /**
-         * Converts TextSubmissions to DTO objects to prepare for sending them to Athene in a REST call.
+         * Converts TextSubmissions to DTO objects to prepare for sending them to Athena in a REST call.
          */
         @NotNull
         private static List<TextSubmission> createSubmissionDTOs(@NotNull List<TextSubmission> submissions) {
@@ -95,35 +87,35 @@ public class AtheneService {
     // endregion
 
     /**
-     * Register an Athene task for an exercise as running
+     * Register an Athena task for an exercise as running
      *
-     * @param exerciseId the exerciseId which the Athene task is running for
+     * @param exerciseId the exerciseId which the Athena task is running for
      */
     public void startTask(Long exerciseId) {
-        runningAtheneTasks.add(exerciseId);
+        runningAthenaTasks.add(exerciseId);
     }
 
     /**
-     * Delete an Athene task for an exercise from the running tasks
+     * Delete an Athena task for an exercise from the running tasks
      *
-     * @param exerciseId the exerciseId which the Athene task finished for
+     * @param exerciseId the exerciseId which the Athena task finished for
      */
     public void finishTask(Long exerciseId) {
-        runningAtheneTasks.remove(exerciseId);
+        runningAthenaTasks.remove(exerciseId);
     }
 
     /**
-     * Check whether an Athene task is running for the given exerciseId
+     * Check whether an Athena task is running for the given exerciseId
      *
-     * @param exerciseId the exerciseId to check for a running Athene task
+     * @param exerciseId the exerciseId to check for a running Athena task
      * @return true, if a task for the given exerciseId is running
      */
     public boolean isTaskRunning(Long exerciseId) {
-        return runningAtheneTasks.contains(exerciseId);
+        return runningAthenaTasks.contains(exerciseId);
     }
 
     /**
-     * Calls the remote Athene service to submit a Job for calculating automatic feedback
+     * Calls the remote Athena service to submit a Job for calculating automatic feedback
      *
      * @param exercise the exercise the automatic assessments should be calculated for
      */
@@ -132,7 +124,7 @@ public class AtheneService {
     }
 
     /**
-     * Calls the remote Athene service to submit a Job for calculating automatic feedback
+     * Calls the remote Athena service to submit a Job for calculating automatic feedback
      * Falls back to naive splitting for less than 10 submissions
      * Note: See `TextSubmissionService:getTextSubmissionsByExerciseId` for selection of Submissions.
      *
@@ -140,13 +132,13 @@ public class AtheneService {
      * @param maxRetries number of retries before the request will be canceled
      */
     public void submitJob(TextExercise exercise, int maxRetries) {
-        log.debug("Start Athene Service for Text Exercise '{}' (#{}).", exercise.getTitle(), exercise.getId());
+        log.debug("Start Athena Service for Text Exercise '{}' (#{}).", exercise.getTitle(), exercise.getId());
 
         // Find all submissions for Exercise
         // We only support english languages so far, to prevent corruption of the clustering
         List<TextSubmission> textSubmissions = textSubmissionRepository.getTextSubmissionsWithTextBlocksByExerciseIdAndLanguage(exercise.getId(), Language.ENGLISH);
 
-        // Athene only works with 10 or more submissions
+        // Athena only works with 10 or more submissions
         if (textSubmissions.size() < 10) {
             return;
         }
@@ -154,11 +146,11 @@ public class AtheneService {
         log.info("Calling Remote Service to calculate automatic feedback for {} submissions.", textSubmissions.size());
 
         try {
-            final RequestDTO request = new RequestDTO(exercise.getId(), textSubmissions, artemisServerUrl + ATHENE_RESULT_API_PATH + exercise.getId());
-            ResponseDTO response = connector.invokeWithRetry(atheneUrl + "/submit", request, maxRetries);
+            final RequestDTO request = new RequestDTO(exercise.getId(), textSubmissions);
+            ResponseDTO response = connector.invokeWithRetry(athenaUrl + "/submit", request, maxRetries);
             log.info("Remote Service to calculate automatic feedback responded: {}", response.detail);
 
-            // Register task for exercise as running, AtheneResource calls finishTask on result receive
+            // Register task for exercise as running, AthenaResource calls finishTask on result receive
             startTask(exercise.getId());
         }
         catch (NetworkingError networkingError) {

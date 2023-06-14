@@ -12,12 +12,10 @@ import de.tum.in.www1.artemis.repository.FeedbackRepository;
 import de.tum.in.www1.artemis.repository.TextBlockRepository;
 
 @Service
-@Profile("athene")
+@Profile("athena")
 public class AutomaticTextFeedbackService {
 
     private final FeedbackRepository feedbackRepository;
-
-    private static final double DISTANCE_THRESHOLD = 1;
 
     private final TextBlockRepository textBlockRepository;
 

@@ -13,7 +13,7 @@ import de.tum.in.www1.artemis.domain.enumeration.Language;
 import de.tum.in.www1.artemis.repository.TextSubmissionRepository;
 
 @Service
-@Profile("athene")
+@Profile("athena")
 public class TextAssessmentQueueService {
 
     private final TextSubmissionRepository textSubmissionRepository;

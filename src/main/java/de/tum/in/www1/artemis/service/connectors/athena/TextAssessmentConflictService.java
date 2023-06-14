@@ -1,4 +1,4 @@
-package de.tum.in.www1.artemis.service.connectors.athene;
+package de.tum.in.www1.artemis.service.connectors.athena;
 
 import java.util.List;
 
@@ -15,18 +15,18 @@ import de.tum.in.www1.artemis.service.dto.FeedbackConflictResponseDTO;
 import de.tum.in.www1.artemis.service.dto.TextFeedbackConflictRequestDTO;
 
 @Service
-@Profile("athene")
+@Profile("athena")
 public class TextAssessmentConflictService {
 
     private final Logger log = LoggerFactory.getLogger(TextAssessmentConflictService.class);
 
-    @Value("${artemis.athene.url}")
-    private String atheneUrl;
+    @Value("${artemis.athena.url}")
+    private String athenaUrl;
 
-    private final AtheneConnector<Request, Response> connector;
+    private final AthenaConnector<Request, Response> connector;
 
-    public TextAssessmentConflictService(@Qualifier("atheneRestTemplate") RestTemplate atheneRestTemplate) {
-        connector = new AtheneConnector<>(log, atheneRestTemplate, Response.class);
+    public TextAssessmentConflictService(@Qualifier("athenaRestTemplate") RestTemplate athenaRestTemplate) {
+        connector = new AthenaConnector<>(log, athenaRestTemplate, Response.class);
     }
 
     // region Request/Response DTOs
@@ -61,7 +61,7 @@ public class TextAssessmentConflictService {
             throws NetworkingError {
         log.info("Calling Remote Service to check feedback consistencies.");
         final Request request = new Request(textFeedbackConflictRequestDTOS, exerciseId);
-        final Response response = connector.invokeWithRetry(atheneUrl + "/feedback_consistency", request, maxRetries);
+        final Response response = connector.invokeWithRetry(athenaUrl + "/feedback_consistency", request, maxRetries);
 
         return response.feedbackInconsistencies;
     }

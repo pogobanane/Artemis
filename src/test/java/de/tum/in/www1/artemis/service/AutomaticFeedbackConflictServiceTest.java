@@ -14,7 +14,7 @@
 // import org.springframework.security.test.context.support.WithMockUser;
 //
 // import de.tum.in.www1.artemis.AbstractSpringIntegrationBambooBitbucketJiraTest;
-// import de.tum.in.www1.artemis.connector.AtheneRequestMockProvider;
+// import de.tum.in.www1.artemis.connector.AthenaRequestMockProvider;
 // import de.tum.in.www1.artemis.domain.*;
 // import de.tum.in.www1.artemis.domain.enumeration.FeedbackConflictType;
 // import de.tum.in.www1.artemis.domain.enumeration.Language;
@@ -33,7 +33,7 @@
 // private FeedbackRepository feedbackRepository;
 //
 // @Autowired
-// private AtheneRequestMockProvider atheneRequestMockProvider;
+// private AthenaRequestMockProvider athenaRequestMockProvider;
 //
 // @Autowired
 // private AutomaticTextAssessmentConflictService automaticTextAssessmentConflictService;
@@ -47,19 +47,19 @@
 // void init() {
 // database.addUsers(TEST_PREFIX, 2, 1, 0, 0);
 // textExercise = (TextExercise) database.addCourseWithOneFinishedTextExercise().getExercises().iterator().next();
-// atheneRequestMockProvider.enableMockingOfRequests();
+// athenaRequestMockProvider.enableMockingOfRequests();
 //
 // feedbackConflictRepository.deleteAll(); // TODO: This should be improved by better tests that do not rely on an empty repository
 // }
 //
 // @AfterEach
 // void tearDown() throws Exception {
-// atheneRequestMockProvider.reset();
+// athenaRequestMockProvider.reset();
 // }
 //
 // /**
 // * Creates two text submissions with text blocks and feedback, adds text blocks to a cluster.
-// * Mocks TextAssessmentConflictService class to not to connect to remote Athene service
+// * Mocks TextAssessmentConflictService class to not to connect to remote Athena service
 // * Then checks if the text assessment conflicts are created and stored correctly.
 // */
 // @Test
@@ -94,7 +94,7 @@
 // feedback1 = textSubmission1.getLatestResult().getFeedbacks().get(0);
 // feedback2 = textSubmission2.getLatestResult().getFeedbacks().get(0);
 //
-// atheneRequestMockProvider.mockFeedbackConsistency(createRemoteServiceResponse(feedback1, feedback2));
+// athenaRequestMockProvider.mockFeedbackConsistency(createRemoteServiceResponse(feedback1, feedback2));
 // automaticTextAssessmentConflictService.asyncCheckFeedbackConsistency(Set.of(textBlock1), new ArrayList<>(Collections.singletonList(feedback1)), textExercise.getId());
 //
 // Feedback finalFeedback = feedback1;
@@ -134,7 +134,7 @@
 // feedbackConflict.setType(FeedbackConflictType.INCONSISTENT_COMMENT);
 // feedbackConflictRepository.save(feedbackConflict);
 //
-// atheneRequestMockProvider.mockFeedbackConsistency(createRemoteServiceResponse(updatedFeedback1, updatedFeedback2));
+// athenaRequestMockProvider.mockFeedbackConsistency(createRemoteServiceResponse(updatedFeedback1, updatedFeedback2));
 // automaticTextAssessmentConflictService.asyncCheckFeedbackConsistency(Set.of(textBlock), new ArrayList<>(Collections.singletonList(updatedFeedback1)), textExercise.getId());
 //
 // await().until(() -> {
@@ -179,7 +179,7 @@
 // FeedbackConflict feedbackConflict = ModelFactory.generateFeedbackConflictBetweenFeedbacks(feedback1, feedback2);
 // feedbackConflictRepository.save(feedbackConflict);
 //
-// atheneRequestMockProvider.mockFeedbackConsistency(List.of());
+// athenaRequestMockProvider.mockFeedbackConsistency(List.of());
 // automaticTextAssessmentConflictService.asyncCheckFeedbackConsistency(Set.of(textBlock), new ArrayList<>(List.of(feedback1, feedback2)), textExercise.getId());
 //
 // Feedback finalFeedback = feedback1;

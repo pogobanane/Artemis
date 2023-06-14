@@ -10,21 +10,21 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.tum.in.www1.artemis.AbstractSpringIntegrationBambooBitbucketJiraTest;
-import de.tum.in.www1.artemis.connector.AtheneRequestMockProvider;
+import de.tum.in.www1.artemis.connector.AthenaRequestMockProvider;
 import de.tum.in.www1.artemis.domain.TextExercise;
 import de.tum.in.www1.artemis.domain.TextSubmission;
 import de.tum.in.www1.artemis.domain.enumeration.InitializationState;
 import de.tum.in.www1.artemis.repository.StudentParticipationRepository;
 import de.tum.in.www1.artemis.repository.TextSubmissionRepository;
-import de.tum.in.www1.artemis.service.connectors.athene.AtheneService;
+import de.tum.in.www1.artemis.service.connectors.athena.AthenaService;
 import de.tum.in.www1.artemis.util.ModelFactory;
 
-class AtheneServiceTest extends AbstractSpringIntegrationBambooBitbucketJiraTest {
+class AthenaServiceTest extends AbstractSpringIntegrationBambooBitbucketJiraTest {
 
-    private static final String TEST_PREFIX = "atheneservice";
+    private static final String TEST_PREFIX = "athenaservice";
 
     @Autowired
-    private AtheneRequestMockProvider atheneRequestMockProvider;
+    private AthenaRequestMockProvider athenaRequestMockProvider;
 
     @Autowired
     private StudentParticipationRepository participationRepository;
@@ -33,12 +33,12 @@ class AtheneServiceTest extends AbstractSpringIntegrationBambooBitbucketJiraTest
     private TextSubmissionRepository textSubmissionRepository;
 
     @Autowired
-    private AtheneService atheneService;
+    private AthenaService athenaService;
 
     private TextExercise exercise1;
 
     /**
-     * Initializes atheneService and example exercise
+     * Initializes athenaService and example exercise
      */
     @BeforeEach
     void init() {
@@ -46,22 +46,22 @@ class AtheneServiceTest extends AbstractSpringIntegrationBambooBitbucketJiraTest
         database.addUsers(TEST_PREFIX, 10, 1, 0, 1);
         var course = database.addCourseWithOneReleasedTextExercise();
         exercise1 = (TextExercise) course.getExercises().iterator().next();
-        atheneRequestMockProvider.enableMockingOfRequests();
+        athenaRequestMockProvider.enableMockingOfRequests();
     }
 
     @AfterEach
     void tearDown() throws Exception {
-        atheneRequestMockProvider.reset();
-        atheneService.finishTask(exercise1.getId());
+        athenaRequestMockProvider.reset();
+        athenaService.finishTask(exercise1.getId());
     }
 
     /**
-     * Submits a job to atheneService without any submissions
+     * Submits a job to athenaService without any submissions
      */
     @Test
     void submitJobWithoutSubmissions() {
-        atheneService.submitJob(exercise1);
-        assertThat(!atheneService.isTaskRunning(exercise1.getId())).isTrue();
+        athenaService.submitJob(exercise1);
+        assertThat(!athenaService.isTaskRunning(exercise1.getId())).isTrue();
     }
 
     private List<TextSubmission> generateTextSubmissions(int size) {
@@ -80,27 +80,27 @@ class AtheneServiceTest extends AbstractSpringIntegrationBambooBitbucketJiraTest
     }
 
     /**
-     * Submits a job to atheneService with less than 10 submissions (will use fallback segmentation without athene)
+     * Submits a job to athenaService with less than 10 submissions (will use fallback segmentation without athena)
      */
     @Test
     void submitJobWithLessThan10Submissions() {
         generateTextSubmissions(9);
-        atheneService.submitJob(exercise1);
-        assertThat(atheneService.isTaskRunning(exercise1.getId())).isFalse();
+        athenaService.submitJob(exercise1);
+        assertThat(athenaService.isTaskRunning(exercise1.getId())).isFalse();
     }
 
     /**
-     * Submits a job to atheneService with 10 submissions (will trigger athene)
+     * Submits a job to athenaService with 10 submissions (will trigger athena)
      */
     @Test
     void submitJobWith10Submissions() {
         generateTextSubmissions(10);
 
         // Create mock server
-        atheneRequestMockProvider.mockSubmitSubmissions();
+        athenaRequestMockProvider.mockSubmitSubmissions();
 
-        atheneService.submitJob(exercise1);
-        assertThat(atheneService.isTaskRunning(exercise1.getId())).isTrue();
+        athenaService.submitJob(exercise1);
+        assertThat(athenaService.isTaskRunning(exercise1.getId())).isTrue();
     }
 
 }

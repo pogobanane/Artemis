@@ -129,8 +129,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers(HttpMethod.POST, TEST_CASE_CHANGED_API_PATH + "*");
         web.ignoring()
             .antMatchers(HttpMethod.GET, SYSTEM_NOTIFICATIONS_RESOURCE_PATH_ACTIVE_API_PATH);
-        web.ignoring()
-            .antMatchers(HttpMethod.POST, ATHENE_RESULT_API_PATH + "*");
         // @formatter:on
     }
 

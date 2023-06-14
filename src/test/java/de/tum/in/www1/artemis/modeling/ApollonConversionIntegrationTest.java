@@ -39,11 +39,11 @@ class ApollonConversionIntegrationTest extends AbstractSpringIntegrationBambooBi
     private ApollonConversionService apollonConversionService;
 
     /**
-     * Initializes atheneService and example exercise
+     * Initializes apollon and example exercise
      */
     @BeforeEach
     void init() {
-        // Create atheneService and inject @Value fields
+        // Create apollonConversionService and inject @Value fields
         apollonConversionService.setRestTemplate(restTemplate);
         ReflectionTestUtils.setField(apollonConversionService, "apollonConversionUrl", apollonConversionUrl);
 
