@@ -115,12 +115,12 @@ public class AthenaService {
     }
 
     /**
-     * Calls the remote Athena service to submit a Job for calculating automatic feedback
+     * Calls the remote Athena service to send all submissions of an exercise for calculating automatic feedback
      *
      * @param exercise the exercise the automatic assessments should be calculated for
      */
-    public void submitJob(TextExercise exercise) {
-        submitJob(exercise, 1);
+    public void sendSubmissions(TextExercise exercise) {
+        sendSubmissions(exercise, 1);
     }
 
     /**
@@ -131,7 +131,7 @@ public class AthenaService {
      * @param exercise   the exercise the automatic assessments should be calculated for
      * @param maxRetries number of retries before the request will be canceled
      */
-    public void submitJob(TextExercise exercise, int maxRetries) {
+    public void sendSubmissions(TextExercise exercise, int maxRetries) {
         log.debug("Start Athena Service for Text Exercise '{}' (#{}).", exercise.getTitle(), exercise.getId());
 
         // Find all submissions for Exercise

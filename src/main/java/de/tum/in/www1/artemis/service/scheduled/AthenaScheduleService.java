@@ -5,7 +5,6 @@ import static java.time.Instant.now;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.validation.constraints.NotNull;
@@ -109,7 +108,7 @@ public class AthenaScheduleService {
     private Runnable athenaRunnableForExercise(TextExercise exercise) {
         return () -> {
             SecurityUtils.setAuthorizationObject();
-            athenaService.submitJob(exercise);
+            athenaService.sendSubmissions(exercise);
         };
     }
 
@@ -122,29 +121,7 @@ public class AthenaScheduleService {
         final ScheduledFuture<?> future = scheduledAthenaTasks.get(exerciseId);
         if (future != null) {
             future.cancel(false);
-            scheduledAthenaTasks.remove(exerciseId);
         }
-    }
-
-    /**
-     * Checks if Athena is currently processing submissions of given exercise.
-     *
-     * @param exercise Exercise to check state
-     * @return currently computing Athena?
-     */
-    public boolean currentlyProcessing(TextExercise exercise) {
-        final ScheduledFuture<?> future = scheduledAthenaTasks.get(exercise.getId());
-        if (future == null) {
-            return false;
-        }
-
-        final long delay = future.getDelay(TimeUnit.NANOSECONDS);
-        final boolean done = future.isDone();
-        final boolean cancelled = future.isCancelled();
-
-        // Check future for scheduled tasks
-        // Check athenaService for running tasks
-        return !done && !cancelled && delay <= 0 || athenaService.isTaskRunning(exercise.getId());
     }
 
 }

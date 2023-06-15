@@ -33,7 +33,7 @@ public class AdminTextExerciseResource {
     @PostMapping("text-exercises/{exerciseId}/trigger-automatic-assessment")
     @EnforceAdmin
     public ResponseEntity<Void> triggerAutomaticAssessment(@PathVariable Long exerciseId) {
-        instanceMessageSendService.sendTextExerciseInstantClustering(exerciseId);
+        instanceMessageSendService.sendAthenaExerciseInstant(exerciseId);
         return ResponseEntity.ok().build();
     }
 }

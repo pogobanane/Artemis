@@ -60,7 +60,7 @@ class AthenaServiceTest extends AbstractSpringIntegrationBambooBitbucketJiraTest
      */
     @Test
     void submitJobWithoutSubmissions() {
-        athenaService.submitJob(exercise1);
+        athenaService.sendSubmissions(exercise1);
         assertThat(!athenaService.isTaskRunning(exercise1.getId())).isTrue();
     }
 
@@ -85,7 +85,7 @@ class AthenaServiceTest extends AbstractSpringIntegrationBambooBitbucketJiraTest
     @Test
     void submitJobWithLessThan10Submissions() {
         generateTextSubmissions(9);
-        athenaService.submitJob(exercise1);
+        athenaService.sendSubmissions(exercise1);
         assertThat(athenaService.isTaskRunning(exercise1.getId())).isFalse();
     }
 
@@ -99,7 +99,7 @@ class AthenaServiceTest extends AbstractSpringIntegrationBambooBitbucketJiraTest
         // Create mock server
         athenaRequestMockProvider.mockSubmitSubmissions();
 
-        athenaService.submitJob(exercise1);
+        athenaService.sendSubmissions(exercise1);
         assertThat(athenaService.isTaskRunning(exercise1.getId())).isTrue();
     }
 

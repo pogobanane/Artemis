@@ -75,7 +75,7 @@ public class DistributedInstanceMessageSendService implements InstanceMessageSen
     }
 
     @Override
-    public void sendTextExerciseInstantClustering(Long exerciseId) {
+    public void sendAthenaExerciseInstant(Long exerciseId) {
         log.info("Sending schedule instant clustering for text exercise {} to broker.", exerciseId);
         sendMessageDelayed(MessageTopic.TEXT_EXERCISE_INSTANT_CLUSTERING, exerciseId);
     }

@@ -60,7 +60,7 @@ public interface InstanceMessageSendService {
      *
      * @param exerciseId the id of the exercise that should be clustered
      */
-    void sendTextExerciseInstantClustering(Long exerciseId);
+    void sendAthenaExerciseInstant(Long exerciseId);
 
     /**
      * Send a message to the main server that all repositories of an exercise should be instantly unlocked

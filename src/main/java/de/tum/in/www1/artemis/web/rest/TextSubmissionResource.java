@@ -201,11 +201,6 @@ public class TextSubmissionResource extends AbstractSubmissionResource {
         // Check if tutors can start assessing the students submission
         this.textSubmissionService.checkIfExerciseDueDateIsReached(exercise);
 
-        // Tutors cannot start assessing submissions if Athena is currently processing automatic feedback
-        if (athenaScheduleService.isPresent() && athenaScheduleService.get().currentlyProcessing((TextExercise) exercise)) {
-            throw new EntityNotFoundException("Athena is currently processing automatic feedback.");
-        }
-
         // Check if the limit of simultaneously locked submissions has been reached
         textSubmissionService.checkSubmissionLockLimit(exercise.getCourseViaExerciseGroupOrCourseMember().getId());
 
