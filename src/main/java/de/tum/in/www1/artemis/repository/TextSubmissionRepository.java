@@ -89,10 +89,6 @@ public interface TextSubmissionRepository extends JpaRepository<TextSubmission, 
                 .orElseThrow(() -> new BadRequestAlertException("No text submission found for the given submission.", "textSubmission", "textSubmissionNotFound"));
     }
 
-    default List<TextSubmission> getTextSubmissionsWithTextBlocksByExerciseIdAndLanguage(long exerciseId, Language language) {
-        return findByParticipation_ExerciseIdAndSubmittedIsTrueAndLanguage(exerciseId, language);
-    }
-
     @NotNull
     default TextSubmission findByIdWithParticipationExerciseResultAssessorElseThrow(long submissionId) {
         return findByIdWithEagerParticipationExerciseResultAssessor(submissionId).orElseThrow(() -> new EntityNotFoundException("TextSubmission", submissionId));

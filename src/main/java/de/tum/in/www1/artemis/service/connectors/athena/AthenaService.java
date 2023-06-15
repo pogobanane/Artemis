@@ -1,7 +1,6 @@
 package de.tum.in.www1.artemis.service.connectors.athena;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import javax.validation.constraints.NotNull;
 
@@ -15,7 +14,6 @@ import org.springframework.web.client.RestTemplate;
 
 import de.tum.in.www1.artemis.domain.TextExercise;
 import de.tum.in.www1.artemis.domain.TextSubmission;
-import de.tum.in.www1.artemis.domain.enumeration.Language;
 import de.tum.in.www1.artemis.exception.NetworkingError;
 import de.tum.in.www1.artemis.repository.TextBlockRepository;
 import de.tum.in.www1.artemis.repository.TextExerciseRepository;
@@ -56,26 +54,31 @@ public class AthenaService {
     // region Request/Response DTOs
     private static class RequestDTO {
 
-        public long courseId;
+        // use Maps to much more easily change the transfer format to better fit the Athena API
+        public Map<String, Object> exercise;
 
-        public List<TextSubmission> submissions;
+        public List<Map<String, Object>> submissions;
 
-        RequestDTO(@NotNull long courseId, @NotNull List<TextSubmission> submissions) {
-            this.courseId = courseId;
-            this.submissions = createSubmissionDTOs(submissions);
+        RequestDTO(@NotNull TextExercise exercise, @NotNull List<TextSubmission> submissions) {
+            this.exercise = createExerciseDTO(exercise);
+            this.submissions = submissions.stream().map(RequestDTO::createSubmissionDTO).toList();
+        }
+
+        /**
+         * Converts a TextExercise to a DTO object to prepare for sending it to Athena in a REST call.
+         */
+        @NotNull
+        private static Map<String, Object> createExerciseDTO(@NotNull TextExercise exercise) {
+            return Map.of("id", exercise.getId(), "title", exercise.getTitle(), "type", "text", "maxPoints", exercise.getMaxPoints(), "bonusPoints", exercise.getBonusPoints(),
+                    "gradingInstructions", exercise.getGradingInstructions(), "problemStatement", exercise.getProblemStatement());
         }
 
         /**
          * Converts TextSubmissions to DTO objects to prepare for sending them to Athena in a REST call.
          */
         @NotNull
-        private static List<TextSubmission> createSubmissionDTOs(@NotNull List<TextSubmission> submissions) {
-            return submissions.stream().map(textSubmission -> {
-                final TextSubmission submission = new TextSubmission();
-                submission.setText(textSubmission.getText());
-                submission.setId(textSubmission.getId());
-                return submission;
-            }).toList();
+        private static Map<String, Object> createSubmissionDTO(@NotNull TextSubmission submission) {
+            return Map.of("id", submission.getId(), "text", submission.getText());
         }
     }
 
@@ -134,23 +137,17 @@ public class AthenaService {
     public void sendSubmissions(TextExercise exercise, int maxRetries) {
         log.debug("Start Athena Service for Text Exercise '{}' (#{}).", exercise.getTitle(), exercise.getId());
 
-        // Find all submissions for Exercise
-        // We only support english languages so far, to prevent corruption of the clustering
-        List<TextSubmission> textSubmissions = textSubmissionRepository.getTextSubmissionsWithTextBlocksByExerciseIdAndLanguage(exercise.getId(), Language.ENGLISH);
-
-        // Athena only works with 10 or more submissions
-        if (textSubmissions.size() < 10) {
-            return;
-        }
+        // Find all text submissions for exercise (later we will support others)
+        List<TextSubmission> textSubmissions = textSubmissionRepository.getTextSubmissionsWithTextBlocksByExerciseId(exercise.getId());
 
         log.info("Calling Remote Service to calculate automatic feedback for {} submissions.", textSubmissions.size());
 
         try {
-            final RequestDTO request = new RequestDTO(exercise.getId(), textSubmissions);
-            ResponseDTO response = connector.invokeWithRetry(athenaUrl + "/submit", request, maxRetries);
+            final RequestDTO request = new RequestDTO(exercise, textSubmissions);
+            ResponseDTO response = connector.invokeWithRetry(athenaUrl + "/submissions", request, maxRetries);
             log.info("Remote Service to calculate automatic feedback responded: {}", response.detail);
 
-            // Register task for exercise as running, AthenaResource calls finishTask on result receive
+            // Register submission processing task for exercise as running
             startTask(exercise.getId());
         }
         catch (NetworkingError networkingError) {
