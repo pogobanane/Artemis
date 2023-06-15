@@ -69,8 +69,15 @@ public class AthenaService {
          */
         @NotNull
         private static Map<String, Object> createExerciseDTO(@NotNull TextExercise exercise) {
-            return Map.of("id", exercise.getId(), "title", exercise.getTitle(), "type", "text", "maxPoints", exercise.getMaxPoints(), "bonusPoints", exercise.getBonusPoints(),
-                    "gradingInstructions", exercise.getGradingInstructions(), "problemStatement", exercise.getProblemStatement());
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", exercise.getId());
+            map.put("title", exercise.getTitle());
+            map.put("type", "text");
+            map.put("maxPoints", exercise.getMaxPoints());
+            map.put("bonusPoints", exercise.getBonusPoints());
+            map.put("gradingInstructions", exercise.getGradingInstructions());
+            map.put("problemStatement", exercise.getProblemStatement());
+            return map;
         }
 
         /**
@@ -78,7 +85,10 @@ public class AthenaService {
          */
         @NotNull
         private static Map<String, Object> createSubmissionDTO(@NotNull TextSubmission submission) {
-            return Map.of("id", submission.getId(), "text", submission.getText());
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", submission.getId());
+            map.put("text", submission.getText());
+            return map;
         }
     }
 
@@ -144,7 +154,8 @@ public class AthenaService {
 
         try {
             final RequestDTO request = new RequestDTO(exercise, textSubmissions);
-            ResponseDTO response = connector.invokeWithRetry(athenaUrl + "/submissions", request, maxRetries);
+            // TODO: make module selection dynamic (based on exercise)
+            ResponseDTO response = connector.invokeWithRetry(athenaUrl + "/modules/text/module_text_cofee/submissions", request, maxRetries);
             log.info("Remote Service to calculate automatic feedback responded: {}", response.detail);
 
             // Register submission processing task for exercise as running
