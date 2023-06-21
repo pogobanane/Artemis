@@ -30,7 +30,6 @@ import de.tum.in.www1.artemis.domain.exam.ExerciseGroup;
 import de.tum.in.www1.artemis.domain.participation.Participation;
 import de.tum.in.www1.artemis.domain.participation.StudentParticipation;
 import de.tum.in.www1.artemis.repository.*;
-import de.tum.in.www1.artemis.service.AutomaticTextFeedbackService;
 import de.tum.in.www1.artemis.service.TextAssessmentService;
 import de.tum.in.www1.artemis.util.ModelFactory;
 import de.tum.in.www1.artemis.util.TextExerciseUtilService;
@@ -79,9 +78,6 @@ class TextAssessmentIntegrationTest extends AbstractSpringIntegrationBambooBitbu
 
     @Autowired
     private FeedbackConflictRepository feedbackConflictRepository;
-
-    @Autowired
-    private AutomaticTextFeedbackService automaticTextFeedbackService;
 
     @Autowired
     private FeedbackRepository feedbackRepository;
@@ -146,8 +142,6 @@ class TextAssessmentIntegrationTest extends AbstractSpringIntegrationBambooBitbu
         resultRepo.save(firstResult);
         feedback.setResult(firstResult);
         feedbackRepository.save(feedback);
-
-        automaticTextFeedbackService.suggestFeedback(secondResult);
 
         assertThat(secondResult).as("saved result found").isNotNull();
         assertThat(secondResult.getFeedbacks().get(0).getReference()).isEqualTo(textBlocks.stream().toList().get(1).getId());
