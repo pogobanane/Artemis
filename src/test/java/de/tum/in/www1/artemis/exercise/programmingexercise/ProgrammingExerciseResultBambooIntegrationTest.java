@@ -171,7 +171,7 @@ class ProgrammingExerciseResultBambooIntegrationTest extends AbstractSpringInteg
     }
 
     private Object createSimpleBuildResult() {
-        return ModelFactory.generateBambooBuildResult(Constants.ASSIGNMENT_REPO_NAME, null, null, null, List.of(), List.of(), List.of());
+        return ProgrammingExerciseFactory.generateBambooBuildResult(Constants.ASSIGNMENT_REPO_NAME, null, null, null, List.of(), List.of(), List.of());
     }
 
     @Test

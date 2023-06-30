@@ -1645,7 +1645,7 @@ class ProgrammingExerciseIntegrationTestService {
 
     void unlockAllRepositories() throws Exception {
         String suffix = "unlockAll";
-        database.updateCourseGroups(userPrefix, course, suffix);
+        courseUtilService.updateCourseGroups(userPrefix, course, suffix);
 
         var instructor = userUtilService.getUserByLogin(userPrefix + "instructor1");
         instructor.setGroups(Set.of(userPrefix + "instructor" + suffix));

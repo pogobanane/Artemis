@@ -28,6 +28,7 @@ import de.tum.in.www1.artemis.domain.hestia.ProgrammingExerciseTestCaseType;
 import de.tum.in.www1.artemis.domain.participation.ProgrammingExerciseParticipation;
 import de.tum.in.www1.artemis.domain.participation.ProgrammingExerciseStudentParticipation;
 import de.tum.in.www1.artemis.domain.participation.SolutionProgrammingExerciseParticipation;
+import de.tum.in.www1.artemis.exam.ExamUtilService;
 import de.tum.in.www1.artemis.exercise.ExerciseUtilService;
 import de.tum.in.www1.artemis.hestia.TestwiseCoverageTestUtil;
 import de.tum.in.www1.artemis.participation.ParticipationFactory;
@@ -99,6 +100,9 @@ public class ProgrammingExerciseResultTestService {
 
     @Autowired
     private ParticipationUtilService participationUtilService;
+
+    @Autowired
+    private ExamUtilService examUtilService;
 
     private Course course;
 
@@ -388,8 +392,8 @@ public class ProgrammingExerciseResultTestService {
 
     // Test
     public void shouldNotUseGracePeriodForExamExercise(Object resultNotification) {
-        Exam exam = database.addExamWithExerciseGroup(course, true);
-        programmingExercise = database.addProgrammingExerciseToExam(exam, 0);
+        Exam exam = examUtilService.addExamWithExerciseGroup(course, true);
+        programmingExercise = programmingExerciseUtilService.addProgrammingExerciseToExam(exam, 0);
         testWithGracePeriod(false, resultNotification, programmingExercise);
     }
 
@@ -405,8 +409,8 @@ public class ProgrammingExerciseResultTestService {
 
         programmingExerciseStudentParticipation.setExercise(programmingExercise);
         participationRepository.save(programmingExerciseStudentParticipation);
-        Submission submission = database.createProgrammingSubmission(programmingExerciseStudentParticipation, false);
-        database.addSubmission(programmingExerciseStudentParticipation, submission);
+        Submission submission = programmingExerciseUtilService.createProgrammingSubmission(programmingExerciseStudentParticipation, false);
+        participationUtilService.addSubmission(programmingExerciseStudentParticipation, submission);
 
         Optional<Result> optionalResult = gradingService.processNewProgrammingExerciseResult(programmingExerciseStudentParticipation, resultNotification);
         assertThat(optionalResult).isPresent();

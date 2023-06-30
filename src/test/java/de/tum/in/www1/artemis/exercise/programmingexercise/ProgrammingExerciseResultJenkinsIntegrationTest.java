@@ -175,7 +175,8 @@ class ProgrammingExerciseResultJenkinsIntegrationTest extends AbstractSpringInte
 
     private Object createSimpleBuildResult() {
         var commit = new CommitDTO("abc123", "slug", DEFAULT_BRANCH);
-        return ModelFactory.generateTestResultDTO(null, TEST_PREFIX + "student1", null, ProgrammingLanguage.JAVA, false, List.of(), List.of(), List.of(), List.of(commit), null);
+        return ProgrammingExerciseFactory.generateTestResultDTO(null, TEST_PREFIX + "student1", null, ProgrammingLanguage.JAVA, false, List.of(), List.of(), List.of(),
+                List.of(commit), null);
     }
 
     @Test
