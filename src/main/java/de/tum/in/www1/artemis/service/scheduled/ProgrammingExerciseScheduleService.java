@@ -86,8 +86,7 @@ public class ProgrammingExerciseScheduleService implements IExerciseScheduleServ
             ProgrammingExerciseStudentParticipationRepository programmingExerciseParticipationRepository, Environment env, ProgrammingTriggerService programmingTriggerService,
             ProgrammingExerciseGradingService programmingExerciseGradingService, GroupNotificationService groupNotificationService, ExamDateService examDateService,
             ProgrammingExerciseParticipationService programmingExerciseParticipationService, ExerciseDateService exerciseDateService, StudentExamRepository studentExamRepository,
-            GitService gitService,
-            ParallelExecutorService parallelExecutorService) {
+            GitService gitService, ParallelExecutorService parallelExecutorService) {
         this.scheduleService = scheduleService;
         this.programmingExerciseRepository = programmingExerciseRepository;
         this.programmingExerciseTestCaseRepository = programmingExerciseTestCaseRepository;
@@ -300,7 +299,7 @@ public class ProgrammingExerciseScheduleService implements IExerciseScheduleServ
 
     /**
      * Schedules all necessary tasks for participations with individual due dates.
-     *
+     * <p>
      * Also removes schedules for individual participations of their individual due date no longer exists.
      *
      * @param exercise the participations belong to.
@@ -460,7 +459,7 @@ public class ProgrammingExerciseScheduleService implements IExerciseScheduleServ
      * Returns a runnable that, once executed, will
      * (1) lock all student repositories and
      * (2) stash all student changes in the online editor for manual assessments.
-     *
+     * <p>
      * NOTE: this will not lock the student participations. See {@link #lockAllStudentRepositoriesAndParticipations(ProgrammingExercise)} for that.
      * NOTE: this will not immediately lock the repositories as only a Runnable is returned!
      *
@@ -505,7 +504,7 @@ public class ProgrammingExerciseScheduleService implements IExerciseScheduleServ
      * Returns a runnable that, once executed, will
      * (1) lock all student repositories for students for which no individual due date is set and
      * (2) stash all student changes in the online editor for manual assessments.
-     *
+     * <p>
      * NOTE: this will not immediately lock the repositories as only a Runnable is returned!
      *
      * @param exercise for which the repositories should be locked.
@@ -519,10 +518,10 @@ public class ProgrammingExerciseScheduleService implements IExerciseScheduleServ
     /**
      * Returns a runnable, that, once executed, will update all results for the given exercise for students for which no
      * individual due date is set.
-     *
+     * <p>
      * This might be needed for an exercise that has test cases marked with
      * {@link de.tum.in.www1.artemis.domain.enumeration.Visibility#AFTER_DUE_DATE}.
-     *
+     * <p>
      * Those test cases might already have been run in the continuous integration
      * service and their feedbacks are therefore stored in the database.
      * However, they are not included in the student score before the due date has passed.
@@ -556,9 +555,8 @@ public class ProgrammingExerciseScheduleService implements IExerciseScheduleServ
         return () -> {
             SecurityUtils.setAuthorizationObject();
             try {
-                List<ProgrammingExerciseStudentParticipation> failedLockOperations = removeWritePermissionsFromAllStudentRepositoriesAndLockParticipations(programmingExerciseId,
-                        condition);
-                stashStudentChangesAndNotifyInstructor(exercise, failedLockOperations.size(), condition);
+                var failedLockOperations = removeWritePermissionsFromAllStudentRepositoriesAndLockParticipations(programmingExerciseId, condition);
+                failedLockOperations.thenAccept(failures -> stashStudentChangesAndNotifyInstructor(exercise, failures.size(), condition));
             }
             catch (EntityNotFoundException ex) {
                 log.error("Programming exercise with id {} is no longer available in database for use in scheduled task.", programmingExerciseId);
@@ -582,8 +580,7 @@ public class ProgrammingExerciseScheduleService implements IExerciseScheduleServ
             SecurityUtils.setAuthorizationObject();
             try {
                 var failedLockOperationsFuture = removeWritePermissionsFromAllStudentRepositories(programmingExerciseId, condition);
-                failedLockOperationsFuture.thenAccept(failedLockOperations -> {
-                    stashStudentChangesAndNotifyInstructor(exercise, failedLockOperations.size(), condition);
+                failedLockOperationsFuture.thenAccept(failedLockOperations -> stashStudentChangesAndNotifyInstructor(exercise, failedLockOperations.size(), condition));
             }
             catch (EntityNotFoundException ex) {
                 log.error("Programming exercise with id {} is no longer available in database for use in scheduled task.", programmingExerciseId);
@@ -606,8 +603,8 @@ public class ProgrammingExerciseScheduleService implements IExerciseScheduleServ
         return () -> {
             SecurityUtils.setAuthorizationObject();
             try {
-                List<ProgrammingExerciseStudentParticipation> failedLockOperations = updateParticipationsLockedInDatabase(programmingExerciseId, condition);
-                stashStudentChangesAndNotifyInstructor(exercise, failedLockOperations.size(), condition);
+                var failedLockOperations = updateParticipationsLockedInDatabase(programmingExerciseId, condition);
+                failedLockOperations.thenAccept(failures -> stashStudentChangesAndNotifyInstructor(exercise, failures.size(), condition));
             }
             catch (EntityNotFoundException ex) {
                 log.error("Programming exercise with id {} is no longer available in database for use in scheduled task.", programmingExerciseId);
@@ -617,47 +614,40 @@ public class ProgrammingExerciseScheduleService implements IExerciseScheduleServ
 
     /**
      * Stash all student changes in the online editor for manual assessments and notify the instructor about the success of the repository locking and stashing operations.
-                   *
+     *
      * @throws EntityNotFoundException if the programming exercise with template and solution participation was not found
      */
     private void stashStudentChangesAndNotifyInstructor(ProgrammingExercise exercise, long numberOfFailedLockOperations,
             Predicate<ProgrammingExerciseStudentParticipation> condition) {
         Long programmingExerciseId = exercise.getId();
+        ProgrammingExercise programmingExercise = programmingExerciseRepository
+                .findByIdWithTemplateAndSolutionParticipationTeamAssignmentConfigCategoriesElseThrow(programmingExerciseId);
 
-                    ProgrammingExercise programmingExercise = programmingExerciseRepository
-                            .findByIdWithTemplateAndSolutionParticipationTeamAssignmentConfigCategoriesElseThrow(programmingExerciseId);
-                    if (numberOfFailedLockOperations > 0) {
-                        groupNotificationService.notifyEditorAndInstructorGroupAboutExerciseUpdate(programmingExercise,
-                                Constants.PROGRAMMING_EXERCISE_FAILED_LOCK_OPERATIONS_NOTIFICATION + numberOfFailedLockOperations);
-                    }
-                    else {
-                        groupNotificationService.notifyEditorAndInstructorGroupAboutExerciseUpdate(programmingExercise,
-                                Constants.PROGRAMMING_EXERCISE_SUCCESSFUL_LOCK_OPERATION_NOTIFICATION);
-                    }
-                });
+        if (numberOfFailedLockOperations > 0) {
+            groupNotificationService.notifyEditorAndInstructorGroupAboutExerciseUpdate(programmingExercise,
+                    Constants.PROGRAMMING_EXERCISE_FAILED_LOCK_OPERATIONS_NOTIFICATION + numberOfFailedLockOperations);
+        }
+        else {
+            groupNotificationService.notifyEditorAndInstructorGroupAboutExerciseUpdate(programmingExercise, Constants.PROGRAMMING_EXERCISE_SUCCESSFUL_LOCK_OPERATION_NOTIFICATION);
+        }
 
-                // Stash the not submitted/committed changes for exercises with manual assessment and with online editor enabled
-                // This is necessary for students who have used the online editor, to ensure that only submitted/committed changes are displayed during manual assessment
-                // in the case they still have saved changes on the Artemis server which have not been committed / pushed
-                // NOTE: we always stash, also when manual assessment is not activated, because instructors might change this after the exam
-                if (Boolean.TRUE.equals(exercise.isAllowOnlineEditor())) {
-                    var failedStashOperationsFuture = stashChangesInAllStudentRepositories(programmingExerciseId, condition);
-                    failedStashOperationsFuture.thenAccept(failedStashOperations -> {
-                        ProgrammingExercise programmingExercise = programmingExerciseRepository
-                                .findByIdWithTemplateAndSolutionParticipationTeamAssignmentConfigCategoriesElseThrow(programmingExerciseId);
-
-                        long numberOfFailedStashOperations = failedStashOperations.size();
-                        if (numberOfFailedStashOperations > 0) {
-                            groupNotificationService.notifyEditorAndInstructorGroupAboutExerciseUpdate(programmingExercise,
-                                    Constants.PROGRAMMING_EXERCISE_FAILED_STASH_OPERATIONS_NOTIFICATION + numberOfFailedStashOperations);
-                        }
-                        else {
-                            groupNotificationService.notifyEditorAndInstructorGroupAboutExerciseUpdate(programmingExercise,
-                                    Constants.PROGRAMMING_EXERCISE_SUCCESSFUL_STASH_OPERATION_NOTIFICATION);
-                        }
-                    });
+        // Stash the not submitted/committed changes for exercises with manual assessment and with online editor enabled
+        // This is necessary for students who have used the online editor, to ensure that only submitted/committed changes are displayed during manual assessment
+        // in the case they still have saved changes on the Artemis server which have not been committed / pushed
+        // NOTE: we always stash, also when manual assessment is not activated, because instructors might change this after the exam
+        if (Boolean.TRUE.equals(exercise.isAllowOnlineEditor())) {
+            var failedStashOperationsFuture = stashChangesInAllStudentRepositories(programmingExerciseId, condition);
+            failedStashOperationsFuture.thenAccept(failedStashOperations -> {
+                long numberOfFailedStashOperations = failedStashOperations.size();
+                if (numberOfFailedStashOperations > 0) {
+                    groupNotificationService.notifyEditorAndInstructorGroupAboutExerciseUpdate(programmingExercise,
+                            Constants.PROGRAMMING_EXERCISE_FAILED_STASH_OPERATIONS_NOTIFICATION + numberOfFailedStashOperations);
                 }
-            }
+                else {
+                    groupNotificationService.notifyEditorAndInstructorGroupAboutExerciseUpdate(programmingExercise,
+                            Constants.PROGRAMMING_EXERCISE_SUCCESSFUL_STASH_OPERATION_NOTIFICATION);
+                }
+            });
         }
     }
 
@@ -841,7 +831,7 @@ public class ProgrammingExerciseScheduleService implements IExerciseScheduleServ
         return exercise.getExerciseGroup().getExam().getStartDate().minusMinutes(EXAM_START_WAIT_TIME_MINUTES);
     }
 
-    private List<ProgrammingExerciseStudentParticipation> removeWritePermissionsFromAllStudentRepositoriesAndLockParticipations(Long programmingExerciseId,
+    private CompletableFuture<List<ProgrammingExerciseStudentParticipation>> removeWritePermissionsFromAllStudentRepositoriesAndLockParticipations(Long programmingExerciseId,
             Predicate<ProgrammingExerciseStudentParticipation> condition) throws EntityNotFoundException {
         return invokeOperationOnAllParticipationsThatSatisfy(programmingExerciseId, programmingExerciseParticipationService::lockStudentRepositoryAndParticipation, condition,
                 "remove write permissions from all student repositories and lock participations");
@@ -853,7 +843,7 @@ public class ProgrammingExerciseScheduleService implements IExerciseScheduleServ
                 "remove write permissions from all student repositories");
     }
 
-    private List<ProgrammingExerciseStudentParticipation> updateParticipationsLockedInDatabase(Long programmingExerciseId,
+    private CompletableFuture<List<ProgrammingExerciseStudentParticipation>> updateParticipationsLockedInDatabase(Long programmingExerciseId,
             Predicate<ProgrammingExerciseStudentParticipation> condition) throws EntityNotFoundException {
         return invokeOperationOnAllParticipationsThatSatisfy(programmingExerciseId, programmingExerciseParticipationService::lockStudentParticipation, condition,
                 "lock all student participations");
