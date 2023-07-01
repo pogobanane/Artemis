@@ -11,6 +11,7 @@ import java.time.temporal.ChronoUnit;
 import javax.mail.internet.MimeMessage;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,11 +77,12 @@ class NotificationScheduleServiceTest extends AbstractSpringIntegrationBambooBit
         doNothing().when(javaMailSender).send(any(MimeMessage.class));
     }
 
-    @Test
+    @RepeatedTest(1000)
     @Timeout(10)
     @WithMockUser(username = TEST_PREFIX + "instructor1", roles = "INSTRUCTOR")
     void shouldCreateNotificationAndEmailAtReleaseDate() {
         long sizeBefore = notificationRepository.count();
+        notificationSettingRepository.deleteAll();
         notificationSettingRepository.save(new NotificationSetting(user, true, true, true, NOTIFICATION__EXERCISE_NOTIFICATION__EXERCISE_RELEASED));
         instanceMessageReceiveService.processScheduleExerciseReleasedNotification(exercise.getId());
         await().until(() -> notificationRepository.count() > sizeBefore);
