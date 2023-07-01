@@ -84,7 +84,7 @@ class NotificationScheduleServiceTest extends AbstractSpringIntegrationBambooBit
         notificationSettingRepository.save(new NotificationSetting(user, true, true, true, NOTIFICATION__EXERCISE_NOTIFICATION__EXERCISE_RELEASED));
 
         Exercise exercise = exerciseUtilService.getFirstExerciseWithType(course, TextExercise.class);
-        exercise.setReleaseDate(now().plus(500, ChronoUnit.MILLIS));
+        exercise.setReleaseDate(now().plus(2000, ChronoUnit.MILLIS));
         exercise = exerciseRepository.save(exercise);
 
         instanceMessageReceiveService.processScheduleExerciseReleasedNotification(exercise.getId());
