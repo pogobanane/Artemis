@@ -101,7 +101,7 @@ test {
     useJUnitPlatform()
     exclude "**/*IT*", "**/*IntTest*"
     filter {
-        includeTestsMatching "*NotificationScheduleServiceTest.shouldCreateNotificationAndEmailAtReleaseDate"
+        includeTestsMatching "*NotificationScheduleServiceTest"
     }
     testLogging {
         events "FAILED", "SKIPPED"
