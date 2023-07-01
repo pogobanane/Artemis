@@ -75,7 +75,7 @@ class NotificationScheduleServiceTest extends AbstractSpringIntegrationBambooBit
         doNothing().when(javaMailSender).send(any(MimeMessage.class));
     }
 
-    @RepeatedTest(400)
+    @RepeatedTest(5000)
     @Timeout(10)
     @WithMockUser(username = TEST_PREFIX + "student1", roles = "USER")
     void shouldCreateNotificationAndEmailAtReleaseDate() {
