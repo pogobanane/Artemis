@@ -1,7 +1,9 @@
-import { PARTICIPATION, QUIZ_EXERCISES } from './endpoints.js';
+import { ADMIN_COURSES, PARTICIPATION, QUIZ_EXERCISES } from './endpoints.js';
 import { fail, sleep } from 'k6';
 import { nextAlphanumeric, nextWSSubscriptionId, randomArrayValue, extractDestination, extractMessageContent } from '../util/utils.js';
 import { QUIZ_EXERCISE, SUBMIT_QUIZ_LIVE, SUBMIT_QUIZ_EXAM } from './endpoints.js';
+import http from 'k6/http';
+import { FormData } from 'https://jslib.k6.io/formdata/0.0.2/index.js';
 
 export function createQuizExercise(artemis, course, exerciseGroup = null, startQuiz = true, setReleaseDate = true) {
     let res;
@@ -30,9 +32,13 @@ export function createQuizExercise(artemis, course, exerciseGroup = null, startQ
         course: course,
         exerciseGroup: exerciseGroup,
         quizQuestions: generateQuizQuestions(10),
+        channelName: 'Channel' + nextAlphanumeric(10),
     };
 
-    res = artemis.post(QUIZ_EXERCISES, exercise);
+    const formData = new FormData();
+    formData.append('exercise', http.file(JSON.stringify(exercise), 'exercise', 'application/json'));
+
+    res = artemis.post(QUIZ_EXERCISES, undefined, undefined, formData);
     if (res[0].status !== 201) {
         console.log('ERROR when creating a new quiz exercise. Response headers:');
         for (let [key, value] of Object.entries(res[0].headers)) {

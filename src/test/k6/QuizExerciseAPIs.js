@@ -1,7 +1,7 @@
 import { login } from './requests/requests.js';
 import { group, sleep } from 'k6';
 import { getQuizQuestions, simulateQuizWork } from './requests/quiz.js';
-import { newCourse, deleteCourse } from './requests/course.js';
+import { newCourse, deleteCourse, addUserToInstructorsInCourse } from './requests/course.js';
 import { createUsersIfNeeded } from './requests/user.js';
 import { createQuizExercise, deleteQuizExercise, waitForQuizStartAndStart } from './requests/quiz.js';
 
@@ -48,6 +48,8 @@ export function setup() {
 
         const instructorUsername = baseUsername.replace('USERID', '101');
         const instructorPassword = basePassword.replace('USERID', '101');
+
+        addUserToInstructorsInCourse(artemis, instructorUsername, course.id);
 
         // Login to Artemis
         artemis = login(instructorUsername, instructorPassword);
