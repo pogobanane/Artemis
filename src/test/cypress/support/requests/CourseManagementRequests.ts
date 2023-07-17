@@ -45,6 +45,10 @@ export class CourseManagementRequests {
      * @returns <Chainable> request response
      */
     deleteCourse(course: Course, admin: CypressCredentials) {
+        console.log(course.shortName + ' Student Group Name: ' + course.studentGroupName);
+        console.log(course.shortName + ' Tutor Group Name: ' + course.teachingAssistantGroupName);
+        console.log(course.shortName + ' Editor Group Name: ' + course.editorGroupName);
+        console.log(course.shortName + ' Instructor Group Name: ' + course.instructorGroupName);
         // Sometimes the server fails with a ConstraintViolationError if we delete the course immediately after a login
         cy.wait(20000);
         if (course) {
