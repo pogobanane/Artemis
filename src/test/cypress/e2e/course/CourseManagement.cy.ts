@@ -46,7 +46,7 @@ describe('Course management', () => {
     beforeEach(() => {
         cy.login(admin, '/');
         const uid = generateUUID();
-        courseData.title = 'Cypress course' + uid;
+        courseData.title = 'Course ' + uid;
         courseData.shortName = 'cypress' + uid;
     });
 
