@@ -2,6 +2,7 @@ package de.tum.in.www1.artemis.metis;
 
 import static de.tum.in.www1.artemis.metis.AnswerPostIntegrationTest.MAX_POSTS_PER_PAGE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -13,16 +14,13 @@ import java.util.Set;
 
 import javax.validation.*;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.TestSecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -48,6 +46,7 @@ import de.tum.in.www1.artemis.repository.UserRepository;
 import de.tum.in.www1.artemis.repository.metis.ConversationMessageRepository;
 import de.tum.in.www1.artemis.repository.metis.ConversationParticipantRepository;
 import de.tum.in.www1.artemis.repository.metis.conversation.OneToOneChatRepository;
+import de.tum.in.www1.artemis.security.SecurityUtils;
 import de.tum.in.www1.artemis.user.UserUtilService;
 import de.tum.in.www1.artemis.web.rest.dto.PostContextFilter;
 import de.tum.in.www1.artemis.web.websocket.dto.metis.PostDTO;
@@ -135,9 +134,6 @@ class MessageIntegrationTest extends AbstractSpringIntegrationBambooBitbucketJir
         courseUtilService.enableMessagingForCourse(course);
 
         courseId = course.getId();
-
-        SimpMessageSendingOperations simpMessageSendingOperations = mock(SimpMessageSendingOperations.class);
-        doNothing().when(simpMessageSendingOperations).convertAndSendToUser(any(), any(), any());
     }
 
     @AfterEach
@@ -162,7 +158,7 @@ class MessageIntegrationTest extends AbstractSpringIntegrationBambooBitbucketJir
         assertThat(conversationMessageRepository.findMessages(postContextFilter, Pageable.unpaged(), requestingUser.getId())).hasSize(1);
 
         // both conversation participants should be notified
-        verify(messagingTemplate, times(2)).convertAndSendToUser(anyString(), anyString(), any(PostDTO.class));
+        verify(websocketMessagingService, timeout(2000).times(2)).sendMessageToUser(anyString(), anyString(), any(PostDTO.class));
     }
 
     @ParameterizedTest
@@ -221,7 +217,7 @@ class MessageIntegrationTest extends AbstractSpringIntegrationBambooBitbucketJir
         assertThat(conversationMessageRepository.findMessages(postContextFilter, Pageable.unpaged(), requestingUser.getId())).hasSize(numberOfPostsBefore);
 
         // conversation participants should not be notified
-        verify(messagingTemplate, never()).convertAndSendToUser(anyString(), anyString(), any(PostDTO.class));
+        verify(websocketMessagingService, never()).sendMessageToUser(anyString(), anyString(), any(PostDTO.class));
 
         // active messaging again
         persistedCourse.setCourseInformationSharingConfiguration(CourseInformationSharingConfiguration.COMMUNICATION_AND_MESSAGING);
@@ -247,7 +243,7 @@ class MessageIntegrationTest extends AbstractSpringIntegrationBambooBitbucketJir
         assertThat(conversationMessageRepository.findMessages(postContextFilter, Pageable.unpaged(), requestingUser.getId())).hasSize(numberOfPostsBefore);
 
         // conversation participants should not be notified
-        verify(messagingTemplate, never()).convertAndSendToUser(anyString(), anyString(), any(PostDTO.class));
+        verify(websocketMessagingService, never()).sendMessageToUser(anyString(), anyString(), any(PostDTO.class));
     }
 
     @Test
@@ -305,7 +301,7 @@ class MessageIntegrationTest extends AbstractSpringIntegrationBambooBitbucketJir
         assertThat(conversationPostToUpdate).isEqualTo(updatedPost);
 
         // both conversation participants should be notified about the update
-        verify(messagingTemplate, times(2)).convertAndSendToUser(anyString(), anyString(), any(PostDTO.class));
+        verify(websocketMessagingService, timeout(2000).times(2)).sendMessageToUser(anyString(), anyString(), any(PostDTO.class));
     }
 
     @Test
@@ -321,7 +317,7 @@ class MessageIntegrationTest extends AbstractSpringIntegrationBambooBitbucketJir
         assertThat(notUpdatedPost).isNull();
 
         // conversation participants should not be notified
-        verify(messagingTemplate, never()).convertAndSendToUser(anyString(), anyString(), any(PostDTO.class));
+        verify(websocketMessagingService, never()).sendMessageToUser(anyString(), anyString(), any(PostDTO.class));
     }
 
     @Test
@@ -333,7 +329,7 @@ class MessageIntegrationTest extends AbstractSpringIntegrationBambooBitbucketJir
 
         assertThat(conversationMessageRepository.findById(conversationPostToDelete.getId())).isEmpty();
         // both conversation participants should be notified
-        verify(messagingTemplate, times(2)).convertAndSendToUser(anyString(), anyString(), any(PostDTO.class));
+        verify(websocketMessagingService, timeout(2000).times(2)).sendMessageToUser(anyString(), anyString(), any(PostDTO.class));
     }
 
     @Test
@@ -345,7 +341,7 @@ class MessageIntegrationTest extends AbstractSpringIntegrationBambooBitbucketJir
 
         assertThat(conversationMessageRepository.findById(conversationPostToDelete.getId())).isPresent();
         // conversation participants should not be notified
-        verify(messagingTemplate, never()).convertAndSendToUser(anyString(), anyString(), any(PostDTO.class));
+        verify(websocketMessagingService, never()).sendMessageToUser(anyString(), anyString(), any(PostDTO.class));
     }
 
     @Test
@@ -381,13 +377,12 @@ class MessageIntegrationTest extends AbstractSpringIntegrationBambooBitbucketJir
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        SecurityContextHolder.setContext(TestSecurityContextHolder.getContext());
-        long unreadMessages = oneToOneChatRepository.findByIdWithConversationParticipantsAndUserGroups(createdPost1.getConversation().getId()).orElseThrow()
-                .getConversationParticipants().stream()
-                .filter(conversationParticipant -> !Objects.equals(conversationParticipant.getUser().getId(), postToSave1.getAuthor().getId())).findAny().orElseThrow()
-                .getUnreadMessagesCount();
-
-        assertThat(unreadMessages).isZero();
+        await().untilAsserted(() -> {
+            SecurityUtils.setAuthorizationObject();
+            assertThat(oneToOneChatRepository.findByIdWithConversationParticipantsAndUserGroups(createdPost1.getConversation().getId()).orElseThrow().getConversationParticipants()
+                    .stream().filter(conversationParticipant -> !Objects.equals(conversationParticipant.getUser().getId(), postToSave1.getAuthor().getId())).findAny().orElseThrow()
+                    .getUnreadMessagesCount()).isZero();
+        });
     }
 
     @Test

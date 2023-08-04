@@ -64,6 +64,7 @@ import de.tum.in.www1.artemis.repository.*;
 import de.tum.in.www1.artemis.service.FileService;
 import de.tum.in.www1.artemis.service.UrlService;
 import de.tum.in.www1.artemis.service.connectors.GitService;
+import de.tum.in.www1.artemis.service.connectors.vcs.VersionControlRepositoryPermission;
 import de.tum.in.www1.artemis.service.connectors.vcs.VersionControlService;
 import de.tum.in.www1.artemis.user.UserUtilService;
 import de.tum.in.www1.artemis.util.*;
@@ -471,7 +472,8 @@ class ProgrammingExerciseIntegrationTestService {
 
         // Checks
         assertThat(entries).anyMatch(entry -> entry.endsWith("Test.java"));
-        Optional<Path> extractedRepo1 = entries.stream().filter(entry -> entry.toString().endsWith(Path.of("student1", ".git").toString())).findFirst();
+        Optional<Path> extractedRepo1 = entries.stream()
+                .filter(entry -> entry.toString().endsWith(Path.of("-" + String.valueOf(participation1.getId()) + "-student-submission.git", ".git").toString())).findFirst();
         assertThat(extractedRepo1).isPresent();
         try (Git downloadedGit = Git.open(extractedRepo1.get().toFile())) {
             RevCommit commit = downloadedGit.log().setMaxCount(1).call().iterator().next();
@@ -531,7 +533,7 @@ class ProgrammingExerciseIntegrationTestService {
         repositoryExportOptions.setFilterLateSubmissions(true);
         repositoryExportOptions.setExcludePracticeSubmissions(false);
         repositoryExportOptions.setCombineStudentCommits(true);
-        repositoryExportOptions.setAnonymizeStudentCommits(true);
+        repositoryExportOptions.setAnonymizeRepository(true);
         repositoryExportOptions.setAddParticipantName(true);
         repositoryExportOptions.setNormalizeCodeStyle(true);
         return repositoryExportOptions;
@@ -1657,8 +1659,10 @@ class ProgrammingExerciseIntegrationTestService {
         final var endpoint = ProgrammingExerciseResourceEndpoints.UNLOCK_ALL_REPOSITORIES.replace("{exerciseId}", String.valueOf(programmingExercise.getId()));
         request.put(ROOT + endpoint, null, HttpStatus.OK);
 
-        verify(versionControlService).configureRepository(programmingExercise, participation1, true);
-        verify(versionControlService).configureRepository(programmingExercise, participation2, true);
+        verify(versionControlService).addMemberToRepository(participation1.getVcsRepositoryUrl(), participation1.getStudent().orElseThrow(),
+                VersionControlRepositoryPermission.REPO_WRITE);
+        verify(versionControlService).addMemberToRepository(participation2.getVcsRepositoryUrl(), participation2.getStudent().orElseThrow(),
+                VersionControlRepositoryPermission.REPO_WRITE);
 
         userUtilService.changeUser(userPrefix + "instructor1");
 

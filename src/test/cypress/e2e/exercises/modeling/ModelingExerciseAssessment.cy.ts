@@ -19,7 +19,7 @@ describe('Modeling Exercise Assessment', () => {
 
     before('Create course', () => {
         cy.login(admin);
-        courseManagementRequest.createCourse(true).then((response) => {
+        courseManagementRequest.createCourse().then((response) => {
             course = convertModelAfterMultiPart(response);
             courseManagementRequest.addStudentToCourse(course, studentOne);
             courseManagementRequest.addTutorToCourse(course, tutor);
@@ -39,8 +39,7 @@ describe('Modeling Exercise Assessment', () => {
 
     it('Tutor can assess a submission', () => {
         cy.login(tutor, '/course-management');
-        courseManagement.openCourse(course.id!);
-        courseManagement.openAssessmentDashboard();
+        courseManagement.openAssessmentDashboardOfCourse(course.id!);
         cy.wait(500);
         courseAssessment.clickExerciseDashboardButton();
         exerciseAssessment.clickHaveReadInstructionsButton();
