@@ -2,12 +2,10 @@ package de.tum.in.www1.artemis.web.rest;
 
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,7 +16,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import de.tum.in.www1.artemis.config.Constants;
 import de.tum.in.www1.artemis.domain.Authority;
-import de.tum.in.www1.artemis.domain.Organization;
 import de.tum.in.www1.artemis.domain.User;
 import de.tum.in.www1.artemis.repository.UserRepository;
 import de.tum.in.www1.artemis.security.annotations.EnforceAtLeastInstructor;
@@ -93,18 +90,7 @@ public class UserResource {
         Page<UserDTO> page;
         // limit search results to 25 users (larger result sizes would impact performance and are not useful for specific user searches)
         if (currentUser.getOrganizations().size() > 0 && !currentUser.getAuthorities().contains(Authority.ADMIN_AUTHORITY)) {
-            page = new PageImpl<>(userRepository.searchAllUsersByLoginOrName(PageRequest.of(0, 25), loginOrName).stream().filter(user -> {
-                User userWithOrganizations = userRepository.findByIdWithGroupsAndAuthoritiesAndOrganizationsElseThrow(user.getId());
-                if (userWithOrganizations.getOrganizations().size() > 0) {
-                    for (Organization org : currentUser.getOrganizations()) {
-                        if (userWithOrganizations.getOrganizations().contains(org)) {
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-                return true;
-            }).collect(Collectors.toList()));
+            page = userRepository.searchAllUsersByLoginOrNameAndOrganization(PageRequest.of(0, 25), loginOrName, currentUser.getOrganizations());
         }
         else {
             page = userRepository.searchAllUsersByLoginOrName(PageRequest.of(0, 25), loginOrName);

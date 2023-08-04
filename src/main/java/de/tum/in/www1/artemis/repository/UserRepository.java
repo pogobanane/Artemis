@@ -646,4 +646,13 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     default User findByIdElseThrow(long userId) throws EntityNotFoundException {
         return findById(userId).orElseThrow(() -> new EntityNotFoundException("User", userId));
     }
+
+    @Query("""
+            SELECT user FROM User user
+            WHERE user.isDeleted = false
+            AND (user.login like :#{#loginOrName}% OR concat_ws(' ', user.firstName, user.lastName) LIKE %:#{#loginOrName}%)
+            AND :#{#organizations} MEMBER OF user.organizations
+            """)
+    Page<UserDTO> searchAllUsersByLoginOrNameAndOrganization(Pageable pageable, @Param("loginOrName") String loginOrName, @Param("organizations") Set<Organization> organizations);
+
 }
