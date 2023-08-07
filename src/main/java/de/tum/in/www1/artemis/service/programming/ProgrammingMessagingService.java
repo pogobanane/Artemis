@@ -2,6 +2,8 @@ package de.tum.in.www1.artemis.service.programming;
 
 import static de.tum.in.www1.artemis.config.Constants.*;
 
+import java.util.concurrent.CompletableFuture;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -43,13 +45,19 @@ public class ProgrammingMessagingService {
         groupNotificationService.notifyEditorAndInstructorGroupAboutExerciseUpdate(programmingExercise, BUILD_RUN_COMPLETE_FOR_PROGRAMMING_EXERCISE);
     }
 
+    public void awaitNotifyUserAboutSubmission(ProgrammingSubmission submission) {
+        notifyUserAboutSubmission(submission).join();
+    }
+
     /**
      * Notify user on a new programming submission.
      *
      * @param submission ProgrammingSubmission
      */
-    public void notifyUserAboutSubmission(ProgrammingSubmission submission) {
-        if (submission.getParticipation() instanceof StudentParticipation studentParticipation) {
+    public CompletableFuture<?> notifyUserAboutSubmission(ProgrammingSubmission submission) {
+        var originalParticipation = submission.getParticipation();
+        CompletableFuture<?>[] futures = new CompletableFuture[0];
+        if (originalParticipation instanceof StudentParticipation studentParticipation) {
             // TODO LOCALVC_CI: Find a way to set the exercise to null (submission.getParticipation().setExercise(null)) as it is not necessary to send all these details here.
             // Just removing it causes issues with the local CI system that calls this method and in some places expects the exercise to be set on the submission's participation
             // afterwards (call by reference).
@@ -58,13 +66,19 @@ public class ProgrammingMessagingService {
             // Creating a deep copy of the submission and setting the exercise to null there is also not working, because 'java.time.ZoneRegion' is not open to external libraries
             // (like Jackson) so it cannot be serialized using 'objectMapper.readValue()'.
             // You could look into some kind of ProgrammingSubmissionDTO here that only gets the values set that the client actually needs.
-            studentParticipation.getStudents().forEach(user -> websocketMessagingService.sendMessageToUser(user.getLogin(), NEW_SUBMISSION_TOPIC, submission));
+            submission.setParticipation(originalParticipation.copyParticipationId());
+            futures = studentParticipation.getStudents().stream().map(user -> websocketMessagingService.sendMessageToUser(user.getLogin(), NEW_SUBMISSION_TOPIC, submission))
+                    .toArray(CompletableFuture[]::new);
         }
 
-        if (submission.getParticipation() != null && submission.getParticipation().getExercise() != null && !(submission.getParticipation() instanceof StudentParticipation)) {
-            var topicDestination = getExerciseTopicForTAAndAbove(submission.getParticipation().getExercise().getId());
-            websocketMessagingService.sendMessage(topicDestination, submission);
-        }
+        return CompletableFuture.allOf(futures).thenCompose(v -> {
+            submission.setParticipation(originalParticipation);
+            if (originalParticipation != null && originalParticipation.getExercise() != null && !(originalParticipation instanceof StudentParticipation)) {
+                var topicDestination = getExerciseTopicForTAAndAbove(submission.getParticipation().getExercise().getId());
+                return websocketMessagingService.sendMessage(topicDestination, submission);
+            }
+            return CompletableFuture.completedFuture(null);
+        });
     }
 
     public void notifyUserAboutSubmissionError(ProgrammingSubmission submission, BuildTriggerWebsocketError error) {

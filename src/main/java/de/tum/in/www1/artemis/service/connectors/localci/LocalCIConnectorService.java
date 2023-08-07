@@ -185,7 +185,7 @@ public class LocalCIConnectorService {
             throw new LocalCIException("Could not create submission for solution participation", e);
         }
 
-        programmingMessagingService.notifyUserAboutSubmission(submission);
+        programmingMessagingService.awaitNotifyUserAboutSubmission(submission);
 
         try {
             // Set a flag to inform the instructor that the student results are now outdated.
