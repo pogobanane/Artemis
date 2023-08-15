@@ -24,7 +24,7 @@ import { BuildLogStatisticsDTO } from 'app/exercises/programming/manage/build-lo
 import { SortService } from 'app/shared/service/sort.service';
 import { Result } from 'app/entities/result.model';
 import { Participation } from 'app/entities/participation/participation.model';
-import { ProgrammingSubmission } from 'app/entities/programming-submission.model';
+import { CommitInfo, ProgrammingSubmission } from 'app/entities/programming-submission.model';
 
 export type EntityResponseType = HttpResponse<ProgrammingExercise>;
 export type EntityArrayResponseType = HttpResponse<ProgrammingExercise[]>;
@@ -568,15 +568,6 @@ export class ProgrammingExerciseService {
      */
     getTemplateRepositoryTestFilesWithContent(exerciseId: number): Observable<Map<string, string> | undefined> {
         return this.http.get(`${this.resourceUrl}/${exerciseId}/template-files-content`).pipe(
-            map((res: HttpResponse<any>) => {
-                // this mapping is required because otherwise the HttpResponse object would be parsed
-                // to an arbitrary object (and not a map)
-                return res && new Map(Object.entries(res));
-            }),
-        );
-    }
-    getParticipationRepositoryFilesWithContent(exerciseId: number, participationId: number): Observable<Map<string, string> | undefined> {
-        return this.http.get(`${this.resourceUrl}/${exerciseId}/participations/${participationId}/files-content`).pipe(
             map((res: HttpResponse<any>) => {
                 // this mapping is required because otherwise the HttpResponse object would be parsed
                 // to an arbitrary object (and not a map)
