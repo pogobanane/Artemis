@@ -18,7 +18,6 @@ import { ExamSubmissionComponent } from 'app/exam/participate/exercises/exam-sub
 import { Exercise, IncludedInOverallScore } from 'app/entities/exercise.model';
 import { Submission } from 'app/entities/submission.model';
 import { faListAlt } from '@fortawesome/free-regular-svg-icons';
-import { SubmissionVersion } from 'app/entities/submission-version.model';
 
 @Component({
     selector: 'jhi-file-upload-submission-exam',
@@ -166,11 +165,5 @@ export class FileUploadExamSubmissionComponent extends ExamSubmissionComponent i
      */
     private onError() {
         this.alertService.error(this.translateService.instant('error.fileUploadSavingError'));
-    }
-
-    //@ts-ignore it's intentionally unused
-    setSubmissionVersion(submissionVersion: SubmissionVersion): void {
-        // submission versions are not supported for file upload exercises
-        throw new Error('Submission versions are not supported for file upload exercises.');
     }
 }

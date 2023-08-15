@@ -26,9 +26,15 @@ export abstract class ExamSubmissionComponent extends ExamPageComponent {
     abstract updateViewFromSubmission(): void;
 
     abstract getSubmission(): Submission | undefined;
+
     abstract getExercise(): Exercise;
+
     @Input() readonly = false;
     @Input() examTimeline = false;
     submissionVersion: SubmissionVersion;
-    abstract setSubmissionVersion(submissionVersion: SubmissionVersion): void;
+
+    setSubmissionVersion(submissionVersion: SubmissionVersion): void {
+        this.submissionVersion = submissionVersion;
+        throw new Error('Method not implemented.');
+    }
 }

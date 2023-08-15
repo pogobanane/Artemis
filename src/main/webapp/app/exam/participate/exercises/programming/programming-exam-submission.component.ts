@@ -16,7 +16,6 @@ import {
     CodeEditorRepositoryFileService,
     CodeEditorRepositoryService,
 } from 'app/exercises/programming/shared/code-editor/service/code-editor-repository.service';
-import { SubmissionVersion } from 'app/entities/submission-version.model';
 
 @Component({
     selector: 'jhi-programming-submission-exam',
@@ -63,7 +62,10 @@ export class ProgrammingExamSubmissionComponent extends ExamSubmissionComponent 
     readonly ButtonType = ButtonType;
     readonly ButtonSize = ButtonSize;
 
-    constructor(private domainService: DomainService, changeDetectorReference: ChangeDetectorRef) {
+    constructor(
+        private domainService: DomainService,
+        changeDetectorReference: ChangeDetectorRef,
+    ) {
         super(changeDetectorReference);
     }
 
@@ -126,10 +128,5 @@ export class ProgrammingExamSubmissionComponent extends ExamSubmissionComponent 
 
     updateViewFromSubmission(): void {
         // do nothing - the code editor itself is taking care of updating the view from submission
-    }
-    //@ts-ignore it's intentionally unused
-    setSubmissionVersion(submissionVersion: SubmissionVersion): void {
-        // submission versions are not supported for programming exercises
-        throw new Error('Submission versions are not supported for file upload exercises.');
     }
 }
