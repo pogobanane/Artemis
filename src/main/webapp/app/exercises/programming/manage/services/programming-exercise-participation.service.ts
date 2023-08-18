@@ -67,8 +67,8 @@ export class ProgrammingExerciseParticipationService implements IProgrammingExer
             }
         }
     }
-    getParticipationRepositoryFilesWithContent(exerciseId: number, participationId: number): Observable<Map<string, string> | undefined> {
-        return this.http.get(`${this.resourceUrl}/${exerciseId}/participations/${participationId}/files-content`).pipe(
+    getParticipationRepositoryFilesWithContent(participationId: number): Observable<Map<string, string> | undefined> {
+        return this.http.get(`${this.resourceUrl}/${participationId}/files-content`).pipe(
             map((res: HttpResponse<any>) => {
                 // this mapping is required because otherwise the HttpResponse object would be parsed
                 // to an arbitrary object (and not a map)

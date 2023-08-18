@@ -171,7 +171,7 @@ public class ProgrammingExerciseGitDiffReportService {
         var submission1 = programmingSubmissionRepository.findById(submissionId1).orElseThrow();
 
         var repo1 = gitService.getOrCheckoutRepositoryAtCommit(((ProgrammingExerciseParticipation) submission1.getParticipation()).getVcsRepositoryUrl(),
-                submission1.getCommitHash(), true);
+                submission1.getCommitHash(), false);
         var oldTreeParser = new FileTreeIterator(repo1);
         var newTreeParser = new FileTreeIterator(templateRepo);
         var report = createReport(templateRepo, oldTreeParser, newTreeParser);
@@ -211,9 +211,9 @@ public class ProgrammingExerciseGitDiffReportService {
     private ProgrammingExerciseGitDiffReport generateReportForSubmissions(ProgrammingSubmission submission1, ProgrammingSubmission submission2)
             throws GitAPIException, IOException {
         var repo1 = gitService.getOrCheckoutRepositoryAtCommit(((ProgrammingExerciseParticipation) submission1.getParticipation()).getVcsRepositoryUrl(),
-                submission1.getCommitHash(), true);
+                submission1.getCommitHash(), false);
         var repo2 = gitService.getOrCheckoutRepositoryAtCommit(((ProgrammingExerciseParticipation) submission2.getParticipation()).getVcsRepositoryUrl(),
-                submission2.getCommitHash(), true);
+                submission2.getCommitHash(), false);
         return parseFilesAndCreateReport(repo1, repo2);
 
     }
@@ -267,8 +267,8 @@ public class ProgrammingExerciseGitDiffReportService {
             }
             else if (!parserState.deactivateCodeReading) {
                 switch (line.charAt(0)) {
-                    case '+' -> handleAddition(parserState);
-                    case '-' -> handleRemoval(parserState);
+                    case '-' -> handleAddition(parserState);
+                    case '+' -> handleRemoval(parserState);
                     case ' ' -> handleUnchanged(parserState);
                     default -> parserState.deactivateCodeReading = true;
                 }

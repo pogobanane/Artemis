@@ -1,5 +1,8 @@
-import { Component, Input, OnChanges, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { CommitInfo } from 'app/entities/programming-submission.model';
+import { GitDiffReportModalComponent } from 'app/exercises/programming/hestia/git-diff-report/git-diff-report-modal.component';
+import { ProgrammingExerciseGitDiffReport } from 'app/entities/hestia/programming-exercise-git-diff-report.model';
 
 @Component({
     selector: 'jhi-commits-info',
@@ -8,7 +11,5 @@ import { CommitInfo } from 'app/entities/programming-submission.model';
 })
 export class CommitsInfoComponent {
     @Input() commits: CommitInfo[];
-    private sortByTimestamp(commits: CommitInfo[]): CommitInfo[] {
-        return commits.sort((a, b) => b.timestamp!.unix() - a.timestamp!.unix());
-    }
+    @Input() activeCommitHash?: string;
 }

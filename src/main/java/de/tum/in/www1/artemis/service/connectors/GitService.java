@@ -380,11 +380,12 @@ public class GitService {
         var repo = getOrCheckoutRepository(repoUrl, pullOnGet);
         try (Git git = new Git(repo)) {
             git.checkout().setName(commitHash).call();
-            return repo;
+
         }
         catch (GitAPIException e) {
             throw new GitException("Could not checkout commit " + commitHash + " in repository " + repoUrl, e);
         }
+        return repo;
 
     }
 
@@ -1370,21 +1371,20 @@ public class GitService {
         return command.setTransportConfigCallback(sshCallback);
     }
 
-    public List<CommitInfoDTO> getCommitInfos(VcsRepositoryUrl vcsRepositoryUrl) {
+    public List<CommitInfoDTO> getCommitInfos(VcsRepositoryUrl vcsRepositoryUrl) throws GitAPIException {
         List<CommitInfoDTO> commitInfos = new ArrayList<>();
-        try {
-            var repo = getOrCheckoutRepository(vcsRepositoryUrl, false);
-            var git = new Git(repo);
-            var commits = git.log().call();
-            commits.forEach(commit -> {
-                var commitInfo = CommitInfoDTO.of(commit);
-                commitInfos.add(commitInfo);
-            });
-        }
-        catch (GitAPIException e) {
-            log.error("Could not get commit infos for repository " + vcsRepositoryUrl, e);
-            return Collections.emptyList();
-        }
+        // var repo = getOrCheckoutRepository(vcsRepositoryUrl, true);
+        //
+        // try (var git = new Git(repo)) {
+        // var commits = git.log().call();
+        // commits.forEach(commit -> {
+        // var commitInfo = CommitInfoDTO.of(commit);
+        // commitInfos.add(commitInfo);
+        // });
+        // } catch (GitAPIException e) {
+        // log.error("Could not get commit infos for repository " + vcsRepositoryUrl, e);
+        // return Collections.emptyList();
+        // }
         return commitInfos;
     }
 }

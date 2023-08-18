@@ -59,7 +59,7 @@ import { ArtemisExamSubmissionComponentsModule } from 'app/exam/participate/exer
 import { NgxSliderModule } from 'ngx-slider-v2';
 import { ProgrammingExerciseExamDiffComponent } from './student-exams/student-exam-timeline/programming-exam-diff/programming-exercise-exam-diff.component';
 import { GitDiffReportModule } from 'app/exercises/programming/hestia/git-diff-report/git-diff-report.module';
-import { ArtemisProgrammingExerciseModule } from 'app/exercises/programming/shared/programming-exercise.module';
+import { CommitsInfoModule } from 'app/exercises/programming/shared/commits-info/commits-info.module';
 const ENTITY_STATES = [...examManagementState];
 
 @NgModule({
@@ -97,7 +97,7 @@ const ENTITY_STATES = [...examManagementState];
         ArtemisExamSubmissionComponentsModule,
         NgxSliderModule,
         GitDiffReportModule,
-        ArtemisProgrammingExerciseModule,
+        CommitsInfoModule,
     ],
     declarations: [
         ExamManagementComponent,

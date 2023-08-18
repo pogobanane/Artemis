@@ -1,7 +1,7 @@
 <p>Programming Diff works</p>
-<jhi-commits-info [commits]="commits" />
+<jhi-commits-info [commits]="commits" [activeCommitHash]="currentSubmission?.commitHash" />
 <div *ngIf="exercise?.gitDiffReport">
-    <dt><span jhiTranslate="artemisApp.programmingExercise.diffReport.lineStatLabel">Lines added/removed between template and solution</span></dt>
+    <dt><span jhiTranslate="artemisApp.programmingExercise.diffReport.lineStatBetweenCommitsLabel">Lines added/removed between current commit and previous commit</span></dt>
     <dd>
         <div class="fw-bold">
             <jhi-git-diff-line-stat
