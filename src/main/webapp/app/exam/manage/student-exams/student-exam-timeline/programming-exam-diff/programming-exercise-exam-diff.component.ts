@@ -26,7 +26,6 @@ export class ProgrammingExerciseExamDiffComponent extends ExamSubmissionComponen
     @Input() previousSubmission: ProgrammingSubmission | undefined;
     @Input() currentSubmission: ProgrammingSubmission;
     @Input() studentParticipation: ProgrammingExerciseStudentParticipation;
-    @Input() commits: CommitInfo[];
 
     isLoadingDiffReport: boolean;
     addedLineCount: number;

@@ -41,7 +41,6 @@ export class StudentExamTimelineComponent implements OnInit, AfterViewInit {
     studentExam: StudentExam;
     exerciseIndex: number;
     activeExamPage = new ExamPage();
-    courseId: number;
     submissionTimeStamps: dayjs.Dayjs[] = [];
     submissionVersions: SubmissionVersion[] = [];
     programmingSubmissions: ProgrammingSubmission[] = [];
@@ -66,7 +65,6 @@ export class StudentExamTimelineComponent implements OnInit, AfterViewInit {
     ngOnInit(): void {
         this.activatedRoute.data.subscribe(({ studentExam: studentExamWithGrade }) => {
             this.studentExam = studentExamWithGrade.studentExam;
-            this.courseId = this.studentExam.exam!.course!.id!;
             // this.retrieveCommitInfos();
         });
         this.exerciseIndex = 0;
@@ -111,9 +109,7 @@ export class StudentExamTimelineComponent implements OnInit, AfterViewInit {
             activeProgrammingComponent.exercise = this.currentExercise!;
             activeProgrammingComponent.currentSubmission = this.currentSubmission as ProgrammingSubmission;
             activeProgrammingComponent.previousSubmission = this.findPreviousSubmission(this.currentExercise!, this.currentSubmission!);
-            setTimeout(() => {
-                activeProgrammingComponent.loadGitDiffReport();
-            }, 10000);
+            activeProgrammingComponent.loadGitDiffReport();
         }
     }
 
