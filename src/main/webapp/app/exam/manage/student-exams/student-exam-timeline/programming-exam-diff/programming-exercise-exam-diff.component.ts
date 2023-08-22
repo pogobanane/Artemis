@@ -61,6 +61,8 @@ export class ProgrammingExerciseExamDiffComponent extends ExamSubmissionComponen
                 gitDiffReport.programmingExercise = this.exercise;
                 gitDiffReport.participationIdForFirstCommit = this.previousSubmission?.participation?.id;
                 gitDiffReport.participationIdForSecondCommit = this.currentSubmission.participation?.id;
+                gitDiffReport.templateRepositoryCommitHash = this.previousSubmission?.commitHash!;
+                gitDiffReport.solutionRepositoryCommitHash = this.currentSubmission.commitHash!;
                 this.calculateLineCount(gitDiffReport);
             }
             this.isLoadingDiffReport = false;
