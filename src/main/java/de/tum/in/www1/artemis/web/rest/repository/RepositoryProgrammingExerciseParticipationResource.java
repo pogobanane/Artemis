@@ -179,7 +179,7 @@ public class RepositoryProgrammingExerciseParticipationResource extends Reposito
         }
         return executeAndCheckForExceptions(() -> {
 
-            Repository repository = gitService.getOrCheckoutRepositoryAtCommit(getRepositoryUrl(participationId), commitId, true);
+            Repository repository = gitService.checkoutRepositoryAtCommit(getRepositoryUrl(participationId), commitId, true);
             Map<String, FileType> fileList = repositoryService.getFiles(repository);
             return new ResponseEntity<>(fileList, HttpStatus.OK);
         });

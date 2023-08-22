@@ -376,17 +376,43 @@ public class GitService {
         return getOrCheckoutRepository(repoUrl, localPath, pullOnGet);
     }
 
-    public Repository getOrCheckoutRepositoryAtCommit(VcsRepositoryUrl repoUrl, String commitHash, boolean pullOnGet) throws GitAPIException {
-        var repo = getOrCheckoutRepository(repoUrl, pullOnGet);
-        try (Git git = new Git(repo)) {
+    /**
+     * Get the local repository for a given remote repository URL. If the local repo does not exist yet, it will be checked out.
+     * After retrieving the repository, the commit for the given hash will be checked out.
+     *
+     * @param repository the repository to check out the commit in
+     * @param commitHash the hash of the commit to check out
+     * @return the repository checked out at the given commit
+     */
+    public Repository checkoutRepositoryAtCommit(Repository repository, String commitHash) {
+        try (Git git = new Git(repository)) {
             git.checkout().setName(commitHash).call();
-
         }
         catch (GitAPIException e) {
-            throw new GitException("Could not checkout commit " + commitHash + " in repository " + repoUrl, e);
+            throw new GitException("Could not checkout commit " + commitHash + " in repository located at  " + repository.getLocalPath(), e);
         }
-        return repo;
+        return repository;
+    }
 
+    /**
+     * Get the local repository for a given remote repository URL. If the local repo does not exist yet, it will be checked out.
+     * After the checkout, the repository the commit for the given hash will be checked out.
+     *
+     * @param vcsRepositoryUrl the url of the remote repository
+     * @param commitHash       the hash of the commit to checkout
+     * @param pullOnGet        pull from the remote on the checked out repository, if it does not need to be cloned
+     * @return the repository if it could be checked out
+     * @throws GitAPIException if the repository could not be checked out
+     */
+    public Repository checkoutRepositoryAtCommit(VcsRepositoryUrl vcsRepositoryUrl, String commitHash, boolean pullOnGet) throws GitAPIException {
+        var repository = getOrCheckoutRepository(vcsRepositoryUrl, pullOnGet);
+        try (Git git = new Git(repository)) {
+            git.checkout().setName(commitHash).call();
+        }
+        catch (GitAPIException e) {
+            throw new GitException("Could not checkout commit " + commitHash + " in repository located at  " + repository.getLocalPath(), e);
+        }
+        return repository;
     }
 
     /**
