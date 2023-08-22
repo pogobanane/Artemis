@@ -35,12 +35,7 @@ export class ProgrammingExerciseExamDiffComponent extends ExamSubmissionComponen
     readonly ButtonSize = ButtonSize;
     readonly faEye = faEye;
 
-    constructor(
-        protected changeDetectorReference: ChangeDetectorRef,
-        private programmingExerciseService: ProgrammingExerciseService,
-        private modalService: NgbModal,
-        private programmingExerciseParticipationService: ProgrammingExerciseParticipationService,
-    ) {
+    constructor(protected changeDetectorReference: ChangeDetectorRef, private programmingExerciseService: ProgrammingExerciseService, private modalService: NgbModal) {
         super(changeDetectorReference);
     }
 
@@ -54,15 +49,14 @@ export class ProgrammingExerciseExamDiffComponent extends ExamSubmissionComponen
         if (!this.currentSubmission) {
             return;
         }
-        // if there is no previous submission, we want to see the diff between the current submission and the template
         if (this.previousSubmission) {
             subscription = this.programmingExerciseService.getDiffReportForSubmissions(this.exercise.id!, this.previousSubmission, this.currentSubmission);
         } else {
+            // if there is no previous submission, we want to see the diff between the current submission and the template
             subscription = this.programmingExerciseService.getDiffReportForSubmissionWithTemplate(this.exercise.id!, this.currentSubmission);
         }
         subscription.subscribe((gitDiffReport: ProgrammingExerciseGitDiffReport | undefined) => {
             if (gitDiffReport) {
-                console.log(gitDiffReport);
                 this.exercise.gitDiffReport = gitDiffReport;
                 gitDiffReport.programmingExercise = this.exercise;
                 gitDiffReport.participationIdForFirstCommit = this.previousSubmission?.participation?.id;

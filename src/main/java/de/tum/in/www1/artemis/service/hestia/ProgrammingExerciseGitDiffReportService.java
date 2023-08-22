@@ -215,14 +215,14 @@ public class ProgrammingExerciseGitDiffReportService {
 
     private ProgrammingExerciseGitDiffReport generateReportForSubmissions(ProgrammingSubmission submission1, ProgrammingSubmission submission2)
             throws GitAPIException, IOException {
-        var repo1 = gitService.getOrCheckoutRepository(((ProgrammingExerciseParticipation) submission1.getParticipation()).getVcsRepositoryUrl(), true);
+        var repositoryUrl = ((ProgrammingExerciseParticipation) submission1.getParticipation()).getVcsRepositoryUrl();
+        var repo1 = gitService.getOrCheckoutRepository(repositoryUrl, true);
         var repo1Path = repo1.getLocalPath();
-        var destPath = repo1Path.getParent().resolve(repo1Path.getFileName().toString() + "");
-        FileSystemUtils.copyRecursively(repo1Path, destPath);
-        fileService.scheduleForDirectoryDeletion(destPath, 5);
-
-        gitService.checkoutRepositoryAtCommit(repo1, submission1.getCommitHash());
-        var repo2 = gitService.getOrCheckoutRepository(((ProgrammingExerciseParticipation) submission2.getParticipation()).getVcsRepositoryUrl(), true);
+        var repo2Path = fileService.getTemporaryUniquePath(repo1Path.getParent(), 5);
+        FileSystemUtils.copyRecursively(repo1Path, repo2Path);
+        repo1 = gitService.checkoutRepositoryAtCommit(repo1, submission1.getCommitHash());
+        var repo2 = gitService.getExistingCheckedOutRepositoryByLocalPath(repo2Path, repositoryUrl);
+        repo2 = gitService.checkoutRepositoryAtCommit(repo2, submission2.getCommitHash());
         return parseFilesAndCreateReport(repo1, repo2);
 
     }
@@ -276,8 +276,8 @@ public class ProgrammingExerciseGitDiffReportService {
             }
             else if (!parserState.deactivateCodeReading) {
                 switch (line.charAt(0)) {
-                    case '-' -> handleAddition(parserState);
-                    case '+' -> handleRemoval(parserState);
+                    case '+' -> handleAddition(parserState);
+                    case '-' -> handleRemoval(parserState);
                     case ' ' -> handleUnchanged(parserState);
                     default -> parserState.deactivateCodeReading = true;
                 }

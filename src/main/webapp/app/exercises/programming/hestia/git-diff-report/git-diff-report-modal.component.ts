@@ -14,7 +14,7 @@ export class GitDiffReportModalComponent implements OnInit {
 
     errorWhileFetchingRepos = false;
     firstCommitFileContentByPath: Map<string, string>;
-    secondCommitContentByPath: Map<string, string>;
+    secondCommitFileContentByPath: Map<string, string>;
 
     constructor(
         protected activeModal: NgbActiveModal,
@@ -41,7 +41,7 @@ export class GitDiffReportModalComponent implements OnInit {
         });
         this.programmingExerciseService.getSolutionRepositoryTestFilesWithContent(this.report.programmingExercise.id!).subscribe({
             next: (response: Map<string, string>) => {
-                this.secondCommitContentByPath = response;
+                this.secondCommitFileContentByPath = response;
             },
             error: () => {
                 this.errorWhileFetchingRepos = true;
@@ -72,7 +72,7 @@ export class GitDiffReportModalComponent implements OnInit {
         }
         this.programmingExerciseParticipationService.getParticipationRepositoryFilesWithContent(this.report.participationIdForSecondCommit!).subscribe({
             next: (filesWithContent: Map<string, string>) => {
-                this.secondCommitContentByPath = filesWithContent;
+                this.secondCommitFileContentByPath = filesWithContent;
             },
             error: () => {
                 this.errorWhileFetchingRepos = true;
