@@ -174,11 +174,10 @@ public class ProgrammingExerciseGitDiffReportService {
         var templateParticipation = templateProgrammingExerciseParticipationRepository.findByProgrammingExerciseId(exercise.getId()).orElseThrow();
         Repository templateRepo = prepareTemplateRepository(templateParticipation);
         var submission1 = programmingSubmissionRepository.findById(submissionId1).orElseThrow();
-
-        var repo1 = gitService.checkoutRepositoryAtCommit(((ProgrammingExerciseParticipation) submission1.getParticipation()).getVcsRepositoryUrl(), submission1.getCommitHash(),
-                false);
-        var oldTreeParser = new FileTreeIterator(repo1);
-        var newTreeParser = new FileTreeIterator(templateRepo);
+        var repo1 = gitService.getOrCheckoutRepository(((ProgrammingExerciseParticipation) submission1.getParticipation()).getVcsRepositoryUrl(), true);
+        gitService.checkoutRepositoryAtCommit(repo1, submission1.getCommitHash());
+        var oldTreeParser = new FileTreeIterator(templateRepo);
+        var newTreeParser = new FileTreeIterator(repo1);
         var report = createReport(templateRepo, oldTreeParser, newTreeParser);
         gitService.checkoutHead(repo1);
         return report;

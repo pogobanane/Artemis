@@ -76,7 +76,7 @@ export class ProgrammingExerciseParticipationService implements IProgrammingExer
             }),
         );
     }
-    retrieveCommitsInfoForParticipation(exerciseId: number, participationId: number): Observable<CommitInfo[]> {
+    retrieveCommitsInfoForParticipation(participationId: number): Observable<CommitInfo[]> {
         return this.http.get<CommitInfo[]>(`${this.resourceUrl}/${participationId}/commits-info`);
     }
 }

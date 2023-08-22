@@ -17,7 +17,6 @@ import { FileUploadSubmission } from 'app/entities/file-upload-submission.model'
 import { FileUploadExamSubmissionComponent } from 'app/exam/participate/exercises/file-upload/file-upload-exam-submission.component';
 import { SubmissionVersionService } from 'app/exercises/shared/submission-version/submission-version.service';
 import { ProgrammingExerciseExamDiffComponent } from 'app/exam/manage/student-exams/student-exam-timeline/programming-exam-diff/programming-exercise-exam-diff.component';
-import { ProgrammingExerciseService } from 'app/exercises/programming/manage/services/programming-exercise.service';
 import { ProgrammingExerciseParticipationService } from 'app/exercises/programming/manage/services/programming-exercise-participation.service';
 
 @Component({
@@ -68,6 +67,7 @@ export class StudentExamTimelineComponent implements OnInit, AfterViewInit {
         this.activatedRoute.data.subscribe(({ studentExam: studentExamWithGrade }) => {
             this.studentExam = studentExamWithGrade.studentExam;
             this.courseId = this.studentExam.exam!.course!.id!;
+            this.retrieveCommitInfos();
         });
         this.exerciseIndex = 0;
         this.pageComponentVisited = new Array(this.studentExam.exercises!.length).fill(false);
@@ -89,7 +89,6 @@ export class StudentExamTimelineComponent implements OnInit, AfterViewInit {
                     this.submissionTimeStamps.push(programmingSubmission.submissionDate!);
                 }
             });
-            this.retrieveCommitInfos();
             this.sortTimeStamps();
             this.setupRangeSlider();
             const firstSubmission = this.findFirstSubmission();
@@ -109,10 +108,12 @@ export class StudentExamTimelineComponent implements OnInit, AfterViewInit {
         const activeProgrammingComponent = this.activePageComponent as ProgrammingExerciseExamDiffComponent;
         if (activeProgrammingComponent) {
             activeProgrammingComponent.studentParticipation = this.currentExercise!.studentParticipations![0];
-            activeProgrammingComponent.exercise = this.currentExercise as Exercise;
+            activeProgrammingComponent.exercise = this.currentExercise!;
             activeProgrammingComponent.currentSubmission = this.currentSubmission as ProgrammingSubmission;
             activeProgrammingComponent.previousSubmission = this.findPreviousSubmission(this.currentExercise!, this.currentSubmission!);
-            activeProgrammingComponent.loadGitDiffReport();
+            setTimeout(() => {
+                activeProgrammingComponent.loadGitDiffReport();
+            }, 10000);
         }
     }
 
@@ -418,8 +419,8 @@ export class StudentExamTimelineComponent implements OnInit, AfterViewInit {
     private retrieveCommitInfos() {
         this.studentExam.exercises?.forEach((exercise) => {
             if (exercise.type === ExerciseType.PROGRAMMING) {
-                const id = exercise.studentParticipations![0].id!;
-                this.programmingExerciseParticipationService.retrieveCommitsInfoForParticipation(exercise.id!, id).subscribe((commitInfo) => {
+                const participationId = exercise.studentParticipations![0].id!;
+                this.programmingExerciseParticipationService.retrieveCommitsInfoForParticipation(participationId).subscribe((commitInfo) => {
                     const sortedCommitInfo = this.sortCommitsByTimestampAsc(commitInfo);
                     this.commitInfosPerExercise.set(exercise, sortedCommitInfo);
                 });
