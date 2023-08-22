@@ -67,7 +67,7 @@ export class StudentExamTimelineComponent implements OnInit, AfterViewInit {
         this.activatedRoute.data.subscribe(({ studentExam: studentExamWithGrade }) => {
             this.studentExam = studentExamWithGrade.studentExam;
             this.courseId = this.studentExam.exam!.course!.id!;
-            this.retrieveCommitInfos();
+            // this.retrieveCommitInfos();
         });
         this.exerciseIndex = 0;
         this.pageComponentVisited = new Array(this.studentExam.exercises!.length).fill(false);
