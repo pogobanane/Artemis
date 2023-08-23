@@ -1,5 +1,6 @@
 package de.tum.in.www1.artemis.repository.tutorialgroups;
 
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.Set;
 
@@ -65,6 +66,19 @@ public interface TutorialGroupRepository extends JpaRepository<TutorialGroup, Lo
     Set<TutorialGroup> findAllByCourseIdWithChannel(@Param("courseId") Long courseId);
 
     boolean existsByTitleAndCourse(String title, Course course);
+
+    @Query("""
+            SELECT DISTINCT tutorialGroups.id
+            FROM Course c
+                LEFT JOIN c.tutorialGroups tutorialGroups
+                LEFT JOIN tutorialGroups.teachingAssistant tutor
+                LEFT JOIN tutorialGroups.registrations registrations
+                LEFT JOIN registrations.student student
+            WHERE (c.startDate <= :now OR c.startDate IS NULL)
+                AND (c.endDate >= :now OR c.endDate IS NULL)
+                AND (student.id = :userId OR tutor.id = :userId)
+            """)
+    Set<Long> findAllActiveTutorialGroupIdsWhereUserIsRegisteredOrTutor(@Param("now") ZonedDateTime now, @Param("userId") Long userId);
 
     @Query("""
             SELECT tutorialGroup
