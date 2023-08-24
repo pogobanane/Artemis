@@ -33,7 +33,11 @@ export class ProgrammingExerciseExamDiffComponent extends ExamPageComponent {
     readonly ButtonSize = ButtonSize;
     readonly faEye = faEye;
 
-    constructor(protected changeDetectorReference: ChangeDetectorRef, private programmingExerciseService: ProgrammingExerciseService, private modalService: NgbModal) {
+    constructor(
+        protected changeDetectorReference: ChangeDetectorRef,
+        private programmingExerciseService: ProgrammingExerciseService,
+        private modalService: NgbModal,
+    ) {
         super(changeDetectorReference);
     }
 
