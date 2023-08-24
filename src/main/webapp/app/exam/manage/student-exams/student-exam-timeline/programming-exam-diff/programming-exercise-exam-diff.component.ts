@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, Input } from '@angular/core';
 import { ProgrammingExercise } from 'app/entities/programming-exercise.model';
-import { CommitInfo, ProgrammingSubmission } from 'app/entities/programming-submission.model';
+import { ProgrammingSubmission } from 'app/entities/programming-submission.model';
 import { FeatureToggle } from 'app/shared/feature-toggle/feature-toggle.service';
 import { ButtonSize } from 'app/shared/components/button.component';
 import { GitDiffReportModalComponent } from 'app/exercises/programming/hestia/git-diff-report/git-diff-report-modal.component';
@@ -9,11 +9,9 @@ import { ProgrammingExerciseService } from 'app/exercises/programming/manage/ser
 import { Exercise } from 'app/entities/exercise.model';
 import { ExamSubmissionComponent } from 'app/exam/participate/exercises/exam-submission.component';
 import { Submission } from 'app/entities/submission.model';
-import { SubmissionVersion } from 'app/entities/submission-version.model';
 import { ProgrammingExerciseStudentParticipation } from 'app/entities/participation/programming-exercise-student-participation.model';
 import { faEye } from '@fortawesome/free-solid-svg-icons';
 import { ProgrammingExerciseGitDiffReport } from 'app/entities/hestia/programming-exercise-git-diff-report.model';
-import { ProgrammingExerciseParticipationService } from 'app/exercises/programming/manage/services/programming-exercise-participation.service';
 
 @Component({
     selector: 'jhi-programming-exam-diff',
@@ -34,7 +32,11 @@ export class ProgrammingExerciseExamDiffComponent extends ExamSubmissionComponen
     readonly ButtonSize = ButtonSize;
     readonly faEye = faEye;
 
-    constructor(protected changeDetectorReference: ChangeDetectorRef, private programmingExerciseService: ProgrammingExerciseService, private modalService: NgbModal) {
+    constructor(
+        protected changeDetectorReference: ChangeDetectorRef,
+        private programmingExerciseService: ProgrammingExerciseService,
+        private modalService: NgbModal,
+    ) {
         super(changeDetectorReference);
     }
 
@@ -49,10 +51,10 @@ export class ProgrammingExerciseExamDiffComponent extends ExamSubmissionComponen
             return;
         }
         if (this.previousSubmission) {
-            subscription = this.programmingExerciseService.getDiffReportForSubmissions(this.exercise.id!, this.previousSubmission, this.currentSubmission);
+            subscription = this.programmingExerciseService.getDiffReportForSubmissions(this.exercise.id!, this.previousSubmission.id!, this.currentSubmission.id!);
         } else {
             // if there is no previous submission, we want to see the diff between the current submission and the template
-            subscription = this.programmingExerciseService.getDiffReportForSubmissionWithTemplate(this.exercise.id!, this.currentSubmission);
+            subscription = this.programmingExerciseService.getDiffReportForSubmissionWithTemplate(this.exercise.id!, this.currentSubmission.id!);
         }
         subscription.subscribe((gitDiffReport: ProgrammingExerciseGitDiffReport | undefined) => {
             if (gitDiffReport) {
@@ -60,8 +62,8 @@ export class ProgrammingExerciseExamDiffComponent extends ExamSubmissionComponen
                 gitDiffReport.programmingExercise = this.exercise;
                 gitDiffReport.participationIdForFirstCommit = this.previousSubmission?.participation?.id;
                 gitDiffReport.participationIdForSecondCommit = this.currentSubmission.participation?.id;
-                gitDiffReport.templateRepositoryCommitHash = this.previousSubmission?.commitHash!;
-                gitDiffReport.solutionRepositoryCommitHash = this.currentSubmission.commitHash!;
+                gitDiffReport.firstCommitHash = this.previousSubmission?.commitHash;
+                gitDiffReport.secondCommitHash = this.currentSubmission.commitHash;
                 this.calculateLineCount(gitDiffReport);
             }
             this.isLoadingDiffReport = false;
@@ -97,8 +99,6 @@ export class ProgrammingExerciseExamDiffComponent extends ExamSubmissionComponen
     hasUnsavedChanges(): boolean {
         return false;
     }
-
-    setSubmissionVersion(submissionVersion: SubmissionVersion): void {}
 
     updateSubmissionFromView(): void {}
 
