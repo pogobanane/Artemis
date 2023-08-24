@@ -198,10 +198,14 @@ public class GitUtilService {
     }
 
     public void stashAndCommitAll(REPOS repo) {
+        stashAndCommitAll(repo, "new commit");
+    }
+
+    public void stashAndCommitAll(REPOS repo, String commitMsg) {
         try {
             Git git = new Git(getRepoByType(repo));
             git.add().addFilepattern(".").call();
-            git.commit().setMessage("new commit").call();
+            git.commit().setMessage(commitMsg).call();
         }
         catch (GitAPIException ignored) {
         }

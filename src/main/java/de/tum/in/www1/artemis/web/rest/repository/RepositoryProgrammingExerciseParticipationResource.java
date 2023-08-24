@@ -186,7 +186,7 @@ public class RepositoryProgrammingExerciseParticipationResource extends Reposito
         return executeAndCheckForExceptions(() -> {
             Repository repository = gitService.checkoutRepositoryAtCommit(getRepositoryUrl(participationId), commitId, true);
             Map<String, String> filesWithContent = super.repositoryService.getFilesWithContent(repository);
-            gitService.checkoutHead(repository);
+            gitService.switchBackToDefaultBranchHead(repository);
             return new ResponseEntity<>(filesWithContent, HttpStatus.OK);
         });
     }
