@@ -934,12 +934,12 @@ public abstract class Exercise extends BaseExercise implements LearningObject {
         // at least one is set, so we have to check the three possible errors
         //@formatter:off
         boolean areDatesValid = isNotAfterAndNotNull(getReleaseDate(), getDueDate())
-                && isNotAfterAndNotNull(getReleaseDate(), getStartDate())
-                && isNotAfterAndNotNull(getStartDate(), getDueDate())
-                && isValidAssessmentDueDate(getStartDate(), getDueDate(), getAssessmentDueDate())
-                && isValidAssessmentDueDate(getReleaseDate(), getDueDate(), getAssessmentDueDate())
-                && isValidExampleSolutionPublicationDate(getStartDate(), getDueDate(), getExampleSolutionPublicationDate(), getIncludedInOverallScore())
-                && isValidExampleSolutionPublicationDate(getReleaseDate(), getDueDate(), getExampleSolutionPublicationDate(), getIncludedInOverallScore());
+            && isNotAfterAndNotNull(getReleaseDate(), getStartDate())
+            && isNotAfterAndNotNull(getStartDate(), getDueDate())
+            && isValidAssessmentDueDate(getStartDate(), getDueDate(), getAssessmentDueDate())
+            && isValidAssessmentDueDate(getReleaseDate(), getDueDate(), getAssessmentDueDate())
+            && isValidExampleSolutionPublicationDate(getStartDate(), getDueDate(), getExampleSolutionPublicationDate(), getIncludedInOverallScore())
+            && isValidExampleSolutionPublicationDate(getReleaseDate(), getDueDate(), getExampleSolutionPublicationDate(), getIncludedInOverallScore());
         //@formatter:on
 
         if (!areDatesValid) {
