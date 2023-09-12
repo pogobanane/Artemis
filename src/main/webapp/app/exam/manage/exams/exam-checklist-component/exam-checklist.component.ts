@@ -1,9 +1,11 @@
 import { Component, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
 import { Exam } from 'app/entities/exam.model';
 import { ExamChecklist } from 'app/entities/exam-checklist.model';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { faChartBar, faEye, faListAlt, faThList, faUser, faWrench } from '@fortawesome/free-solid-svg-icons';
 import { ExamChecklistService } from 'app/exam/manage/exams/exam-checklist-component/exam-checklist.service';
 import { JhiWebsocketService } from 'app/core/websocket/websocket.service';
+import { MakeLiveExamAnnouncementModalComponent } from 'app/exam/manage/exams/exam-checklist-component/make-live-exam-announcement.component';
 
 @Component({
     selector: 'jhi-exam-checklist',
@@ -28,6 +30,8 @@ export class ExamChecklistComponent implements OnChanges, OnInit, OnDestroy {
 
     examPreparationFinished: boolean;
 
+    ngbModalRef?: NgbModalRef;
+
     // Icons
     faEye = faEye;
     faWrench = faWrench;
@@ -39,6 +43,7 @@ export class ExamChecklistComponent implements OnChanges, OnInit, OnDestroy {
     constructor(
         private examChecklistService: ExamChecklistService,
         private websocketService: JhiWebsocketService,
+        private modalService: NgbModal,
     ) {}
 
     ngOnInit() {
@@ -71,5 +76,9 @@ export class ExamChecklistComponent implements OnChanges, OnInit, OnDestroy {
         this.websocketService.unsubscribe(submittedTopic);
         const startedTopic = this.examChecklistService.getStartedTopic(this.exam);
         this.websocketService.unsubscribe(startedTopic);
+    }
+
+    openLiveExamAnnouncementModal() {
+        this.ngbModalRef = this.modalService.open(MakeLiveExamAnnouncementModalComponent as Component, { size: 'lg', backdrop: 'static' });
     }
 }

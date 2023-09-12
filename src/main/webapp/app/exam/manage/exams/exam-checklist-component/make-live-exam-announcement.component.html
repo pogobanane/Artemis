@@ -1,0 +1,16 @@
+<form name="makeLiveExamAnnouncementForm">
+    <div class="modal-header">
+        <h4 class="modal-title" id="exampleModalLabel">Make Live Exam Announcement</h4>
+        <button type="button" class="btn-close" aria-label="Close" (click)="clear()"></button>
+    </div>
+    <div class="modal-body">
+        <div class="form-group">
+            <span>To communicate important information, you can make an announcement and send it out to all exam participants. Enter your announcement below:</span>
+            <input id="announcementText" type="text" class="form-control" name="announcementText" />
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="clear()">Close</button>
+        <button type="button" class="btn btn-primary">Make announcement</button>
+    </div>
+</form>
